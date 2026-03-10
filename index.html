@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Builder Pro</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        #container {
+            display: flex;
+            min-height: 100vh;
+        }
+        #sidebar {
+            width: 260px;
+            background: #222;
+            color: #fff;
+            padding: 20px 10px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        #sidebar div {
+            margin-bottom: 20px;
+        }
+        #sidebar button {
+            display: block;
+            width: 100%;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: #444;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #sidebar button:hover {
+            background: #666;
+        }
+        #prompts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .prompt-tile {
+            background: #333;
+            color: #fff;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .prompt-tile:hover {
+            background: #444;
+        }
+        #main-content {
+            flex: 1;
+            padding: 32px 24px;
+            background: #fff;
+            min-width: 0;
+        }
+        #tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        #tabs button {
+            padding: 10px 24px;
+            border: none;
+            background: #eee;
+            border-radius: 4px 4px 0 0;
+        }
+        #tabs button.active {
+            background: #fff;
+            border-bottom: 2px solid #222;
+        }
+        .empty-state {
+            text-align: center;
+            color: #888;
+        }
+        .btn-block {
+            width: 100%;
+        }
+        .visually-hidden {
+            position: absolute;
+            left: -9999px;
+        }
+        .edit-fields {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 16px 0;
+        }
+        details {
+            margin-bottom: 16px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+        summary {
+            font-weight: bold;
+            cursor: pointer;
+        }
+        textarea, input[type="text"] {
+            font-size: 1em;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        .view-panel {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .view-header {
+            margin-bottom: 16px;
+        }
+        .view-header h3 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #222;
+        }
+        .view-header p {
+            margin: 4px 0 0;
+            color: #666;
+        }
+        .view-card {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        .view-card h4 {
+            margin: 0 0 12px;
+            font-size: 1.2em;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div id="container">
+    <div id="sidebar">
+        <div>
+            <h1>Prompt Builder Pro</h1>
+            <p>7-component structured prompts</p>
+        </div>
+        <div class="warning-banner" role="alert">
+            <strong>⚠️ Session Storage Only</strong>
+            Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
+        </div>
+        <div id="prompts-list">
+            <!-- Prompt tiles will be rendered here -->
+        </div>
+        <div>
+            <button type="button" id="new-prompt">+ New Prompt</button>
+            <button type="button" id="export-prompts">Export Prompts</button>
+            <button type="button" id="import-prompts">Import Prompts</button>
+            <label for="import-file" class="visually-hidden">Import prompts file</label>
+            <input type="file" id="import-file" accept=".json" style="display: none;">
+        </div>
+    </div>
+    <div id="main-content">
+        <div id="tabs">
+            <button class="active" onclick="showTab('view-screen', this)">View Prompt</button>
+            <button onclick="showTab('edit-screen', this)">Edit</button>
+        </div>
+        <section id="view-screen" class="screen active">
+            <div class="view-panel">
+                <div class="view-header">
+                    <h3 id="view-name">Prompt Name</h3>
+                    <p id="view-desc">Description</p>
+                </div>
+                <div class="view-card">
+                    <h4>Input Fields</h4>
+                    <div id="view-inputs"></div>
+                </div>
+                <div class="view-card">
+                    <h4>Generated Prompt</h4>
+                    <div id="view-output"></div>
+                    <div class="btn-group">
+                        <button type="button" id="copy-view-output">Copy</button>
+                        <button type="button" id="download-view-output">Download</button>
+                    </div>
+                    <button type="button" id="togglePrompt" aria-expanded="false" aria-controls="myCollapsibleSection">Show/hide Prompt JSON</button>
+                    <div class="collapse" id="myCollapsibleSection" aria-hidden="true">
+                        <div class="card card-body">
+                            <pre id="view-output-json" class="prompt-display"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="edit-screen" class="screen" style="display:none;">
+            <div class="edit-screen">
+                <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
+                    <h3>⚠️ Required Fields Missing</h3>
+                    <ul id="validation-errors-list"></ul>
+                </div>
+                <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
+                    <h3>⚠️ Recommendations</h3>
+                    <ul id="validation-warnings-list"></ul>
+                </div>
+                <details open>
+                    <summary>Prompt Info</summary>
+                    <div class="edit-fields">
+                        <label for="prompt-name">Name:</label>
+                        <input type="text" id="prompt-name" placeholder="e.g., Human Writing Assistant" aria-required="true">
+                        <label for="prompt-desc">Description:</label>
+                        <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true">
+                    </div>
+                </details>
+                <details>
+                    <summary>1. Objective</summary>
+                    <div class="edit-fields">
+                        <label for="objective" class="visually-hidden">Objective</label>
+                        <textarea id="objective" placeholder="e.g., Generate natural, human-like prose without AI giveaways" aria-required="true"></textarea>
+                    </div>
+                </details>
+                <details>
+                    <summary>2. Actor</summary>
+                    <div class="edit-fields">
+                        <label for="actor" class="visually-hidden">Actor</label>
+                        <textarea id="actor" placeholder="e.g., You are a senior technical writer who creates clear, engaging documentation" aria-required="true"></textarea>
+                    </div>
+                </details>
+                <details>
+                    <summary>3. Context</summary>
+                    <div class="edit-fields">
+                        <label for="context" class="visually-hidden">Context</label>
+                        <textarea id="context" placeholder="e.g., This is for internal engineering documentation read by backend developers" aria-required="true"></textarea>
+                    </div>
+                </details>
+                <details>
+                    <summary>4. Input</summary>
+                    <div class="edit-fields">
+                        <div id="inputs-container"></div>
+                        <button type="button" id="add-input">+ Add Input Field</button>
+                    </div>
+                </details>
+                <details>
+                    <summary>5. Constraints</summary>
+                    <div class="edit-fields">
+                        <div id="constraints-container"></div>
+                        <button type="button" id="add-constraint">+ Add Constraint</button>
+                    </div>
+                </details>
+                <details>
+                    <summary>6. Output</summary>
+                    <div class="edit-fields">
+                        <div id="outputs-container"></div>
+                        <button type="button" id="add-output">+ Add Output Property</button>
+                    </div>
+                </details>
+                <details>
+                    <summary>7. Success</summary>
+                    <div class="edit-fields">
+                        <div id="success-container"></div>
+                        <button type="button" id="add-success">+ Add Success Criterion</button>
+                    </div>
+                </details>
+                <div class="btn-group">
+                    <button type="button" id="save-prompt">Save Changes</button>
+                    <button type="button" id="cancel-edit">Cancel</button>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+<script>
+    function showTab(tabId, btn) {
+        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+        document.getElementById(tabId).style.display = 'block';
+        document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+</script>
+<script src="newApp.js"></script>
+</body>
+</html>
+
