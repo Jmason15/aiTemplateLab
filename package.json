@@ -1,0 +1,12 @@
+{
+  "name": "prompt-builder-pro",
+  "version": "1.0.0",
+  "description": "Prompt Builder Pro build tools",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "MIT"
+}
+
