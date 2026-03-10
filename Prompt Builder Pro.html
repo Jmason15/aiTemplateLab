@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="app.css">
+    <title>Prompt Builder Pro</title>
+    
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1>Prompt Builder Pro</h1>
+                <p class="sidebar-subtitle">7-component structured prompts</p>
+            </div>
+            
+            <div class="warning-banner">
+                <strong>⚠️ Session Storage Only</strong>
+                Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
+            </div>
+            
+            <div class="prompts-list" id="prompts-list">
+                <div class="empty-state">
+                    <h3>No Prompts Yet</h3>
+                    <p>Create your first prompt to get started</p>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <button class="btn btn-primary btn-block" onclick="newPrompt()">+ New Prompt</button>
+                <button class="btn btn-secondary btn-block" onclick="exportPrompts()" style="margin-top: 0.5rem;">Export Prompts</button>
+                <button class="btn btn-secondary btn-block" onclick="importPrompts()" style="margin-top: 0.5rem;">Import Prompts</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImport(event)">
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Welcome Screen -->
+            <div id="welcome-screen" class="screen active" style="flex: 1; padding: 2rem; display: flex; align-items: center; justify-content: center;">
+                <div class="empty-state">
+                    <h3>Welcome to Prompt Builder Pro</h3>
+                    <p>Select a prompt from the sidebar or create a new one</p>
+                </div>
+            </div>
+
+            <!-- View Screen (Split View) -->
+            <div id="view-screen" class="screen">
+                <div class="view-screen">
+                    <div class="view-left">
+                        <div class="info-display">
+                            <h3 id="view-name">Prompt Name</h3>
+                            <p id="view-desc">Description</p>
+                        </div>
+
+                        <div class="section">
+                            <h2>Input Fields</h2>
+                            <div id="view-inputs"></div>
+                        </div>
+
+                        <!-- <div class="btn-group">
+                            <button class="btn btn-primary" onclick="editCurrentPrompt()">Edit Prompt</button>
+                        </div> -->
+                    </div>
+
+                    <div class="view-right">
+                        <div class="output-header">
+                            <h2>Generated Prompt</h2>
+                            <!-- <p class="section-desc">Fill in input fields to update the JSON</p> -->
+                        </div>
+
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="copyViewOutput()">Copy</button>
+                            <button class="btn btn-secondary" onclick="downloadViewOutput()">Download</button>
+                        </div>
+                        <br>
+
+
+                        <button class="btn btn-secondary" type="button"
+                                id="togglePrompt"
+                                aria-expanded="false"
+                                aria-controls="myCollapsibleSection">
+                        Show/hide Prompt
+                        </button>
+
+                        <br/>
+
+                        <div class="collapse" id="myCollapsibleSection">
+                        <div class="card card-body">
+                            <pre id="view-output-json" class="prompt-display"></pre>
+                        </div>
+                        </div>
+                     
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Screen (Full Screen) -->
+            <div id="edit-screen" class="screen">
+                <div class="edit-screen">
+                    <!-- Validation Panel -->
+                    <div id="validation-errors" class="validation-panel">
+                        <h3>⚠️ Required Fields Missing</h3>
+                        <ul id="validation-errors-list"></ul>
+                    </div>
+
+                    <div id="validation-warnings" class="validation-warning">
+                        <h3>⚠️ Recommendations</h3>
+                        <ul id="validation-warnings-list"></ul>
+                    </div>
+
+                    <div class="section">
+                        <h2>Prompt Info</h2>
+                        <label for="prompt-name">Name:</label>
+                        <input type="text" id="prompt-name" placeholder="e.g., Human Writing Assistant">
+                        
+                        <label for="prompt-desc">Description:</label>
+                        <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does">
+                    </div>
+
+                    <div class="section">
+                        <h2>1. Objective (Task)</h2>
+                        <p class="section-desc">One short sentence that states the main job you want the model to do.</p>
+                        <textarea id="objective" placeholder="e.g., Generate natural, human-like prose without AI giveaways" oninput="regenerateOutput()"></textarea>
+                    </div>
+
+                    <div class="section">
+                        <h2>2. Actor (Role / Persona)</h2>
+                        <p class="section-desc">The hat the model wears: background, expertise, and point of view.</p>
+                        <textarea id="actor" placeholder="e.g., You are a senior technical writer who creates clear, engaging documentation" oninput="regenerateOutput()"></textarea>
+                    </div>
+
+                    <div class="section">
+                        <h2>3. Context</h2>
+                        <p class="section-desc">Brief background the model needs to behave correctly in your domain.</p>
+                        <textarea id="context" placeholder="e.g., This is for internal engineering documentation read by backend developers" oninput="regenerateOutput()"></textarea>
+                    </div>
+
+                    <div class="section">
+                        <h2>4. Input (Schema / Fields)</h2>
+                        <p class="section-desc">The structured data the model will receive.</p>
+                        <div id="inputs-container"></div>
+                        <button class="btn btn-secondary btn-small" onclick="addInput()">+ Add Input Field</button>
+                    </div>
+
+                    <div class="section">
+                        <h2>5. Constraints (Rules)</h2>
+                        <p class="section-desc">The do/don't list that shapes style, scope, and behavior.</p>
+                        <div id="constraints-container"></div>
+                        <button class="btn btn-secondary btn-small" onclick="addConstraint()">+ Add Constraint</button>
+                    </div>
+
+                    <div class="section">
+                        <h2>6. Output (Format / Schema)</h2>
+                        <p class="section-desc">The exact shape of the answer the model should return. Define multiple output properties.</p>
+                        <div id="outputs-container"></div>
+                        <button class="btn btn-secondary btn-small" onclick="addOutput()">+ Add Output Property</button>
+                    </div>
+
+                    <div class="section">
+                        <h2>7. Success (Evaluation Criteria)</h2>
+                        <p class="section-desc">How you'll judge whether a response is "good enough."</p>
+                        <div id="success-container"></div>
+                        <button class="btn btn-secondary btn-small" onclick="addSuccess()">+ Add Success Criterion</button>
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="savePrompt()">Save Changes</button>
+                        <button class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
