@@ -1446,3 +1446,9 @@ function setupNewPromptModal() {
     };
 }
 // Call this in startApp()
+window.resetPrompts = function() {
+    if (confirm('This will erase all your current prompts and restore the default set. Continue?')) {
+        localStorage.removeItem('prompts');
+        location.reload();
+    }
+};
