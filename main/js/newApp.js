@@ -17,6 +17,14 @@ let constraintCounter = 0;
 let outputCounter = 0;
 let successCounter = 0;
 
+// Ensure these are initialized on window for global access
+window.prompts = prompts;
+window.currentPromptId = currentPromptId;
+window.inputCounter = inputCounter;
+window.constraintCounter = constraintCounter;
+window.outputCounter = outputCounter;
+window.successCounter = successCounter;
+
 // =========================
 // Initialization
 // =========================
@@ -236,6 +244,9 @@ function renderPromptsList() {
         });
     });
 }
+
+// Make renderPromptsList globally accessible for auto-save
+window.renderPromptsList = renderPromptsList;
 
 /**
  * Clears the edit form fields and containers.

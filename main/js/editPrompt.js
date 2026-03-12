@@ -327,3 +327,164 @@ function renderSuccessField(id, value = '') {
         </button>
     </div>`;
 }
+
+// Debounce utility
+function debounce(fn, delay) {
+    let timer = null;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+// Debounced save
+const debouncedSaveCurrentPrompt = debounce(saveCurrentPrompt, 200);
+
+// Remove any local prompts array, always use window.prompts
+// Remove savePrompts usage, always use window.savePromptsToLocalStorage
+// Add a save indicator
+let saveIndicatorTimeout;
+function showSaveIndicator() {
+    let indicator = document.getElementById('save-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'save-indicator';
+        indicator.style.position = 'fixed';
+        indicator.style.bottom = '24px';
+        indicator.style.right = '32px';
+        indicator.style.background = '#2563eb';
+        indicator.style.color = '#fff';
+        indicator.style.padding = '10px 22px';
+        indicator.style.borderRadius = '6px';
+        indicator.style.fontWeight = 'bold';
+        indicator.style.boxShadow = '0 2px 8px rgba(30,41,59,0.12)';
+        indicator.style.zIndex = '9999';
+        document.body.appendChild(indicator);
+    }
+    indicator.textContent = 'All changes saved';
+    indicator.style.opacity = '1';
+    clearTimeout(saveIndicatorTimeout);
+    saveIndicatorTimeout = setTimeout(() => {
+        indicator.style.opacity = '0';
+    }, 1200);
+}
+
+function saveCurrentPrompt() {
+    if (window.currentPromptId == null) return;
+    if (!window.prompts) return;
+    const idx = window.prompts.findIndex(p => p.id === window.currentPromptId);
+    if (idx === -1) return;
+    // Gather values from the form
+    const prompt = window.prompts[idx];
+    prompt.name = document.getElementById('prompt-name').value;
+    prompt.description = document.getElementById('prompt-desc').value;
+    prompt.objective = document.getElementById('objective').value;
+    prompt.actor = document.getElementById('actor').value;
+    prompt.context = document.getElementById('context').value;
+    // Inputs
+    prompt.inputs = [];
+    for (let i = 1; i <= window.inputCounter; i++) {
+        const name = document.getElementById(`input-name-${i}`);
+        const desc = document.getElementById(`input-desc-${i}`);
+        if (name && name.value.trim()) {
+            prompt.inputs.push({ name: name.value, description: desc ? desc.value : '' });
+        }
+    }
+    // Constraints
+    prompt.constraints = [];
+    for (let i = 1; i <= window.constraintCounter; i++) {
+        const text = document.getElementById(`constraint-text-${i}`);
+        if (text && text.value.trim()) {
+            prompt.constraints.push(text.value);
+        }
+    }
+    // Outputs
+    prompt.outputs = [];
+    for (let i = 1; i <= window.outputCounter; i++) {
+        const name = document.getElementById(`output-name-${i}`);
+        const type = document.getElementById(`output-type-${i}`);
+        const desc = document.getElementById(`output-desc-${i}`);
+        if (name && name.value.trim()) {
+            prompt.outputs.push({ name: name.value, type: type ? type.value : '', description: desc ? desc.value : '' });
+        }
+    }
+    // Success
+    prompt.success = [];
+    for (let i = 1; i <= window.successCounter; i++) {
+        const text = document.getElementById(`success-text-${i}`);
+        if (text && text.value.trim()) {
+            prompt.success.push(text.value);
+        }
+    }
+    if (typeof window.savePromptsToLocalStorage === 'function') {
+        window.savePromptsToLocalStorage();
+    }
+    if (typeof window.renderPromptsList === 'function') {
+        window.renderPromptsList();
+    } else if (typeof renderPromptsList === 'function') {
+        renderPromptsList();
+    }
+    if (typeof regenerateOutput === 'function') regenerateOutput();
+    showSaveIndicator();
+}
+
+// Attach debounced save to all input/textarea fields in the edit screen
+function attachFieldListeners() {
+    const editScreen = document.getElementById('edit-screen');
+    if (!editScreen) return;
+    // Attach to all input and textarea fields
+    const fields = editScreen.querySelectorAll('input, textarea');
+    fields.forEach(field => {
+        // Remove previous listener if any
+        field.removeEventListener('input', field._debouncedSaveListenerReal || (() => {}));
+        // Attach new debounced save
+        field._debouncedSaveListenerReal = function(e) {
+            debouncedSaveCurrentPrompt();
+        };
+        field.addEventListener('input', field._debouncedSaveListenerReal);
+    });
+}
+
+// Patch dynamic field adders to call attachFieldListeners after adding
+const _origAddInput = window.addInput;
+window.addInput = function(...args) {
+    _origAddInput.apply(this, args);
+    attachFieldListeners();
+};
+const _origAddConstraint = window.addConstraint;
+window.addConstraint = function(...args) {
+    _origAddConstraint.apply(this, args);
+    attachFieldListeners();
+};
+const _origAddOutput = window.addOutput;
+window.addOutput = function(...args) {
+    _origAddOutput.apply(this, args);
+    attachFieldListeners();
+};
+const _origAddSuccess = window.addSuccess;
+window.addSuccess = function(...args) {
+    _origAddSuccess.apply(this, args);
+    attachFieldListeners();
+};
+
+// Call attachFieldListeners after loading a prompt for editing
+const _origEditPrompt = window.editPrompt;
+window.editPrompt = function(...args) {
+    _origEditPrompt.apply(this, args);
+    setTimeout(attachFieldListeners, 0); // Ensure DOM is updated before attaching
+};
+
+// Remove the global editScreen input/change listener from attachAutoSave
+function attachAutoSave() {
+    // No-op: now handled by attachFieldListeners
+}
+
+// Call attachAutoSave when edit screen is shown
+window.showEdit = function() {
+    document.getElementById('edit-screen').style.display = '';
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('tab-edit').classList.add('active');
+    document.getElementById('tab-view').classList.remove('active');
+    attachAutoSave();
+};
