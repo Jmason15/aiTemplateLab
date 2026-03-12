@@ -324,6 +324,31 @@
                 if (e.target === modal) modal.style.display = 'none';
             });
         }
+        // Wire up add buttons for input, constraint, output
+        var addInputBtn = document.getElementById('add-input');
+        if (addInputBtn) {
+            addInputBtn.addEventListener('click', function() {
+                if (window.addInput) window.addInput();
+            });
+        }
+        var addConstraintBtn = document.getElementById('add-constraint');
+        if (addConstraintBtn) {
+            addConstraintBtn.addEventListener('click', function() {
+                if (window.addConstraint) window.addConstraint();
+            });
+        }
+        var addOutputBtn = document.getElementById('add-output');
+        if (addOutputBtn) {
+            addOutputBtn.addEventListener('click', function() {
+                if (window.addOutput) window.addOutput();
+            });
+        }
+        var addSuccessBtn = document.getElementById('add-success');
+        if (addSuccessBtn) {
+            addSuccessBtn.addEventListener('click', function() {
+                if (window.addSuccess) window.addSuccess();
+            });
+        }
     });
 })();
 </script>
