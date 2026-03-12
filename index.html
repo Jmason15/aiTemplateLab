@@ -202,32 +202,36 @@
                 <p>Select a prompt from the sidebar or create a new one</p>
             </div>
         </section>
-        <section id="view-screen" class="screen" style="display:none;">
-            <div class="view-panel">
-                <div class="view-header">
-                    <h3 id="view-name">Prompt Name</h3>
-                    <p id="view-desc">Description</p>
-                </div>
-                <div class="view-card">
-                    <h4>Input Fields</h4>
-                    <div id="view-inputs"></div>
-                </div>
-                <div class="view-card">
-                    <h4>Generated Prompt</h4>
-                    <div id="view-output"></div>
-                    <div class="btn-group">
-                        <button type="button" id="copy-view-output">Copy</button>
-                        <button type="button" id="download-view-output">Download</button>
+        <section id="view-screen" class="screen" aria-labelledby="view-name">
+            <div class="view-screen">
+                <div class="view-left">
+                    <div class="info-display">
+                        <h3 id="view-name">Prompt Name</h3>
+                        <p id="view-desc">Description</p>
                     </div>
-                    <button type="button" id="togglePrompt" aria-expanded="false" aria-controls="myCollapsibleSection">Show/hide Prompt JSON</button>
-                    <div class="collapse" id="myCollapsibleSection" aria-hidden="true">
-                        <div class="card card-body">
-                            <pre id="view-output-json" class="prompt-display"></pre>
-                        </div>
+                    <div class="section">
+                        <h2>Input Fields</h2>
+                        <div id="view-inputs"></div>
+                    </div>
+                </div>
+                <div class="view-right">
+                    <div class="btn-group">
+                        <button class="btn btn-primary" type="button" id="copy-view-output">Create Prompt</button>
+                    </div>
+                    <div class="card card-body" style="margin-top:1rem;">
+                        <pre id="view-output-json" class="prompt-display" style="display:none;"></pre>
                     </div>
                 </div>
             </div>
         </section>
+        <!-- Modal for copy confirmation -->
+        <div id="copy-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
+                <h2>Prompt Copied!</h2>
+                <p>The generated prompt has been copied to your clipboard.<br>Go to your AI tool and paste the prompt to use it.</p>
+                <button id="close-copy-modal" class="btn btn-primary" style="margin-top:1rem;">OK</button>
+            </div>
+        </div>
         <section id="edit-screen" class="screen" style="display:none;">
             <div class="edit-panel">
                 <div class="edit-screen">
@@ -315,6 +319,38 @@
     });
 </script>
 <script src="newApp.js"></script>
+<script>
+// Only show/copy the generated prompt when the button is clicked
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var copyBtn = document.getElementById('copy-view-output');
+        var modal = document.getElementById('copy-modal');
+        var closeModal = document.getElementById('close-copy-modal');
+        if (copyBtn) {
+            copyBtn.onclick = function() {
+                var pre = document.getElementById('view-output-json');
+                if (pre) {
+                    pre.style.display = 'block';
+                    navigator.clipboard.writeText(pre.textContent).then(function() {
+                        if (modal) modal.style.display = 'flex';
+                    });
+                }
+            };
+        }
+        if (closeModal) {
+            closeModal.onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+        // Optional: close modal on outside click
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.style.display = 'none';
+            });
+        }
+    });
+})();
+</script>
 </body>
 </html>
 

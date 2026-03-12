@@ -145,11 +145,12 @@ function initApp() {
 
     const btn = document.getElementById('togglePrompt');
     const section = document.getElementById('myCollapsibleSection');
-
-    btn.addEventListener('click', () => {
-        const isOpen = section.classList.toggle('show');
-        btn.setAttribute('aria-expanded', isOpen);
-    });
+    if (btn && section) {
+        btn.addEventListener('click', () => {
+            const isOpen = section.classList.toggle('show');
+            btn.setAttribute('aria-expanded', isOpen);
+        });
+    }
 
     // Initialize
     function init() {
