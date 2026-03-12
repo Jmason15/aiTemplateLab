@@ -205,8 +205,11 @@
         }
     });
 </script>
+<script src="js/utils.js"></script>
+<script src="js/storageManager.js"></script>
 <script src="js/preloadedPrompts.js"></script>
 <script src="js/newApp.js"></script>
+
 <script>
 (function() {
     document.addEventListener('DOMContentLoaded', function() {
@@ -252,3 +255,14 @@
 </body>
 </html>
 
+<div id="export-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="background: var(--color-bg-surface); border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+        <h2 style="margin-bottom: 1rem; color: var(--color-text-accent);">Export Data</h2>
+        <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Copy this JSON data and save it to a .json file:</p>
+        <textarea id="export-modal-textarea" readonly style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text-primary); resize: none;"></textarea>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button class="btn btn-primary" id="export-modal-copy">Copy to Clipboard</button>
+            <button class="btn btn-secondary" id="export-modal-close">Close</button>
+        </div>
+    </div>
+</div>

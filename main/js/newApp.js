@@ -1,28 +1,8 @@
 // --- LocalStorage helpers ---
 
 
-function loadPromptsFromLocalStorage() {
 
-    try {
-        const data = localStorage.getItem('prompts');
-        if (data) {
-            const parsed = JSON.parse(data);
-            if (Array.isArray(parsed)) {
-                prompts = parsed;
-            }
-        }
-    } catch (e) {
-        console.warn('Failed to load prompts from localStorage:', e);
-    }
-}
 
-function savePromptsToLocalStorage() {
-    try {
-        localStorage.setItem('prompts', JSON.stringify(prompts));
-    } catch (e) {
-        console.warn('Failed to save prompts to localStorage:', e);
-    }
-}
 
 let prompts = [...window.preloadedPrompts];
 
@@ -48,7 +28,7 @@ function initApp() {
 
     // Initialize
     function init() {
-        loadPromptsFromLocalStorage();
+        window.loadPromptsFromLocalStorage();
         renderPromptsList();
         if (prompts.length > 0) {
             viewPrompt(prompts[0].id);
@@ -70,7 +50,7 @@ function initApp() {
         }
         container.innerHTML = prompts.map((p, idx) => `
             <div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
-                ${escapeHtml(p.name)}
+                ${window.escapeHtml(p.name)}
             </div>
         `).join('');
         // Add event listeners for tile selection
@@ -106,18 +86,14 @@ function initApp() {
                 if (draggedIdx !== null && draggedIdx !== targetIdx) {
                     const moved = prompts.splice(draggedIdx, 1)[0];
                     prompts.splice(targetIdx, 0, moved);
-                    savePromptsToLocalStorage();
+                    window.savePromptsToLocalStorage();
                     renderPromptsList();
                 }
             });
         });
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+
 
     window.newPrompt = function () {
         // Create a new prompt object with a unique id and empty fields
@@ -135,7 +111,7 @@ function initApp() {
             success: []
         };
         prompts.push(newPrompt);
-        savePromptsToLocalStorage();
+        window.savePromptsToLocalStorage();
         currentPromptId = newId;
         isCreatingNewPrompt = false;
         editPrompt(newId);
@@ -192,12 +168,12 @@ function initApp() {
         } else {
             inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
                 <div style="margin-bottom: 1rem;">
-                    <label for="input-value-${idx}">${escapeHtml(i.name)}:</label>
+                    <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
                       <textarea
                         id="input-value-${idx}"
                         class="view-textarea"
                         rows="6"
-                        placeholder="${escapeHtml(i.description)}"
+                        placeholder="${window.escapeHtml(i.description)}"
                         oninput="generateViewPrompt()"
                     ></textarea>
                 </div>
@@ -250,15 +226,11 @@ function initApp() {
         setTabActive('Edit');
     }
 
-    function editCurrentPrompt() {
-        if (!currentPromptId) return;
-        editPrompt(currentPromptId);
-    }
 
     function deletePrompt(id) {
         if (!confirm('Delete this prompt?')) return;
         prompts = prompts.filter(p => p.id !== id);
-        savePromptsToLocalStorage();
+        window.savePromptsToLocalStorage();
         renderPromptsList();
 
         // If we're viewing the deleted prompt, go back to welcome
@@ -268,161 +240,9 @@ function initApp() {
         }
     }
 
-    function validatePrompt() {
-        const errors = [];
-        const warnings = [];
-
-        // Required: Name
-        const name = document.getElementById('prompt-name').value.trim();
-        if (!name) {
-            errors.push('Prompt name is required');
-        }
-
-        // Required: Objective
-        const objective = document.getElementById('objective').value.trim();
-        if (!objective) {
-            errors.push('Objective (Task) is required - what should the model do?');
-        }
-
-        // Required: At least one output property
-        const outputProperties = [];
-        document.querySelectorAll('[id^="output-name-"]').forEach(el => {
-            const name = el.value.trim();
-            const type = document.getElementById(`output-type-${el.id.split('-')[2]}`).value.trim();
-            if (name && type) {
-                outputProperties.push({ name, type });
-            }
-        });
-
-        if (outputProperties.length === 0) {
-            errors.push('At least one output property is required');
-        } else {
-            // Check each output property has both name and type
-            let incompleteOutputs = 0;
-            document.querySelectorAll('[id^="output-name-"]').forEach(el => {
-                const name = el.value.trim();
-                const type = document.getElementById(`output-type-${el.id.split('-')[2]}`).value.trim();
-                if ((name && !type) || (!name && type)) {
-                    incompleteOutputs++;
-                }
-            });
-            if (incompleteOutputs > 0) {
-                errors.push(`${incompleteOutputs} output property(ies) are incomplete - both name and type are required`);
-            }
-        }
-
-        // Warnings: Recommended fields
-        const description = document.getElementById('prompt-desc').value.trim();
-        if (!description) {
-            warnings.push('Description is recommended to help you remember what this prompt does');
-        }
-
-        const actor = document.getElementById('actor').value.trim();
-        if (!actor) {
-            warnings.push('Actor (Role/Persona) is recommended - helps the model understand its perspective');
-        }
-
-        const context = document.getElementById('context').value.trim();
-        const hasInputs = document.querySelectorAll('[id^="input-name-"]').length > 0;
-        if (!context && !hasInputs) {
-            warnings.push('Either Context or Input fields are recommended - the model needs something to work with');
-        }
-
-        const hasConstraints = document.querySelectorAll('[id^="constraint-text-"]').length > 0;
-        const hasSuccess = document.querySelectorAll('[id^="success-text-"]').length > 0;
-        if (!hasConstraints && !hasSuccess) {
-            warnings.push('At least one Constraint or Success criterion is recommended to define quality expectations');
-        }
-
-        return { errors, warnings };
-    }
-
-    function showValidation(errors, warnings) {
-        const errorPanel = document.getElementById('validation-errors');
-        const errorsList = document.getElementById('validation-errors-list');
-        const warningPanel = document.getElementById('validation-warnings');
-        const warningsList = document.getElementById('validation-warnings-list');
-
-        // Clear all previous error highlighting
-        document.querySelectorAll('input.error, textarea.error').forEach(el => {
-            el.classList.remove('error');
-        });
-
-        // Show errors
-        if (errors.length > 0) {
-            errorsList.innerHTML = errors.map(e => `<li>${escapeHtml(e)}</li>`).join('');
-            errorPanel.classList.add('show');
-            errorPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            // Highlight error fields
-            const name = document.getElementById('prompt-name').value.trim();
-            if (!name) {
-                document.getElementById('prompt-name').classList.add('error');
-            }
-
-            const objective = document.getElementById('objective').value.trim();
-            if (!objective) {
-                document.getElementById('objective').classList.add('error');
-            }
-
-            // Highlight incomplete output properties
-            document.querySelectorAll('[id^="output-name-"]').forEach(el => {
-                const id = el.id.split('-')[2];
-                const name = el.value.trim();
-                const type = document.getElementById(`output-type-${id}`).value.trim();
-
-                if (!name || !type) {
-                    if (!name) el.classList.add('error');
-                    if (!type) document.getElementById(`output-type-${id}`).classList.add('error');
-                }
-            });
-        } else {
-            errorPanel.classList.remove('show');
-        }
-
-        // Show warnings
-        if (warnings.length > 0) {
-            warningsList.innerHTML = warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('');
-            warningPanel.classList.add('show');
-        } else {
-            warningPanel.classList.remove('show');
-        }
-    }
-
-    function hideValidation() {
-        document.getElementById('validation-errors').classList.remove('show');
-        document.getElementById('validation-warnings').classList.remove('show');
-
-        // Clear all error highlighting
-        document.querySelectorAll('input.error, textarea.error').forEach(el => {
-            el.classList.remove('error');
-        });
-    }
-
     function savePrompt() {
         const name = document.getElementById('prompt-name').value.trim();
         const description = document.getElementById('prompt-desc').value.trim();
-
-        // Run validation
-        const validation = validatePrompt();
-
-        // Show validation results
-        showValidation(validation.errors, validation.warnings);
-
-        // Block save if there are errors
-        if (validation.errors.length > 0) {
-            return;
-        }
-
-        // If there are warnings but no errors, ask for confirmation
-        if (validation.warnings.length > 0) {
-            if (!confirm('There are some recommendations for this prompt. Save anyway?')) {
-                return;
-            }
-        }
-
-        // Hide validation panels on successful validation
-        hideValidation();
 
         const inputs = [];
         document.querySelectorAll('[id^="input-name-"]').forEach((el, i) => {
@@ -478,7 +298,7 @@ function initApp() {
             currentPromptId = promptData.id;
         }
         isCreatingNewPrompt = false;
-        savePromptsToLocalStorage();
+        window.savePromptsToLocalStorage();
         renderPromptsList();
         // alert('Prompt saved successfully!');
 
@@ -534,23 +354,23 @@ function initApp() {
         document.getElementById('view-output-json').textContent = JSON.stringify(promptJson, null, 2);
     }
 
-    window.copyViewOutput = function() {
-        const output = document.getElementById('view-output-json').textContent;
-        navigator.clipboard.writeText(output).then(() => {
-            alert('Copied to clipboard!');
-        });
-    }
+    // window.copyViewOutput = function() {
+    //     const output = document.getElementById('view-output-json').textContent;
+    //     navigator.clipboard.writeText(output).then(() => {
+    //         alert('Copied to clipboard!');
+    //     });
+    // }
 
-    window.downloadViewOutput = function() {
-        const output = document.getElementById('view-output-json').textContent;
-        const blob = new Blob([output], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'prompt.json';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
+    // window.downloadViewOutput = function() {
+    //     const output = document.getElementById('view-output-json').textContent;
+    //     const blob = new Blob([output], { type: 'application/json' });
+    //     const url = URL.createObjectURL(blob);
+    //     const a = document.createElement('a');
+    //     a.href = url;
+    //     a.download = 'prompt.json';
+    //     a.click();
+    //     URL.revokeObjectURL(url);
+    // }
 
     window.addInput = function (name = '', description = '') {
         inputCounter++;
@@ -1007,36 +827,36 @@ function initApp() {
     }
 
     function showExportModal(data) {
-        const modal = document.createElement('div');
-        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 2rem;';
-
-        modal.innerHTML = `
-            <div style="background: var(--color-bg-surface); border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
-                <h2 style="margin-bottom: 1rem; color: var(--color-text-accent);">Export Data</h2>
-                <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Copy this JSON data and save it to a .json file:</p>
-                <textarea readonly style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text-primary); resize: none;">${data}</textarea>
-                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-                    <button class="btn btn-primary" onclick="copyExportData()">Copy to Clipboard</button>
-                    <button class="btn btn-secondary" onclick="closeExportModal()">Close</button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        modal.querySelector('textarea').select();
-    }
-
-    function copyExportData() {
-        const textarea = document.querySelector('[readonly]');
+        const modal = document.getElementById('export-modal');
+        const textarea = document.getElementById('export-modal-textarea');
+        textarea.value = data;
+        modal.style.display = 'flex';
         textarea.select();
-        document.execCommand('copy');
-        alert('Copied to clipboard! Paste into a text editor and save as .json');
+
+        document.getElementById('export-modal-copy').onclick = function() {
+            textarea.select();
+            document.execCommand('copy');
+        };
+        document.getElementById('export-modal-close').onclick = function() {
+            modal.style.display = 'none';
+        };
+        // Optional: close modal when clicking outside
+        modal.onclick = function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        };
     }
 
-    function closeExportModal() {
-        const modal = document.querySelector('[style*="position: fixed"]');
-        if (modal) modal.remove();
-    }
+    // function copyExportData() {
+    //     const textarea = document.querySelector('[readonly]');
+    //     textarea.select();
+    //     document.execCommand('copy');
+    //     alert('Copied to clipboard! Paste into a text editor and save as .json');
+    // }
+
+    // function closeExportModal() {
+    //     const modal = document.querySelector('[style*="position: fixed"]');
+    //     if (modal) modal.remove();
+    // }
 
     window.importPrompts = function() {
         document.getElementById('import-file').click();
@@ -1058,7 +878,7 @@ function initApp() {
                     return;
                 }
                 prompts = loaded;
-                savePromptsToLocalStorage();
+                window.savePromptsToLocalStorage();
                 renderPromptsList();
                 showWelcome();
                 alert(`Imported ${loaded.length} prompt(s) successfully!`);
@@ -1070,28 +890,7 @@ function initApp() {
         event.target.value = '';
     }
 
-    // --- LocalStorage helpers ---
-    function loadPromptsFromLocalStorage() {
-        try {
-            const data = localStorage.getItem('prompts');
-            if (data) {
-                const parsed = JSON.parse(data);
-                if (Array.isArray(parsed)) {
-                    prompts = parsed;
-                }
-            }
-        } catch (e) {
-            console.warn('Failed to load prompts from localStorage:', e);
-        }
-    }
 
-    function savePromptsToLocalStorage() {
-        try {
-            localStorage.setItem('prompts', JSON.stringify(prompts));
-        } catch (e) {
-            console.warn('Failed to save prompts to localStorage:', e);
-        }
-    }
 
     init();
 
@@ -1312,7 +1111,7 @@ function setupNewPromptModal() {
             success: Array.isArray(promptObj.success) ? promptObj.success : []
         };
         prompts.push(newPrompt);
-        savePromptsToLocalStorage();
+        window.savePromptsToLocalStorage();
         currentPromptId = newPrompt.id;
         isCreatingNewPrompt = false;
         editPrompt(newPrompt.id);
@@ -1323,10 +1122,5 @@ function setupNewPromptModal() {
         setTimeout(() => alert('Prompt loaded!'), 100);
     };
 }
-// Call this in startApp()
-window.resetPrompts = function() {
-    if (confirm('This will erase all your current prompts and restore the default set. Continue?')) {
-        localStorage.removeItem('prompts');
-        location.reload();
-    }
-};
+
+
