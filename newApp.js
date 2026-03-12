@@ -1,3 +1,26 @@
+// --- LocalStorage helpers ---
+function loadPromptsFromLocalStorage() {
+    try {
+        const data = localStorage.getItem('prompts');
+        if (data) {
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed)) {
+                prompts = parsed;
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to load prompts from localStorage:', e);
+    }
+}
+
+function savePromptsToLocalStorage() {
+    try {
+        localStorage.setItem('prompts', JSON.stringify(prompts));
+    } catch (e) {
+        console.warn('Failed to save prompts to localStorage:', e);
+    }
+}
+
 let prompts = [{
     "id": 1769809000002,
     "name": "Prompt JSON Builder",
@@ -1298,8 +1321,9 @@ function startApp() {
             if (e.target === deleteModal) deleteModal.style.display = 'none';
         });
     }
+    // Attach new prompt modal logic after DOM is ready
+    setupNewPromptModal();
 }
-
 // Call startApp() directly since script is at end of body
 startApp();
 function setupNewPromptModal() {
@@ -1422,4 +1446,3 @@ function setupNewPromptModal() {
     };
 }
 // Call this in startApp()
-setupNewPromptModal();
