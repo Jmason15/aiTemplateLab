@@ -163,8 +163,45 @@ body {
 .edit-fields {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin: 16px 0;
+  gap: 18px;
+  margin: 20px 0;
+  max-width: 600px;
+  width: 100%;
+}
+.edit-fields textarea {
+  min-height: 140px;
+  font-size: 1.08em;
+  padding: 18px 14px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: #fafbfc;
+  resize: vertical;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.edit-fields textarea:focus {
+  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 0 0 2px #2563eb22;
+  outline: none;
+  background: #fff;
+}
+.edit-fields input[type="text"] {
+  font-size: 1.08em;
+  padding: 12px 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: #fafbfc;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.edit-fields input[type="text"]:focus {
+  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 0 0 2px #2563eb22;
+  outline: none;
+  background: #fff;
+}
+.edit-fields label {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #222;
 }
 details {
   margin-bottom: 16px;
