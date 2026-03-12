@@ -20,13 +20,37 @@ let prompts = [{
     "outputs": [
         {
             "name": "Field Suggestions",
-            "type": "Markdown",
-            "description": "A human-readable list of labeled sections for each JSON field (Name, Description, Objective, Actor, Context, Inputs, Constraints, Outputs, Success) that the user can copy into the UI."
+            "type": "JSON",
+            "description": "{\n" +
+                "  \"id\": 0,\n" +
+                "  \"name\": \"\",\n" +
+                "  \"description\": \"\",\n" +
+                "  \"objective\": \"\",\n" +
+                "  \"actor\": \"\",\n" +
+                "  \"context\": \"\",\n" +
+                "  \"inputs\": [\n" +
+                "    {\n" +
+                "      \"name\": \"\",\n" +
+                "      \"description\": \"\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"constraints\": [\n" +
+                "  ],\n" +
+                "  \"outputs\": [\n" +
+                "    {\n" +
+                "      \"name\": \"\",\n" +
+                "      \"type\": \"\",\n" +
+                "      \"description\": \"\"\n" +
+                "    }\n" +
+                "  ],\n" +
+                "  \"success\": [\n" +
+                "  ]\n" +
+                "}"
         }
     ],
     "success": [
-        "The response contains clearly labeled sections for each JSON field, not a JSON object.",
-        "The user can copy-paste each field value directly into the corresponding input in the UI.",
+        "the format meets the json output specification exactly.",
+        "user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
         "All suggested content reflects the user's described prompt idea and is specific, not generic."
     ]
 },
@@ -1278,3 +1302,124 @@ function startApp() {
 
 // Call startApp() directly since script is at end of body
 startApp();
+function setupNewPromptModal() {
+    const openBtn = document.getElementById('new-prompt-main');
+    const modal = document.getElementById('new-prompt-modal');
+    const modalContent = document.getElementById('new-prompt-modal-content');
+    const choiceScreen = document.getElementById('new-prompt-choice');
+    const jsonScreen = document.getElementById('new-prompt-json-import');
+    const blankBtn = document.getElementById('start-blank-prompt');
+    const jsonBtn = document.getElementById('start-json-prompt');
+    const cancelBtn = document.getElementById('new-prompt-cancel');
+    const backBtn = document.getElementById('json-import-back');
+    const jsonImportCancel = document.getElementById('json-import-cancel');
+    const uploadBtn = document.getElementById('json-import-upload');
+    const fileInput = document.getElementById('json-import-file');
+    const filenameSpan = document.getElementById('json-import-filename');
+    const textarea = document.getElementById('json-import-textarea');
+    const errorDiv = document.getElementById('json-import-error');
+    const confirmBtn = document.getElementById('json-import-confirm');
+
+    function showModal() {
+        modal.style.display = 'flex';
+        choiceScreen.style.display = 'block';
+        jsonScreen.style.display = 'none';
+        setTimeout(() => blankBtn.focus(), 50);
+    }
+    function closeModal() {
+        modal.style.display = 'none';
+        textarea.value = '';
+        fileInput.value = '';
+        filenameSpan.textContent = '';
+        errorDiv.textContent = '';
+    }
+    openBtn.onclick = function(e) {
+        e.preventDefault();
+        showModal();
+    };
+    cancelBtn.onclick = closeModal;
+    jsonImportCancel.onclick = closeModal;
+    modal.onclick = function(e) {
+        if (e.target === modal) closeModal();
+    };
+    modal.onkeydown = function(e) {
+        if (e.key === 'Escape') closeModal();
+    };
+    blankBtn.onclick = function(e) {
+        e.preventDefault();
+        closeModal();
+        window.newPrompt();
+    };
+    jsonBtn.onclick = function(e) {
+        e.preventDefault();
+        choiceScreen.style.display = 'none';
+        jsonScreen.style.display = 'flex';
+        setTimeout(() => textarea.focus(), 50);
+    };
+    backBtn.onclick = function(e) {
+        e.preventDefault();
+        jsonScreen.style.display = 'none';
+        choiceScreen.style.display = 'block';
+        setTimeout(() => blankBtn.focus(), 50);
+    };
+    uploadBtn.onclick = function() {
+        fileInput.click();
+    };
+    fileInput.onchange = function() {
+        const file = fileInput.files[0];
+        if (!file) return;
+        filenameSpan.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            textarea.value = ev.target.result;
+        };
+        reader.readAsText(file);
+    };
+    confirmBtn.onclick = function() {
+        let json;
+        try {
+            json = JSON.parse(textarea.value);
+        } catch (err) {
+            errorDiv.textContent = 'Invalid JSON: ' + err.message;
+            return;
+        }
+        let promptObj = null;
+        if (Array.isArray(json)) {
+            if (json.length === 0) {
+                errorDiv.textContent = 'JSON array is empty.';
+                return;
+            }
+            promptObj = json[0];
+        } else {
+            promptObj = json;
+        }
+        if (!promptObj || typeof promptObj !== 'object') {
+            errorDiv.textContent = 'JSON must be a prompt object or array.';
+            return;
+        }
+        const newPrompt = {
+            id: Date.now(),
+            name: promptObj.name || '',
+            description: promptObj.description || '',
+            objective: promptObj.objective || '',
+            actor: promptObj.actor || '',
+            context: promptObj.context || '',
+            inputs: Array.isArray(promptObj.inputs) ? promptObj.inputs : [],
+            constraints: Array.isArray(promptObj.constraints) ? promptObj.constraints : [],
+            outputs: Array.isArray(promptObj.outputs) ? promptObj.outputs : [],
+            success: Array.isArray(promptObj.success) ? promptObj.success : []
+        };
+        prompts.push(newPrompt);
+        savePromptsToLocalStorage();
+        currentPromptId = newPrompt.id;
+        isCreatingNewPrompt = false;
+        editPrompt(newPrompt.id);
+        setTabActive('Edit');
+        setTabBarVisible(true);
+        renderPromptsList();
+        closeModal();
+        setTimeout(() => alert('Prompt loaded!'), 100);
+    };
+}
+// Call this in startApp()
+setupNewPromptModal();
