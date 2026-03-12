@@ -46,11 +46,6 @@
             overflow: hidden;
         }
 
-        .app-container {
-            display: flex;
-            height: 100vh;
-        }
-
         .sidebar {
             width: 350px;
             background: var(--color-bg-elevated);

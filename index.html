@@ -15,6 +15,7 @@
             min-height: 100vh;
         }
         #sidebar {
+            position: fixed;
             width: 260px;
             background: #222;
             color: #fff;
@@ -73,6 +74,7 @@
             padding: 32px 24px;
             background: #fff;
             min-width: 0;
+            margin-left: 260px;
         }
         #tabs {
             display: flex;
@@ -219,7 +221,7 @@
     Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
 </div>
 <div id="container">
-    <div id="sidebar">
+    <div id="sidebar" class="sidebar">
         <div>
             <h2>MDT AI Prompts</h2>
         </div>
@@ -274,7 +276,7 @@
             </div>
         </div>
     </div>
-    <div id="main-content">
+    <div id="main-content" style="margin-left:260px;">
         <div id="tabs">
             <button onclick="showView()">View Prompt</button>
             <button onclick="showEdit()">Edit</button>
