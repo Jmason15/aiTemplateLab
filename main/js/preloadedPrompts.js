@@ -16,7 +16,7 @@ window.preloadedPrompts = [{
         "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
         "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
         "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
-        "Do not wrap the JSON inside any additional properties such as 'Field Suggestions', and do not add extra top-level fields."
+        "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after."
     ],
     "outputs": [
         {
