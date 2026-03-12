@@ -148,36 +148,61 @@
             font-size: 1.2em;
             color: #333;
         }
+        .warning-banner {
+            background: #ffcc00;
+            color: #222;
+            padding: 10px 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .edit-panel {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .edit-screen {
+            width: 100%;
+            box-sizing: border-box;
+        }
     </style>
 </head>
 <body>
+<div class="warning-banner" role="alert">
+    <strong>⚠️ Session Storage Only</strong>
+    Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
+</div>
 <div id="container">
     <div id="sidebar">
         <div>
-            <h1>Prompt Builder Pro</h1>
-            <p>7-component structured prompts</p>
-        </div>
-        <div class="warning-banner" role="alert">
-            <strong>⚠️ Session Storage Only</strong>
-            Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
+            <h2>MDT AI Prompts</h2>
         </div>
         <div id="prompts-list">
             <!-- Prompt tiles will be rendered here -->
         </div>
         <div>
-            <button type="button" id="new-prompt">+ New Prompt</button>
-            <button type="button" id="export-prompts">Export Prompts</button>
-            <button type="button" id="import-prompts">Import Prompts</button>
-            <label for="import-file" class="visually-hidden">Import prompts file</label>
-            <input type="file" id="import-file" accept=".json" style="display: none;">
+            <button class="btn btn-primary btn-block" onclick="newPrompt()">+ New Prompt</button>
+            <button class="btn btn-secondary btn-block" onclick="exportPrompts()" style="margin-top: 0.5rem;">Export Prompts</button>
+            <button class="btn btn-secondary btn-block" onclick="importPrompts()" style="margin-top: 0.5rem;">Import Prompts</button>
+            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImport(event)">
         </div>
     </div>
     <div id="main-content">
         <div id="tabs">
-            <button class="active" onclick="showTab('view-screen', this)">View Prompt</button>
-            <button onclick="showTab('edit-screen', this)">Edit</button>
+            <button onclick="showView()">View Prompt</button>
+            <button onclick="showEdit()">Edit</button>
         </div>
-        <section id="view-screen" class="screen active">
+        <section id="welcome-screen" class="screen active" style="flex: 1; padding: 2rem; display: flex; align-items: center; justify-content: center;">
+            <div class="empty-state">
+                <h3>Welcome to Prompt Builder Pro</h3>
+                <p>Select a prompt from the sidebar or create a new one</p>
+            </div>
+        </section>
+        <section id="view-screen" class="screen" style="display:none;">
             <div class="view-panel">
                 <div class="view-header">
                     <h3 id="view-name">Prompt Name</h3>
@@ -204,88 +229,90 @@
             </div>
         </section>
         <section id="edit-screen" class="screen" style="display:none;">
-            <div class="edit-screen">
-                <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
-                    <h3>⚠️ Required Fields Missing</h3>
-                    <ul id="validation-errors-list"></ul>
-                </div>
-                <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
-                    <h3>⚠️ Recommendations</h3>
-                    <ul id="validation-warnings-list"></ul>
-                </div>
-                <details open>
-                    <summary>Prompt Info</summary>
-                    <div class="edit-fields">
-                        <label for="prompt-name">Name:</label>
-                        <input type="text" id="prompt-name" placeholder="e.g., Human Writing Assistant" aria-required="true">
-                        <label for="prompt-desc">Description:</label>
-                        <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true">
+            <div class="edit-panel">
+                <div class="edit-screen">
+                    <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
+                        <h3>⚠️ Required Fields Missing</h3>
+                        <ul id="validation-errors-list"></ul>
                     </div>
-                </details>
-                <details>
-                    <summary>1. Objective</summary>
-                    <div class="edit-fields">
-                        <label for="objective" class="visually-hidden">Objective</label>
-                        <textarea id="objective" placeholder="e.g., Generate natural, human-like prose without AI giveaways" aria-required="true"></textarea>
+                    <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
+                        <h3>⚠️ Recommendations</h3>
+                        <ul id="validation-warnings-list"></ul>
                     </div>
-                </details>
-                <details>
-                    <summary>2. Actor</summary>
-                    <div class="edit-fields">
-                        <label for="actor" class="visually-hidden">Actor</label>
-                        <textarea id="actor" placeholder="e.g., You are a senior technical writer who creates clear, engaging documentation" aria-required="true"></textarea>
+                    <details open>
+                        <summary>Prompt Info</summary>
+                        <div class="edit-fields">
+                            <label for="prompt-name">Name:</label>
+                            <input type="text" id="prompt-name" placeholder="e.g., Human Writing Assistant" aria-required="true">
+                            <label for="prompt-desc">Description:</label>
+                            <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true">
+                        </div>
+                    </details>
+                    <details>
+                        <summary>1. Objective</summary>
+                        <div class="edit-fields">
+                            <label for="objective" class="visually-hidden">Objective</label>
+                            <textarea id="objective" placeholder="e.g., Generate natural, human-like prose without AI giveaways" aria-required="true"></textarea>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>2. Actor</summary>
+                        <div class="edit-fields">
+                            <label for="actor" class="visually-hidden">Actor</label>
+                            <textarea id="actor" placeholder="e.g., You are a senior technical writer who creates clear, engaging documentation" aria-required="true"></textarea>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>3. Context</summary>
+                        <div class="edit-fields">
+                            <label for="context" class="visually-hidden">Context</label>
+                            <textarea id="context" placeholder="e.g., This is for internal engineering documentation read by backend developers" aria-required="true"></textarea>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>4. Input</summary>
+                        <div class="edit-fields">
+                            <div id="inputs-container"></div>
+                            <button type="button" id="add-input">+ Add Input Field</button>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>5. Constraints</summary>
+                        <div class="edit-fields">
+                            <div id="constraints-container"></div>
+                            <button type="button" id="add-constraint">+ Add Constraint</button>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>6. Output</summary>
+                        <div class="edit-fields">
+                            <div id="outputs-container"></div>
+                            <button type="button" id="add-output">+ Add Output Property</button>
+                        </div>
+                    </details>
+                    <details>
+                        <summary>7. Success</summary>
+                        <div class="edit-fields">
+                            <div id="success-container"></div>
+                            <button type="button" id="add-success">+ Add Success Criterion</button>
+                        </div>
+                    </details>
+                    <div class="btn-group">
+                        <button type="button" id="save-prompt">Save Changes</button>
+                        <button type="button" id="cancel-edit">Cancel</button>
                     </div>
-                </details>
-                <details>
-                    <summary>3. Context</summary>
-                    <div class="edit-fields">
-                        <label for="context" class="visually-hidden">Context</label>
-                        <textarea id="context" placeholder="e.g., This is for internal engineering documentation read by backend developers" aria-required="true"></textarea>
-                    </div>
-                </details>
-                <details>
-                    <summary>4. Input</summary>
-                    <div class="edit-fields">
-                        <div id="inputs-container"></div>
-                        <button type="button" id="add-input">+ Add Input Field</button>
-                    </div>
-                </details>
-                <details>
-                    <summary>5. Constraints</summary>
-                    <div class="edit-fields">
-                        <div id="constraints-container"></div>
-                        <button type="button" id="add-constraint">+ Add Constraint</button>
-                    </div>
-                </details>
-                <details>
-                    <summary>6. Output</summary>
-                    <div class="edit-fields">
-                        <div id="outputs-container"></div>
-                        <button type="button" id="add-output">+ Add Output Property</button>
-                    </div>
-                </details>
-                <details>
-                    <summary>7. Success</summary>
-                    <div class="edit-fields">
-                        <div id="success-container"></div>
-                        <button type="button" id="add-success">+ Add Success Criterion</button>
-                    </div>
-                </details>
-                <div class="btn-group">
-                    <button type="button" id="save-prompt">Save Changes</button>
-                    <button type="button" id="cancel-edit">Cancel</button>
                 </div>
             </div>
         </section>
     </div>
 </div>
 <script>
-    function showTab(tabId, btn) {
-        document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-        document.getElementById(tabId).style.display = 'block';
-        document.querySelectorAll('#tabs button').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
+    window.addEventListener('beforeunload', function (e) {
+        if (window.promptUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
 </script>
 <script src="newApp.js"></script>
 </body>

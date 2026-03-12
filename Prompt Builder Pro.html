@@ -26,11 +26,10 @@
                 </div>
             </div>
             <div class="sidebar-footer">
-                <button class="btn btn-primary btn-block" type="button" data-action="new-prompt">+ New Prompt</button>
-                <button class="btn btn-secondary btn-block" type="button" data-action="export-prompts" style="margin-top: 0.5rem;">Export Prompts</button>
-                <button class="btn btn-secondary btn-block" type="button" data-action="import-prompts" style="margin-top: 0.5rem;">Import Prompts</button>
-                <label for="import-file" class="visually-hidden">Import prompts file</label>
-                <input type="file" id="import-file" accept=".json" style="display: none;" data-action="handle-import">
+                <button class="btn btn-primary btn-block" onclick="newPrompt()">+ New Prompt</button>
+                <button class="btn btn-secondary btn-block" onclick="exportPrompts()" style="margin-top: 0.5rem;">Export Prompts</button>
+                <button class="btn btn-secondary btn-block" onclick="importPrompts()" style="margin-top: 0.5rem;">Import Prompts</button>
+                <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImport(event)">
             </div>
         </nav>
         <!-- Main Content -->

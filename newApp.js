@@ -133,12 +133,16 @@ let prompts = [{
 ];
 
 let currentPromptId = null;
+let isCreatingNewPrompt = false;
 let inputCounter = 0;
 let constraintCounter = 0;
 let outputCounter = 0;
 let successCounter = 0;
 
 function initApp() {
+    // Hide tab bar on load
+    setTabBarVisible(false);
+
     const btn = document.getElementById('togglePrompt');
     const section = document.getElementById('myCollapsibleSection');
 
@@ -188,9 +192,28 @@ function initApp() {
     }
 
     window.newPrompt = function () {
-        currentPromptId = null;
-        clearForm();
-        showEdit();
+        // Create a new prompt object with a unique id and empty fields
+        const newId = Date.now();
+        const newPrompt = {
+            id: newId,
+            name: '',
+            description: '',
+            objective: '',
+            actor: '',
+            context: '',
+            inputs: [],
+            constraints: [],
+            outputs: [],
+            success: []
+        };
+        prompts.push(newPrompt);
+        savePromptsToLocalStorage();
+        currentPromptId = newId;
+        isCreatingNewPrompt = false;
+        editPrompt(newId);
+        setTabActive('Edit');
+        setTabBarVisible(true);
+        renderPromptsList();
     }
 
     function clearForm() {
@@ -220,6 +243,8 @@ function initApp() {
 
         currentPromptId = id;
         showView();
+        setTabActive('View');
+
         // Switch tab to View Prompt
         const tabs = document.querySelectorAll('#tabs button');
         tabs.forEach(btn => {
@@ -294,6 +319,7 @@ function initApp() {
         prompt.success.forEach(s => addSuccess(s));
 
         showEdit();
+        setTabActive('Edit');
     }
 
     function editCurrentPrompt() {
@@ -523,6 +549,7 @@ function initApp() {
             prompts.push(promptData);
             currentPromptId = promptData.id;
         }
+        isCreatingNewPrompt = false;
         savePromptsToLocalStorage();
         renderPromptsList();
         // alert('Prompt saved successfully!');
@@ -937,18 +964,42 @@ function initApp() {
         savePrompt()
     }
 
-    function showWelcome() {
-        // Only show welcome if no prompt is selected
-        if (!currentPromptId) {
-            document.getElementById('view-screen').classList.remove('active');
-            document.getElementById('view-screen').style.display = 'none';
-            document.getElementById('edit-screen').classList.remove('active');
-            document.getElementById('edit-screen').style.display = 'none';
+    function setTabActive(tabName) {
+        const tabs = document.querySelectorAll('#tabs button');
+        tabs.forEach(btn => {
+            if (tabName && btn.textContent.includes(tabName)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    function setTabBarVisible(visible) {
+        const tabs = document.getElementById('tabs');
+        if (tabs) {
+            tabs.style.display = visible ? 'flex' : 'none';
         }
+    }
+
+    function showWelcome() {
+        isCreatingNewPrompt = false;
+        document.getElementById('welcome-screen').classList.add('active');
+        document.getElementById('welcome-screen').style.display = 'flex';
+        document.getElementById('view-screen').classList.remove('active');
+        document.getElementById('view-screen').style.display = 'none';
+        document.getElementById('edit-screen').classList.remove('active');
+        document.getElementById('edit-screen').style.display = 'none';
+        setTabActive(null); // No tab active
+        setTabBarVisible(false); // Hide tabs
         renderPromptsList();
     }
 
     function showView() {
+        if (!currentPromptId) {
+            showWelcome();
+            return;
+        }
         var welcomeScreen = document.getElementById('welcome-screen');
         if (welcomeScreen) {
             welcomeScreen.classList.remove('active');
@@ -958,10 +1009,15 @@ function initApp() {
         document.getElementById('view-screen').style.display = 'block';
         document.getElementById('edit-screen').classList.remove('active');
         document.getElementById('edit-screen').style.display = 'none';
+        setTabActive('View');
+        setTabBarVisible(true); // Show tabs
     }
 
     function showEdit() {
-        console.log('Showing edit screen');
+        if (!currentPromptId && !isCreatingNewPrompt) {
+            showWelcome();
+            return;
+        }
         document.getElementById('welcome-screen').classList.remove('active');
         document.getElementById('welcome-screen').style.display = 'none';
         document.getElementById('view-screen').classList.remove('active');
@@ -969,14 +1025,23 @@ function initApp() {
         document.getElementById('edit-screen').classList.add('active');
         document.getElementById('edit-screen').style.display = 'flex';
         hideValidation(); // Clear any previous validation messages
+        setTabActive('Edit');
+        setTabBarVisible(true); // Show tabs
         renderPromptsList();
     }
 
+    window.showView = showView;
+    window.showEdit = showEdit;
+
     window.cancelEdit = function() {
         if (currentPromptId) {
+            isCreatingNewPrompt = false;
             viewPrompt(currentPromptId);
+            setTabActive('View');
         } else {
+            isCreatingNewPrompt = false;
             showWelcome();
+            setTabActive(null);
         }
     }
 
@@ -1117,6 +1182,28 @@ function initApp() {
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
+    // Add event listeners for Save and Cancel buttons
+    const saveBtn = document.getElementById('save-prompt');
+    if (saveBtn) saveBtn.addEventListener('click', savePrompt);
+    const cancelBtn = document.getElementById('cancel-edit');
+    if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+    // Add event listeners for both tab buttons
+    const viewTabBtn = document.querySelector('#tabs button:nth-child(1)');
+    if (viewTabBtn) {
+        viewTabBtn.addEventListener('click', function() {
+            if (currentPromptId) {
+                showView();
+            }
+        });
+    }
+    const editTabBtn = document.querySelector('#tabs button:nth-child(2)');
+    if (editTabBtn) {
+        editTabBtn.addEventListener('click', function() {
+            if (currentPromptId) {
+                editPrompt(currentPromptId);
+            }
+        });
+    }
 });
 
 // Render prompt tiles in the sidebar
