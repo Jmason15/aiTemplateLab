@@ -165,7 +165,6 @@ function initApp() {
 
     function renderPromptsList() {
         const container = document.getElementById('prompts-list');
-
         if (prompts.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
@@ -175,13 +174,11 @@ function initApp() {
             `;
             return;
         }
-
         container.innerHTML = prompts.map(p => `
-            <div class="prompt-tile" data-id="${p.id}">
+            <div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}">
                 ${escapeHtml(p.name)}
             </div>
         `).join('');
-
         // Add event listeners for tile selection
         container.querySelectorAll('.prompt-tile').forEach(item => {
             const id = parseInt(item.getAttribute('data-id'));
