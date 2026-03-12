@@ -296,6 +296,12 @@ function viewPrompt(id) {
 
     document.getElementById('view-name').textContent = prompt.name;
     document.getElementById('view-desc').textContent = prompt.description;
+    // Add meta info (objective, actor, context)
+    const meta = [];
+    if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
+    if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
+    if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
+    document.getElementById('view-meta').innerHTML = meta.join('');
 
     const inputsContainer = document.getElementById('view-inputs');
     if (prompt.inputs.length === 0) {

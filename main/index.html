@@ -85,11 +85,16 @@
                 <section id="view-screen" class="screen" aria-labelledby="view-name">
                     <div class="view-screen">
                         <div class="view-left">
-                            <div class="info-display">
-                                <h3 id="view-name">Prompt Name</h3>
-                                <p id="view-desc">Description</p>
+                            <div class="info-display card card-body" style="margin-bottom: 1.5rem;">
+                                <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
+                                <p id="view-desc" style="font-size: 1.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Description</p>
+                                <details id="view-meta-details" style="margin-bottom: 0.5rem;">
+                                  <summary style="cursor:pointer; color: var(--color-primary); font-weight: 500; font-size: 1.05em;">Show Details</summary>
+                                  <div id="view-meta" style="display: flex; flex-direction: column; gap: 0.7em; padding: 0.7em 0 0 0.2em; line-height: 1.6;"></div>
+                                </details>
                             </div>
-                            <div class="section">
+                            <div class="section card card-body" style="margin-bottom: 1.5rem;">
+                                <h4 style="margin-top:0; color: var(--color-primary);">Inputs</h4>
                                 <div id="view-inputs"></div>
                             </div>
                         </div>
@@ -128,7 +133,7 @@
                                     <label for="prompt-name">Name:</label>
                                     <input type="text" id="prompt-name" placeholder="e.g., Quarterly Sales Report" aria-required="true">
                                     <label for="prompt-desc">Description:</label>
-                                    <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true">
+                                    <textarea id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true" rows="3"></textarea>
                                 </div>
                             </details>
                             <details>

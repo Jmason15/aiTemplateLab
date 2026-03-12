@@ -30,7 +30,33 @@ function editPrompt(id) {
 
     // Load the prompt data into edit form
     document.getElementById('prompt-name').value = prompt.name;
-    document.getElementById('prompt-desc').value = prompt.description;
+    var descElem = document.getElementById('prompt-desc');
+    descElem.value = prompt.description;
+    // Change to textarea if not already
+    if (descElem.tagName.toLowerCase() !== 'textarea') {
+        var newElem = document.createElement('textarea');
+        newElem.id = 'prompt-desc';
+        newElem.placeholder = descElem.placeholder;
+        newElem.setAttribute('aria-required', 'true');
+        newElem.value = descElem.value;
+        newElem.setAttribute('rows', '3');
+        newElem.style.width = '100%';
+        newElem.style.boxSizing = 'border-box';
+        newElem.style.display = 'block';
+        newElem.style.margin = '0';
+        newElem.style.textAlign = 'left';
+        descElem.parentNode.replaceChild(newElem, descElem);
+        descElem = newElem;
+    } else {
+        descElem.className = '';
+        descElem.removeAttribute('style');
+        descElem.setAttribute('rows', '3');
+        descElem.style.width = '100%';
+        descElem.style.boxSizing = 'border-box';
+        descElem.style.display = 'block';
+        descElem.style.margin = '0';
+        descElem.style.textAlign = 'left';
+    }
     document.getElementById('objective').value = prompt.objective;
     document.getElementById('actor').value = prompt.actor;
     document.getElementById('context').value = prompt.context;
