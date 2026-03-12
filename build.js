@@ -5,35 +5,38 @@
 const fs = require('fs');
 const path = require('path');
 
-const htmlPath = path.join(__dirname, 'Prompt Builder Pro.html');
-const cssPath = path.join(__dirname, 'app.css');
-const jsPath = path.join(__dirname, 'app.js');
+const srcDir = path.join(__dirname, 'main');
+const jsSrcDir = path.join(srcDir, 'js');
 const distDir = path.join(__dirname, 'dist');
-const distHtmlPath = path.join(distDir, 'Prompt Builder Pro.html');
-
-// Read source files
-const html = fs.readFileSync(htmlPath, 'utf8');
-const css = fs.existsSync(cssPath) ? fs.readFileSync(cssPath, 'utf8') : '';
-const js = fs.existsSync(jsPath) ? fs.readFileSync(jsPath, 'utf8') : '';
-
-// Inline CSS
-let inlined = html.replace(
-    /<link rel="stylesheet" href="app\.css">/i,
-    `<style>\n${css}\n</style>`
-);
-
-// Inline JS (replace <script src="app.js"></script> only, not other scripts)
-inlined = inlined.replace(
-    /<script src="app\.js"><\/script>/i,
-    `<script>\n${js}\n</script>`
-);
+const htmlSrcPath = path.join(srcDir, 'index.html');
+const cssSrcPath = path.join(srcDir, 'app.css');
+const htmlDistPath = path.join(distDir, 'PromptBuilderPro.html');
 
 // Ensure dist directory exists
 if (!fs.existsSync(distDir)) {
     fs.mkdirSync(distDir);
 }
 
+// Read HTML
+let html = fs.readFileSync(htmlSrcPath, 'utf8');
+// Inline CSS
+const css = fs.existsSync(cssSrcPath) ? fs.readFileSync(cssSrcPath, 'utf8') : '';
+html = html.replace(
+    /<link rel="stylesheet" href="app\.css">/i,
+    `<style>\n${css}\n</style>`
+);
+// Inline JS
+const jsFiles = fs.readdirSync(jsSrcDir).filter(f => f.endsWith('.js'));
+for (const jsFile of jsFiles) {
+    const jsPath = path.join('js', jsFile).replace(/\\/g, '/');
+    const jsContent = fs.readFileSync(path.join(jsSrcDir, jsFile), 'utf8');
+    // Replace the script tag for this file with inlined content
+    const scriptRegex = new RegExp(`<script src=["']${jsPath}["']><\\/script>`, 'i');
+    html = html.replace(
+        scriptRegex,
+        `<script>\n${jsContent}\n</script>`
+    );
+}
 // Write output
-fs.writeFileSync(distHtmlPath, inlined, 'utf8');
-console.log('Build complete: dist/Prompt Builder Pro.html');
-
+fs.writeFileSync(htmlDistPath, html, 'utf8');
+console.log('Build complete: dist/PromptBuilderPro.html');

@@ -1,0 +1,54 @@
+[
+  {
+    "id": 1770408110308,
+    "name": "Improve Function Implementation with Risk Analysis",
+    "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
+    "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
+    "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
+    "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
+    "inputs": [
+      {
+        "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+        "description": "String indicating the implementation language (for example, Java, Kotlin, C#, TypeScript) so you can follow its idioms and conventions."
+      },
+      {
+        "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
+        "description": ""
+      }
+    ],
+    "constraints": [
+      "Keep the public signature and externally observable behavior of the function unchanged unless context.constraints explicitly allows modifications to the contract.",
+      "Prefer clear, idiomatic code for the specified language, following common conventions for naming, formatting, and control flow.",
+      "Apply the performance_or_readability_priority: if performance, focus on algorithmic and allocation improvements; if readability, emphasize structure, naming, and simplicity; if both, seek a reasonable balance.",
+      "Do not introduce new external dependencies or libraries unless context.constraints explicitly permits them.",
+      "Use comments sparingly to explain non-obvious logic and important assumptions, avoiding over-commenting straightforward code.",
+      "Favor small, single-responsibility helpers and use private/subordinate functions when they improve clarity, while keeping the public function signature unchanged.",
+      "Explicitly look for and call out potential null-pointer and other high-impact issues, describing when they occur and their impact.",
+      "Keep the explanation of changes concise (around 200 words or less) and focused on the most important improvements and trade-offs."
+    ],
+    "outputs": [
+      {
+        "name": "improved_function_source",
+        "type": "string",
+        "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
+      },
+      {
+        "name": "explanation:",
+        "type": "string",
+        "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
+      },
+      {
+        "name": "potential_issues:",
+        "type": "string",
+        "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+      }
+    ],
+    "success": [
+      "improved_function_source parses/compiles in the specified language and preserves the original function’s public behavior and backward compatibility under normal inputs.",
+      "The resulting code follows idiomatic style for the language and is easier for other engineers to read and maintain, especially when readability is prioritized.",
+      "For performance-focused or balanced requests, the explanation clearly calls out the main performance improvements such as reduced allocations, simpler algorithms, or fewer redundant operations.",
+      "potential_issues includes likely null-pointer risks and other high-impact concerns, each with clear triggers, impact, and realistic remediation suggestions aligned with context.constraints.",
+      "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
+    ]
+  }
+]
