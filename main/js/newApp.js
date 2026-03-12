@@ -555,65 +555,40 @@ window.setTabActive = setTabActive;
  * @param {boolean} visible - Whether to show the tab bar.
  */
 function setTabBarVisible(visible) {
-    const tabs = document.getElementById('tabs');
-    if (tabs) {
-        tabs.style.display = visible ? 'flex' : 'none';
-    }
+    // No longer needed: tab bar is always visible in new layout
 }
 
 /**
  * Shows the welcome screen.
  */
 function showWelcome() {
-    isCreatingNewPrompt = false;
+    document.getElementById('tab-edit').classList.remove('active');
+    document.getElementById('tab-view').classList.remove('active');
     document.getElementById('welcome-screen').classList.add('active');
-    document.getElementById('welcome-screen').style.display = 'flex';
     document.getElementById('view-screen').classList.remove('active');
-    document.getElementById('view-screen').style.display = 'none';
     document.getElementById('edit-screen').classList.remove('active');
-    document.getElementById('edit-screen').style.display = 'none';
-    setTabActive(null); // No tab active
-    setTabBarVisible(false); // Hide tabs
-    renderPromptsList();
 }
 
 /**
  * Shows the view screen.
  */
 function showView() {
-    if (!currentPromptId) {
-        showWelcome();
-        return;
-    }
-    var welcomeScreen = document.getElementById('welcome-screen');
-    if (welcomeScreen) {
-        welcomeScreen.classList.remove('active');
-        welcomeScreen.style.display = 'none';
-    }
+    document.getElementById('tab-view').classList.add('active');
+    document.getElementById('tab-edit').classList.remove('active');
     document.getElementById('view-screen').classList.add('active');
-    document.getElementById('view-screen').style.display = 'block';
     document.getElementById('edit-screen').classList.remove('active');
-    document.getElementById('edit-screen').style.display = 'none';
-    setTabActive('View');
-    setTabBarVisible(true); // Show tabs
+    document.getElementById('welcome-screen').classList.remove('active');
 }
 
 /**
  * Shows the edit screen.
  */
 function showEdit() {
-    if (!currentPromptId && !isCreatingNewPrompt) {
-        showWelcome();
-        return;
-    }
-    document.getElementById('welcome-screen').classList.remove('active');
-    document.getElementById('welcome-screen').style.display = 'none';
-    document.getElementById('view-screen').classList.remove('active');
-    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('tab-edit').classList.add('active');
+    document.getElementById('tab-view').classList.remove('active');
     document.getElementById('edit-screen').classList.add('active');
-    document.getElementById('edit-screen').style.display = 'flex';// Clear any previous validation messages
-    setTabActive('Edit');
-    setTabBarVisible(true); // Show tabs
+    document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('welcome-screen').classList.remove('active');
 }
 window.showEdit = showEdit;
 window.showView = showView;

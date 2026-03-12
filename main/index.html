@@ -53,6 +53,7 @@
                         <button id="json-import-back" class="btn btn-secondary" style="font-size:1.1em;">← Back</button>
                         <h3 style="flex:1; text-align:center; margin:0;">Import Prompt from JSON</h3>
                     </div>
+                    <label for="json-import-textarea" class="visually-hidden">Paste prompt JSON here</label>
                     <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical;"></textarea>
                     <div style="display:flex; gap:1em; align-items:center; justify-content:center; width:100%;">
                         <input type="file" id="json-import-file" accept=".json" style="display:none;">
@@ -69,38 +70,118 @@
         </div>
     </div>
     <div id="main-content" style="margin-left:260px;">
-        <div id="tabs">
-            <button onclick="showView()">View Prompt</button>
-            <button onclick="showEdit()">Edit</button>
+        <div class="main-panel">
+            <div id="tabs">
+                <button onclick="showView()" id="tab-view">View Prompt</button>
+                <button onclick="showEdit()" id="tab-edit">Edit</button>
+            </div>
+            <div class="tab-content">
+                <section id="welcome-screen" class="screen active">
+                    <div class="empty-state">
+                        <h3>Welcome to Prompt Builder Pro</h3>
+                        <p>Select a prompt from the sidebar or create a new one</p>
+                    </div>
+                </section>
+                <section id="view-screen" class="screen" aria-labelledby="view-name">
+                    <div class="view-screen">
+                        <div class="view-left">
+                            <div class="info-display">
+                                <h3 id="view-name">Prompt Name</h3>
+                                <p id="view-desc">Description</p>
+                            </div>
+                            <div class="section">
+                                <div id="view-inputs"></div>
+                            </div>
+                        </div>
+                        <div class="view-right">
+                            <div class="btn-group" style="gap: 0.75rem; align-items: center;">
+                                <button class="btn btn-primary" type="button" id="copy-view-output" aria-label="Copy prompt to clipboard">Create Prompt</button>
+                                <button class="btn btn-secondary" type="button" id="toggle-view-output" aria-label="Show or hide generated prompt"><span id="toggle-eye-label">Show Prompt</span></button>
+                            </div>
+                            <div class="card card-body" style="margin-top:1rem;">
+                                <label for="view-output-json" class="visually-hidden">Prompt JSON Output</label>
+                                <textarea id="view-output-json" class="prompt-display" style="display:none; width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="edit-screen" class="screen" style="display:none;">
+                    <div class="edit-panel">
+                        <div class="edit-screen">
+                            <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
+                                <h3>⚠️ Required Fields Missing</h3>
+                                <ul id="validation-errors-list"></ul>
+                            </div>
+                            <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
+                                <h3>⚠️ Recommendations</h3>
+                                <ul id="validation-warnings-list"></ul>
+                            </div>
+                            <details open>
+                                <summary>Prompt Info</summary>
+                                <div class="edit-fields">
+                                    <label for="prompt-name">Name:</label>
+                                    <input type="text" id="prompt-name" placeholder="e.g., Human Writing Assistant" aria-required="true">
+                                    <label for="prompt-desc">Description:</label>
+                                    <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true">
+                                </div>
+                            </details>
+                            <details>
+                                <summary>1. Objective</summary>
+                                <div class="edit-fields">
+                                    <label for="objective" class="visually-hidden">Objective</label>
+                                    <textarea id="objective" placeholder="e.g., Generate natural, human-like prose without AI giveaways" aria-required="true"></textarea>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>2. Actor</summary>
+                                <div class="edit-fields">
+                                    <label for="actor" class="visually-hidden">Actor</label>
+                                    <textarea id="actor" placeholder="e.g., You are a senior technical writer who creates clear, engaging documentation" aria-required="true"></textarea>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>3. Context</summary>
+                                <div class="edit-fields">
+                                    <label for="context" class="visually-hidden">Context</label>
+                                    <textarea id="context" placeholder="e.g., This is for internal engineering documentation read by backend developers" aria-required="true"></textarea>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>4. Input</summary>
+                                <div class="edit-fields">
+                                    <div id="inputs-container"></div>
+                                    <button type="button" id="add-input">+ Add Input Field</button>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>5. Constraints</summary>
+                                <div class="edit-fields">
+                                    <div id="constraints-container"></div>
+                                    <button type="button" id="add-constraint">+ Add Constraint</button>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>6. Output</summary>
+                                <div class="edit-fields">
+                                    <div id="outputs-container"></div>
+                                    <button type="button" id="add-output">+ Add Output Property</button>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>7. Success</summary>
+                                <div class="edit-fields">
+                                    <div id="success-container"></div>
+                                    <button type="button" id="add-success">+ Add Success Criterion</button>
+                                </div>
+                            </details>
+                            <div class="btn-group">
+                                <button type="button" id="delete-prompt" style="background:#ef4444; color:#fff;">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
         </div>
-        <section id="welcome-screen" class="screen active" style="flex: 1; padding: 2rem; display: flex; align-items: center; justify-content: center;">
-            <div class="empty-state">
-                <h3>Welcome to Prompt Builder Pro</h3>
-                <p>Select a prompt from the sidebar or create a new one</p>
-            </div>
-        </section>
-        <section id="view-screen" class="screen" aria-labelledby="view-name">
-            <div class="view-screen">
-                <div class="view-left">
-                    <div class="info-display">
-                        <h3 id="view-name">Prompt Name</h3>
-                        <p id="view-desc">Description</p>
-                    </div>
-                    <div class="section">
-                        <div id="view-inputs"></div>
-                    </div>
-                </div>
-                <div class="view-right">
-                    <div class="btn-group" style="gap: 0.75rem; align-items: center;">
-                        <button class="btn btn-primary" type="button" id="copy-view-output" aria-label="Copy prompt to clipboard">Create Prompt</button>
-                        <button class="btn btn-secondary" type="button" id="toggle-view-output" aria-label="Show or hide generated prompt"><span id="toggle-eye-label">Show Prompt</span></button>
-                    </div>
-                    <div class="card card-body" style="margin-top:1rem;">
-                        <textarea id="view-output-json" class="prompt-display" style="display:none; width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
-                    </div>
-                </div>
-            </div>
-        </section>
         <!-- Modal for copy confirmation -->
         <div id="copy-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
             <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
@@ -120,81 +201,6 @@
                 </div>
             </div>
         </div>
-        <section id="edit-screen" class="screen" style="display:none;">
-            <div class="edit-panel">
-                <div class="edit-screen">
-                    <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
-                        <h3>⚠️ Required Fields Missing</h3>
-                        <ul id="validation-errors-list"></ul>
-                    </div>
-                    <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
-                        <h3>⚠️ Recommendations</h3>
-                        <ul id="validation-warnings-list"></ul>
-                    </div>
-                    <details open>
-                        <summary>Prompt Info</summary>
-                        <div class="edit-fields">
-                            <label for="prompt-name">Name:</label>
-                            <input type="text" id="prompt-name" placeholder="e.g., Human Writing Assistant" aria-required="true">
-                            <label for="prompt-desc">Description:</label>
-                            <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true">
-                        </div>
-                    </details>
-                    <details>
-                        <summary>1. Objective</summary>
-                        <div class="edit-fields">
-                            <label for="objective" class="visually-hidden">Objective</label>
-                            <textarea id="objective" placeholder="e.g., Generate natural, human-like prose without AI giveaways" aria-required="true"></textarea>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>2. Actor</summary>
-                        <div class="edit-fields">
-                            <label for="actor" class="visually-hidden">Actor</label>
-                            <textarea id="actor" placeholder="e.g., You are a senior technical writer who creates clear, engaging documentation" aria-required="true"></textarea>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>3. Context</summary>
-                        <div class="edit-fields">
-                            <label for="context" class="visually-hidden">Context</label>
-                            <textarea id="context" placeholder="e.g., This is for internal engineering documentation read by backend developers" aria-required="true"></textarea>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>4. Input</summary>
-                        <div class="edit-fields">
-                            <div id="inputs-container"></div>
-                            <button type="button" id="add-input">+ Add Input Field</button>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>5. Constraints</summary>
-                        <div class="edit-fields">
-                            <div id="constraints-container"></div>
-                            <button type="button" id="add-constraint">+ Add Constraint</button>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>6. Output</summary>
-                        <div class="edit-fields">
-                            <div id="outputs-container"></div>
-                            <button type="button" id="add-output">+ Add Output Property</button>
-                        </div>
-                    </details>
-                    <details>
-                        <summary>7. Success</summary>
-                        <div class="edit-fields">
-                            <div id="success-container"></div>
-                            <button type="button" id="add-success">+ Add Success Criterion</button>
-                        </div>
-                    </details>
-                    <div class="btn-group">
-                        <button type="button" id="delete-prompt" style="background:#ef4444; color:#fff;">Delete</button>
-                    </div>
-                </div>
-            </div>
-        </section>
     </div>
 </div>
 <script>
@@ -257,10 +263,11 @@
 </html>
 
 <div id="export-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
-    <div style="background: var(--color-bg-surface); border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
-        <h2 style="margin-bottom: 1rem; color: var(--color-text-accent);">Export Data</h2>
-        <p style="margin-bottom: 1rem; color: var(--color-text-secondary);">Copy this JSON data and save it to a .json file:</p>
-        <textarea id="export-modal-textarea" readonly style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 1rem; background: var(--color-bg-base); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text-primary); resize: none;"></textarea>
+    <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+        <h2 style="margin-bottom: 1rem; color: #2563eb;">Export Data</h2>
+        <p style="margin-bottom: 1rem; color: #666;">Copy this JSON data and save it to a .json file:</p>
+        <label for="export-modal-textarea" class="visually-hidden">Exported JSON Data</label>
+        <textarea id="export-modal-textarea" readonly style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 1rem; background: #fff; border: 1px solid #ccc; border-radius: 6px; color: #222; resize: none;"></textarea>
         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
             <button class="btn btn-primary" id="export-modal-copy">Copy to Clipboard</button>
             <button class="btn btn-secondary" id="export-modal-close">Close</button>
