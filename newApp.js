@@ -155,6 +155,11 @@ function initApp() {
     function init() {
         loadPromptsFromLocalStorage();
         renderPromptsList();
+        if (prompts.length > 0) {
+            viewPrompt(prompts[0].id);
+        } else {
+            showWelcome();
+        }
     }
 
     function renderPromptsList() {
