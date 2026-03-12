@@ -1033,8 +1033,9 @@ function initApp() {
         renderPromptsList();
     }
 
-    window.showView = showView;
+    window.editPrompt = editPrompt;
     window.showEdit = showEdit;
+    window.showView = showView;
 
     window.cancelEdit = function() {
         if (currentPromptId) {
@@ -1181,9 +1182,53 @@ function initApp() {
             }
         });
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        initApp();
+        // Add event listeners for Save and Cancel buttons
+        // Add event listeners for both tab buttons
+        const viewTabBtn = document.querySelector('#tabs button:nth-child(1)');
+        if (viewTabBtn) {
+            viewTabBtn.addEventListener('click', function() {
+                if (currentPromptId) {
+                    showView();
+                }
+            });
+        }
+        const editTabBtn = document.querySelector('#tabs button:nth-child(2)');
+        if (editTabBtn) {
+            editTabBtn.addEventListener('click', function() {
+                if (currentPromptId) {
+                    editPrompt(currentPromptId);
+                }
+            });
+        }
+        // Attach delete modal logic here so it always works
+        var deleteBtn = document.getElementById('delete-prompt');
+        var deleteModal = document.getElementById('delete-modal');
+        var confirmDeleteBtn = document.getElementById('confirm-delete-prompt');
+        var cancelDeleteBtn = document.getElementById('cancel-delete-prompt');
+        if (deleteBtn && deleteModal && confirmDeleteBtn && cancelDeleteBtn) {
+            deleteBtn.onclick = function() {
+                deleteModal.style.display = 'flex';
+            };
+            cancelDeleteBtn.onclick = function() {
+                deleteModal.style.display = 'none';
+            };
+            confirmDeleteBtn.onclick = function() {
+                deleteModal.style.display = 'none';
+                if (typeof currentPromptId !== 'undefined' && currentPromptId !== null) {
+                    deletePrompt(currentPromptId);
+                }
+            };
+            deleteModal.addEventListener('click', function(e) {
+                if (e.target === deleteModal) deleteModal.style.display = 'none';
+            });
+        }
+    });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function startApp() {
     initApp();
     // Add event listeners for Save and Cancel buttons
     const saveBtn = document.getElementById('save-prompt');
@@ -1207,19 +1252,29 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-});
-
-// Render prompt tiles in the sidebar
-function renderPromptTiles(prompts) {
-    const list = document.getElementById('prompts-list');
-    if (!prompts || prompts.length === 0) {
-        list.innerHTML = '<div class="empty-state"><h3>No Prompts Yet</h3><p>Create your first prompt to get started</p></div>';
-        return;
+    // Attach delete modal logic here so it always works
+    var deleteBtn = document.getElementById('delete-prompt');
+    var deleteModal = document.getElementById('delete-modal');
+    var confirmDeleteBtn = document.getElementById('confirm-delete-prompt');
+    var cancelDeleteBtn = document.getElementById('cancel-delete-prompt');
+    if (deleteBtn && deleteModal && confirmDeleteBtn && cancelDeleteBtn) {
+        deleteBtn.onclick = function() {
+            deleteModal.style.display = 'flex';
+        };
+        cancelDeleteBtn.onclick = function() {
+            deleteModal.style.display = 'none';
+        };
+        confirmDeleteBtn.onclick = function() {
+            deleteModal.style.display = 'none';
+            if (typeof currentPromptId !== 'undefined' && currentPromptId !== null) {
+                deletePrompt(currentPromptId);
+            }
+        };
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === deleteModal) deleteModal.style.display = 'none';
+        });
     }
-    list.innerHTML = prompts.map(prompt =>
-        `<div class="prompt-tile">${prompt.name}</div>`
-    ).join('');
 }
 
-// Example usage: renderPromptTiles(prompts);
-
+// Call startApp() directly since script is at end of body
+startApp();
