@@ -116,8 +116,8 @@
         }
         .btn-group {
             display: flex;
-            gap: 12px;
-            margin-top: 24px;
+            gap: 0.75rem;
+            align-items: center;
         }
         .view-panel {
             background: #fff;
@@ -169,6 +169,35 @@
             width: 100%;
             box-sizing: border-box;
         }
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            padding: 0.6em 1.5em;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover, .btn-primary:focus {
+            background: #1d4ed8;
+        }
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #2563eb;
+            border: 1px solid #2563eb;
+            border-radius: 4px;
+            font-weight: 500;
+            padding: 0.6em 1.5em;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-secondary:hover, .btn-secondary:focus {
+            background: #2563eb;
+            color: #fff;
+        }
     </style>
 </head>
 <body>
@@ -215,11 +244,12 @@
                     </div>
                 </div>
                 <div class="view-right">
-                    <div class="btn-group">
-                        <button class="btn btn-primary" type="button" id="copy-view-output">Create Prompt</button>
+                    <div class="btn-group" style="gap: 0.75rem; align-items: center;">
+                        <button class="btn btn-primary" type="button" id="copy-view-output" aria-label="Copy prompt to clipboard">Create Prompt</button>
+                        <button class="btn btn-secondary" type="button" id="toggle-view-output" aria-label="Show or hide generated prompt"><span id="toggle-eye-label">Show Prompt</span></button>
                     </div>
                     <div class="card card-body" style="margin-top:1rem;">
-                        <pre id="view-output-json" class="prompt-display" style="display:none;"></pre>
+                        <textarea id="view-output-json" class="prompt-display" style="display:none; width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
                     </div>
                 </div>
             </div>
@@ -320,20 +350,31 @@
 </script>
 <script src="newApp.js"></script>
 <script>
-// Only show/copy the generated prompt when the button is clicked
 (function() {
     document.addEventListener('DOMContentLoaded', function() {
         var copyBtn = document.getElementById('copy-view-output');
+        var toggleBtn = document.getElementById('toggle-view-output');
+        var pre = document.getElementById('view-output-json');
         var modal = document.getElementById('copy-modal');
         var closeModal = document.getElementById('close-copy-modal');
+        var eyeLabel = document.getElementById('toggle-eye-label');
         if (copyBtn) {
             copyBtn.onclick = function() {
-                var pre = document.getElementById('view-output-json');
                 if (pre) {
-                    pre.style.display = 'block';
-                    navigator.clipboard.writeText(pre.textContent).then(function() {
+                    navigator.clipboard.writeText(pre.value).then(function() {
                         if (modal) modal.style.display = 'flex';
                     });
+                }
+            };
+        }
+        if (toggleBtn) {
+            toggleBtn.onclick = function() {
+                if (pre) {
+                    var isVisible = pre.style.display === 'block';
+                    pre.style.display = isVisible ? 'none' : 'block';
+                    if (eyeLabel) {
+                        eyeLabel.textContent = isVisible ? 'Show Prompt' : 'Hide Prompt';
+                    }
                 }
             };
         }
@@ -342,7 +383,6 @@
                 modal.style.display = 'none';
             };
         }
-        // Optional: close modal on outside click
         if (modal) {
             modal.addEventListener('click', function(e) {
                 if (e.target === modal) modal.style.display = 'none';
