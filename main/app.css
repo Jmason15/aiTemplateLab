@@ -442,6 +442,21 @@ textarea, input[type="text"] {
 .edit-fields .add-btn:hover svg, .edit-fields .add-btn:focus svg {
   stroke: #fff;
 }
+.section-hint {
+  font-size: 1em;
+  color: var(--color-text-muted);
+  background: #f3f6fa;
+  border-left: 3px solid var(--color-primary-light);
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  margin-top: 2px;
+  border-radius: 4px;
+  font-style: italic;
+  display: block;
+}
+.section-hint .hint-icon {
+  display: none;
+}
 @media (max-width: 1100px) {
   .main-panel {
     margin: 16px;

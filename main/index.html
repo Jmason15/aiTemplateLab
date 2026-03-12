@@ -118,36 +118,66 @@
                             </div>
                             <details open>
                                 <summary>Prompt Info</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The name and description help you and others quickly identify what this prompt is for.<br>
+                                  <strong>Why is it important?</strong> Clear names and descriptions make it easy to find and reuse prompts for different business or technical needs.<br>
+                                  <strong>Business Example:</strong> "Quarterly Sales Report" or "Summarize meeting notes for executives."<br>
+                                  <strong>Technical Example:</strong> "Generate a REST API endpoint for user authentication." or "Create a SQL query to aggregate sales data."
+                                </div>
                                 <div class="edit-fields">
                                     <label for="prompt-name">Name:</label>
-                                    <input type="text" id="prompt-name" placeholder="e.g., Human Writing Assistant" aria-required="true">
+                                    <input type="text" id="prompt-name" placeholder="e.g., Quarterly Sales Report" aria-required="true">
                                     <label for="prompt-desc">Description:</label>
                                     <input type="text" id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true">
                                 </div>
                             </details>
                             <details>
                                 <summary>1. Objective</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The objective states the main goal of the prompt.<br>
+                                  <strong>Why is it important?</strong> A clear objective ensures the output matches your expectations and business goals.<br>
+                                  <strong>Business Example:</strong> "Summarize the main points from a business meeting in plain language."<br>
+                                  <strong>Technical Example:</strong> "Document the steps to deploy a Node.js application to AWS."
+                                </div>
                                 <div class="edit-fields">
                                     <label for="objective" class="visually-hidden">Objective</label>
-                                    <textarea id="objective" placeholder="e.g., Generate natural, human-like prose without AI giveaways" aria-required="true"></textarea>
+                                    <textarea id="objective" placeholder="e.g., Summarize the main points from a business meeting in plain language" aria-required="true"></textarea>
                                 </div>
                             </details>
                             <details>
                                 <summary>2. Actor</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The actor is the person or role performing the task described by the prompt.<br>
+                                  <strong>Why is it important?</strong> Defining the actor helps tailor the output to the right audience or expertise level.<br>
+                                  <strong>Business Example:</strong> "You are a business analyst preparing a summary for the CEO."<br>
+                                  <strong>Technical Example:</strong> "You are a DevOps engineer automating deployment scripts."
+                                </div>
                                 <div class="edit-fields">
                                     <label for="actor" class="visually-hidden">Actor</label>
-                                    <textarea id="actor" placeholder="e.g., You are a senior technical writer who creates clear, engaging documentation" aria-required="true"></textarea>
+                                    <textarea id="actor" placeholder="e.g., You are a business analyst preparing a summary for the CEO" aria-required="true"></textarea>
                                 </div>
                             </details>
                             <details>
                                 <summary>3. Context</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The context provides background information or the situation for the prompt.<br>
+                                  <strong>Why is it important?</strong> Good context ensures the output is relevant and fits the intended use case.<br>
+                                  <strong>Business Example:</strong> "This summary will be shared with the executive team after each meeting."<br>
+                                  <strong>Technical Example:</strong> "This script will be used by developers to automate database backups."
+                                </div>
                                 <div class="edit-fields">
                                     <label for="context" class="visually-hidden">Context</label>
-                                    <textarea id="context" placeholder="e.g., This is for internal engineering documentation read by backend developers" aria-required="true"></textarea>
+                                    <textarea id="context" placeholder="e.g., This summary will be shared with the executive team after each meeting" aria-required="true"></textarea>
                                 </div>
                             </details>
                             <details>
                                 <summary>4. Input</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> Inputs are the information the user must provide for the prompt to work.<br>
+                                  <strong>Why is it important?</strong> Listing inputs ensures nothing is missed and the output is accurate.<br>
+                                  <strong>Business Example:</strong> "Meeting notes, list of attendees, action items."<br>
+                                  <strong>Technical Example:</strong> "API endpoint URL, request parameters, authentication token."
+                                </div>
                                 <div class="edit-fields">
                                     <div id="inputs-container"></div>
                                     <button type="button" id="add-input" class="add-btn">
@@ -158,6 +188,12 @@
                             </details>
                             <details>
                                 <summary>5. Constraints</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> Constraints are rules or requirements the output must follow.<br>
+                                  <strong>Why is it important?</strong> Constraints help ensure the results meet business standards or technical requirements.<br>
+                                  <strong>Business Example:</strong> "Keep the summary under 200 words. Avoid technical jargon."<br>
+                                  <strong>Technical Example:</strong> "Response time must be under 2 seconds. Use only GET and POST methods."
+                                </div>
                                 <div class="edit-fields">
                                     <div id="constraints-container"></div>
                                     <button type="button" id="add-constraint" class="add-btn">
@@ -168,6 +204,12 @@
                             </details>
                             <details>
                                 <summary>6. Output</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The output describes what the result should look like.<br>
+                                  <strong>Why is it important?</strong> Defining the output helps you get exactly what you need, in the right format.<br>
+                                  <strong>Business Example:</strong> "A short summary with key decisions and next steps."<br>
+                                  <strong>Technical Example:</strong> "A JSON object with user data and status code."
+                                </div>
                                 <div class="edit-fields">
                                     <div id="outputs-container"></div>
                                     <button type="button" id="add-output" class="add-btn">
@@ -178,6 +220,12 @@
                             </details>
                             <details>
                                 <summary>7. Success</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> Success criteria define how you know the output is good.<br>
+                                  <strong>Why is it important?</strong> Clear success criteria make it easy to check if the results meet your needs.<br>
+                                  <strong>Business Example:</strong> "The summary is clear, easy to read, and covers all important points."<br>
+                                  <strong>Technical Example:</strong> "All unit tests pass and the API returns the expected response."
+                                </div>
                                 <div class="edit-fields">
                                     <div id="success-container"></div>
                                     <button type="button" id="add-success" class="add-btn">
