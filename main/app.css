@@ -167,6 +167,9 @@ body {
   position: absolute;
   left: -9999px;
 }
+.edit-fields, .edit-card {
+  box-sizing: border-box;
+}
 .edit-fields {
   display: flex;
   flex-direction: column;
@@ -174,6 +177,8 @@ body {
   margin: 20px 0;
   max-width: 900px;
   width: 100%;
+  padding-left: 0;
+  padding-right: 0;
 }
 .edit-fields textarea {
   min-height: 140px;
@@ -330,6 +335,8 @@ textarea, input[type="text"] {
   gap: 0.7rem;
   min-height: 0;
   width: 100%;
+  padding-left: 0;
+  padding-right: 0;
 }
 .edit-card-label {
   font-size: 0.98em;
@@ -344,6 +351,8 @@ textarea, input[type="text"] {
   flex-direction: column;
   gap: 6px;
   width: 100%;
+  padding-left: 16px;
+  padding-right: 8px;
 }
 .edit-card-content input[type="text"],
 .edit-card-content textarea {
@@ -363,6 +372,14 @@ textarea, input[type="text"] {
   border-radius: 4px;
   width: 100%;
   box-sizing: border-box;
+}
+/* Constraint and Success textareas bigger */
+.edit-card.constraint-item textarea,
+.edit-card.success-item textarea {
+  min-height: 140px;
+  max-height: 320px;
+  font-size: 1.12em;
+  padding: 16px 14px;
 }
 .delete-btn {
   background: none;

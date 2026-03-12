@@ -130,21 +130,23 @@ window.addConstraint = function(text = '') {
     div.id = `constraint-item-${id}`;
     div.style.alignItems = 'center';
 
-    // Label
-    const label = document.createElement('label');
-    label.setAttribute('for', `constraint-text-${id}`);
-    label.textContent = 'Constraint';
-    label.className = 'edit-card-label';
-    label.style.marginRight = '8px';
-    div.appendChild(label);
+    // Remove label for constraint
+    // const label = document.createElement('label');
+    // label.setAttribute('for', `constraint-text-${id}`);
+    // label.textContent = 'Constraint';
+    // label.className = 'edit-card-label';
+    // label.style.marginRight = '8px';
+    // div.appendChild(label);
 
     const textarea = document.createElement('textarea');
     textarea.id = `constraint-text-${id}`;
     textarea.placeholder = 'Constraint';
     textarea.value = text;
     textarea.setAttribute('aria-label', 'Constraint');
-    textarea.style.minHeight = '32px';
-    textarea.style.maxHeight = '60px';
+    textarea.style.minHeight = '140px';
+    textarea.style.maxHeight = '320px';
+    textarea.style.fontSize = '1.12em';
+    textarea.style.padding = '16px 14px';
     textarea.addEventListener('input', regenerateOutput);
     div.appendChild(textarea);
 
@@ -249,21 +251,23 @@ window.addSuccess = function(text = '') {
     div.id = `success-item-${id}`;
     div.style.alignItems = 'center';
 
-    // Label
-    const label = document.createElement('label');
-    label.setAttribute('for', `success-text-${id}`);
-    label.textContent = 'Success Criterion';
-    label.className = 'edit-card-label';
-    label.style.marginRight = '8px';
-    div.appendChild(label);
+    // Remove label for success
+    // const label = document.createElement('label');
+    // label.setAttribute('for', `success-text-${id}`);
+    // label.textContent = 'Success Criterion';
+    // label.className = 'edit-card-label';
+    // label.style.marginRight = '8px';
+    // div.appendChild(label);
 
     const textarea = document.createElement('textarea');
     textarea.id = `success-text-${id}`;
     textarea.placeholder = 'Success criterion';
     textarea.value = text;
     textarea.setAttribute('aria-label', 'Success criterion');
-    textarea.style.minHeight = '32px';
-    textarea.style.maxHeight = '60px';
+    textarea.style.minHeight = '140px';
+    textarea.style.maxHeight = '320px';
+    textarea.style.fontSize = '1.12em';
+    textarea.style.padding = '16px 14px';
     textarea.addEventListener('input', regenerateOutput);
     div.appendChild(textarea);
 
