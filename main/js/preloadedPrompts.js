@@ -4,7 +4,7 @@ window.preloadedPrompts = [{
     "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
     "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
     "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
-    "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: name, description, objective, actor, context, inputs, constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.\n\nIMPORTANT: When you respond, DO NOT output JSON. Instead, show each field as a labeled section the user can copy:\n\nName:\n[...]\n\nDescription:\n[...]\n\nObjective:\n[...]\n\nActor:\n[...]\n\nContext:\n[...]\n\nInputs:\n- Field 1: ...\n- Field 2: ...\n\nConstraints:\n- ...\n\nOutputs:\n- ...\n\nSuccess:\n- ...\n\nAll content must be plain text or simple Markdown headings, not JSON.",
+    "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
     "inputs": [
         {
             "name": "Prompt Idea",
@@ -13,44 +13,21 @@ window.preloadedPrompts = [{
     ],
     "constraints": [
         "Use clear, concise language for every field.",
-        "Never return JSON or code blocks for the field values themselves.",
         "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
-        "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler."
+        "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
+        "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+        "Do not wrap the JSON inside any additional properties such as 'Field Suggestions', and do not add extra top-level fields."
     ],
     "outputs": [
         {
             "name": "Field Suggestions",
             "type": "JSON",
-            "description": "{\n" +
-                "  \"id\": 0,\n" +
-                "  \"name\": \"\",\n" +
-                "  \"description\": \"\",\n" +
-                "  \"objective\": \"\",\n" +
-                "  \"actor\": \"\",\n" +
-                "  \"context\": \"\",\n" +
-                "  \"inputs\": [\n" +
-                "    {\n" +
-                "      \"name\": \"\",\n" +
-                "      \"description\": \"\"\n" +
-                "    }\n" +
-                "  ],\n" +
-                "  \"constraints\": [\n" +
-                "  ],\n" +
-                "  \"outputs\": [\n" +
-                "    {\n" +
-                "      \"name\": \"\",\n" +
-                "      \"type\": \"\",\n" +
-                "      \"description\": \"\"\n" +
-                "    }\n" +
-                "  ],\n" +
-                "  \"success\": [\n" +
-                "  ]\n" +
-                "}"
+            "example": "{\n  \"id\": 0,\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
         }
     ],
     "success": [
-        "the format meets the json output specification exactly.",
-        "user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
+        "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success, and no additional wrapper properties.",
+        "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
         "All suggested content reflects the user's described prompt idea and is specific, not generic."
     ]
 },
@@ -76,22 +53,22 @@ window.preloadedPrompts = [{
             {
                 "name": "User Story",
                 "type": "markdown",
-                "description": "```Markdown format"
+                "example": "```Markdown format"
             },
             {
                 "name": "Acceptance Criteria",
                 "type": "markdown",
-                "description": "```Markdown Gherkin format."
+                "example": "```Markdown Gherkin format."
             },
             {
                 "name": "Estimated Storypoints",
                 "type": "String",
-                "description": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+                "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
             },
             {
                 "name": "Story point description",
                 "type": "string",
-                "description": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+                "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
             }
         ],
         "success": [
@@ -133,17 +110,17 @@ window.preloadedPrompts = [{
             {
                 "name": "improved_function_source",
                 "type": "string",
-                "description": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
+                "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
             },
             {
                 "name": "explanation:",
                 "type": "string",
-                "description": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
+                "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
             },
             {
                 "name": "potential_issues:",
                 "type": "string",
-                "description": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+                "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
             }
         ],
         "success": [
