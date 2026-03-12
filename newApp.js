@@ -221,8 +221,8 @@ function initApp() {
             `;
             return;
         }
-        container.innerHTML = prompts.map(p => `
-            <div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}">
+        container.innerHTML = prompts.map((p, idx) => `
+            <div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
                 ${escapeHtml(p.name)}
             </div>
         `).join('');
@@ -231,6 +231,37 @@ function initApp() {
             const id = parseInt(item.getAttribute('data-id'));
             item.addEventListener('click', () => {
                 viewPrompt(id);
+            });
+        });
+        // Drag-and-drop reordering
+        let draggedIdx = null;
+        container.querySelectorAll('.prompt-tile').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                draggedIdx = parseInt(item.getAttribute('data-index'));
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging');
+                draggedIdx = null;
+            });
+            item.addEventListener('dragover', e => {
+                e.preventDefault();
+                item.classList.add('drag-over');
+            });
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('drag-over');
+            });
+            item.addEventListener('drop', e => {
+                e.preventDefault();
+                item.classList.remove('drag-over');
+                const targetIdx = parseInt(item.getAttribute('data-index'));
+                if (draggedIdx !== null && draggedIdx !== targetIdx) {
+                    const moved = prompts.splice(draggedIdx, 1)[0];
+                    prompts.splice(targetIdx, 0, moved);
+                    savePromptsToLocalStorage();
+                    renderPromptsList();
+                }
             });
         });
     }
