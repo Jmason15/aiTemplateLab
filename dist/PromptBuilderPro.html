@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Builder Pro</title>
+    <style>
+/*
+  Prompt Builder Pro - Modern, Unified, and Simple UI
+  --------------------------------------------------
+  - Uses CSS variables for easy theming
+  - Unified card style for all panels
+  - Responsive and accessible
+  - Minimal, maintainable selectors
+*/
+:root {
+  --color-bg: #f8fafc;
+  --color-card: #fff;
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-light: #e0e7ef;
+  --color-success: #22c55e;
+  --color-success-dark: #16a34a;
+  --color-danger: #ef4444;
+  --color-danger-dark: #b91c1c;
+  --color-border: #e5e7eb;
+  --color-shadow: 0 4px 24px rgba(30,41,59,0.07);
+  --color-sidebar: #1e293b;
+  --color-sidebar-accent: #334155;
+  --color-sidebar-text: #fff;
+  --color-text: #222;
+  --color-text-muted: #64748b;
+  --radius: 12px;
+  --padding: 24px;
+  --sidebar-width: 260px;
+}
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+#container {
+  display: flex;
+  min-height: 100vh;
+}
+#sidebar {
+  position: fixed;
+  width: var(--sidebar-width);
+  background: var(--color-sidebar);
+  color: var(--color-sidebar-text);
+  padding: 20px 10px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100vh;
+}
+#sidebar h2 {
+  margin: 0 0 20px 0;
+  font-size: 1.2em;
+}
+#sidebar button {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px;
+  background: var(--color-sidebar-accent);
+  color: var(--color-sidebar-text);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background 0.2s;
+}
+#sidebar button:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+#prompts-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+.prompt-tile {
+  background: var(--color-sidebar-accent);
+  color: var(--color-sidebar-text);
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background 0.2s, border 0.2s;
+  border: 2px solid transparent;
+}
+.prompt-tile:hover {
+  background: #444;
+}
+.prompt-tile.selected {
+  background: var(--color-primary);
+  border: 2px solid var(--color-primary-dark);
+  font-weight: bold;
+}
+#main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  background: none;
+  padding: 0;
+}
+.main-panel {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  box-shadow: var(--color-shadow);
+  margin: 32px auto;
+  max-width: 900px;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+#tabs {
+  background: var(--color-primary-light);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 32px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+#tabs button {
+  padding: 12px 32px;
+  border: none;
+  background: var(--color-primary-light);
+  color: var(--color-text);
+  border-radius: 8px 8px 0 0;
+  font-size: 1.1em;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+#tabs button.active, #tabs button:focus {
+  background: var(--color-card);
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  outline: none;
+}
+.tab-content {
+  flex: 1 1 auto;
+  padding: var(--padding);
+  background: var(--color-card);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.screen {
+  display: none;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+}
+.screen.active {
+  display: flex !important;
+}
+.empty-state {
+  text-align: center;
+  color: #888;
+  margin: auto;
+}
+.btn-block {
+  width: 100%;
+}
+.visually-hidden {
+  position: absolute;
+  left: -9999px;
+}
+.edit-fields, .edit-card {
+  box-sizing: border-box;
+}
+.edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 20px 0;
+  max-width: 900px;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+.edit-fields textarea {
+  min-height: 140px;
+  font-size: 1.08em;
+  padding: 18px 14px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: #fafbfc;
+  resize: vertical;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.edit-fields textarea:focus {
+  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 0 0 2px #2563eb22;
+  outline: none;
+  background: #fff;
+}
+.edit-fields input[type="text"] {
+  font-size: 1.08em;
+  padding: 12px 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: #fafbfc;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.edit-fields input[type="text"]:focus {
+  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 0 0 2px #2563eb22;
+  outline: none;
+  background: #fff;
+}
+.edit-fields label {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: #222;
+}
+details {
+  margin-bottom: 16px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+summary {
+  font-weight: bold;
+  cursor: pointer;
+}
+textarea, input[type="text"] {
+  font-size: 1em;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  width: 100%;
+  box-sizing: border-box;
+}
+.btn-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+.card, .edit-panel, .view-panel {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--color-shadow);
+  padding: var(--padding);
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+.warning-banner {
+  background: #fef3c7;
+  color: #b45309;
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold;
+}
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background: var(--color-primary-dark);
+}
+.btn-secondary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+}
+.btn-secondary:hover, .btn-secondary:focus {
+  background: var(--color-primary);
+  color: #fff;
+}
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+}
+.btn-danger:hover, .btn-danger:focus {
+  background: var(--color-danger-dark);
+}
+.edit-footer {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fafbfc;
+  border-top: 1px solid #eee;
+  padding: 12px 0 0 0;
+  margin-top: 18px;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+}
+.edit-btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  width: 100%;
+}
+.edit-btn-group .btn {
+  font-size: 1em;
+  padding: 0.55em 1.5em;
+  border-radius: 5px;
+  box-shadow: none;
+  font-weight: 500;
+}
+.edit-card {
+  display: flex;
+  align-items: center;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: 0 1.5px 6px rgba(30,41,59,0.06);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  position: relative;
+  gap: 0.7rem;
+  min-height: 0;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+.edit-card-label {
+  font-size: 0.98em;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+  display: block;
+}
+.edit-card-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding-left: 16px;
+  padding-right: 8px;
+}
+.edit-card-content input[type="text"],
+.edit-card-content textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0;
+  font-size: 1em;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+.large-textarea {
+  min-height: 90px !important;
+  max-height: 220px;
+  font-size: 1em;
+  padding: 10px 10px;
+  resize: vertical;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+/* Constraint and Success textareas bigger */
+.edit-card.constraint-item textarea,
+.edit-card.success-item textarea {
+  min-height: 140px;
+  max-height: 320px;
+  font-size: 1.12em;
+  padding: 16px 14px;
+}
+.delete-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  margin-left: 6px;
+  cursor: pointer;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+.delete-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  pointer-events: none;
+}
+.delete-btn:hover svg path,
+.delete-btn:focus svg path,
+.delete-btn:hover svg rect,
+.delete-btn:focus svg rect {
+  stroke: #ef4444;
+}
+.edit-fields > .edit-card:last-child {
+  margin-bottom: 0;
+}
+.edit-fields .add-btn {
+  margin-top: 0.6rem;
+  align-self: flex-start;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  border-radius: 4px;
+  padding: 0.35em 1.1em 0.35em 0.9em;
+  font-size: 0.97em;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  box-shadow: none;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+}
+.edit-fields .add-btn svg {
+  width: 1.1em;
+  height: 1.1em;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.1em;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2.2;
+}
+.edit-fields .add-btn:hover, .edit-fields .add-btn:focus {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary-dark);
+}
+.edit-fields .add-btn:hover svg, .edit-fields .add-btn:focus svg {
+  stroke: #fff;
+}
+.section-hint {
+  font-size: 1em;
+  color: var(--color-text-muted);
+  background: #f3f6fa;
+  border-left: 3px solid var(--color-primary-light);
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  margin-top: 2px;
+  border-radius: 4px;
+  font-style: italic;
+  display: block;
+}
+.section-hint .hint-icon {
+  display: none;
+}
+@media (max-width: 1100px) {
+  .main-panel {
+    margin: 16px;
+    max-width: 100%;
+  }
+}
+@media (max-width: 800px) {
+  #container {
+    flex-direction: column;
+  }
+  #sidebar {
+    position: static;
+    width: 100%;
+    min-height: unset;
+    height: auto;
+    flex-direction: row;
+    align-items: flex-start;
+    padding: 10px;
+  }
+  #main-content {
+    margin-left: 0;
+  }
+  .main-panel {
+    margin: 8px;
+    min-width: 0;
+    min-height: 0;
+  }
+}
+@media (max-width: 600px) {
+  .edit-footer {
+    padding: 8px 0 0 0;
+  }
+  .edit-btn-group {
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+  .edit-btn-group .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .edit-card {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 8px 6px;
+  }
+  .edit-card-content {
+    flex-direction: column;
+    gap: 6px;
+    align-items: stretch;
+  }
+}
+
+</style>
+</head>
+<body>
+<div class="warning-banner" role="alert">
+    <strong>⚠️ Session Storage Only</strong>
+    Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
+</div>
+<div id="container">
+    <div id="sidebar" class="sidebar">
+        <div>
+            <h2>Prompt templates:</h2>
+        </div>
+        <div id="prompts-list">
+            <!-- Prompt tiles will be rendered here -->
+        </div>
+        <div class="sidebar-actions">
+            <button class="btn btn-primary btn-block" id="new-prompt-main">+ New Template</button>
+            <button class="btn btn-secondary btn-block" onclick="exportPrompts()" style="margin-top: 0.5rem;">Export Templates</button>
+            <button class="btn btn-secondary btn-block" onclick="importPrompts()" style="margin-top: 0.5rem;">Import Templates</button>
+            <button class="btn btn-secondary btn-block" onclick="resetPrompts()" style="margin-top: 0.5rem; background: #ef4444; color: #fff;">Reset Templates</button>
+            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImport(event)">
+        </div>
+
+        <!-- Modal for new prompt creation -->
+        <div id="new-prompt-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+            <div id="new-prompt-modal-content" style="background:#fff; padding:2rem; border-radius:10px; max-width:95vw; min-width:320px; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center; display:flex; flex-direction:column; gap:1.5rem;">
+                <!-- Choice screen -->
+                <div id="new-prompt-choice">
+                    <h2 style="margin-bottom:1.5rem;">Create New Prompt</h2>
+                    <div style="display:flex; gap:2rem; justify-content:center; flex-wrap:wrap;">
+                        <button class="btn btn-primary" id="start-blank-prompt" style="flex:1; min-width:180px; max-width:220px; padding:2em 1em; font-size:1.2em; display:flex; flex-direction:column; align-items:center; gap:0.5em;">
+                            <span style="font-size:2em;">📝</span>
+                            Start from Blank
+                            <span style="font-size:0.95em; color:#2563eb;">Create a new empty prompt</span>
+                        </button>
+                        <button class="btn btn-secondary" id="start-json-prompt" style="flex:1; min-width:180px; max-width:220px; padding:2em 1em; font-size:1.2em; display:flex; flex-direction:column; align-items:center; gap:0.5em;">
+                            <span style="font-size:2em;">⬆️</span>
+                            Import from JSON
+                            <span style="font-size:0.95em; color:#2563eb;">Paste or upload a prompt JSON</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary" id="new-prompt-cancel" style="margin-top:2rem;">Cancel</button>
+                </div>
+                <!-- JSON import screen (hidden by default) -->
+                <div id="new-prompt-json-import" style="display:none; flex-direction:column; gap:1rem; align-items:center;">
+                    <div style="width:100%; display:flex; align-items:center; gap:1em;">
+                        <button id="json-import-back" class="btn btn-secondary" style="font-size:1.1em;">← Back</button>
+                        <h3 style="flex:1; text-align:center; margin:0;">Import Prompt from JSON</h3>
+                    </div>
+                    <label for="json-import-textarea" class="visually-hidden">Paste prompt JSON here</label>
+                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical;"></textarea>
+                    <div style="display:flex; gap:1em; align-items:center; justify-content:center; width:100%;">
+                        <input type="file" id="json-import-file" accept=".json" style="display:none;">
+                        <button class="btn btn-secondary" id="json-import-upload">Upload JSON File</button>
+                        <span id="json-import-filename" style="color:#888; font-size:0.95em;"></span>
+                    </div>
+                    <div id="json-import-error" style="color:#ef4444; min-height:1.5em;"></div>
+                    <div style="display:flex; gap:1em; justify-content:center; width:100%;">
+                        <button class="btn btn-primary" id="json-import-confirm">Import</button>
+                        <button class="btn btn-secondary" id="json-import-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="main-content" style="margin-left:260px;">
+        <div class="main-panel">
+            <div id="tabs">
+                <button onclick="showView()" id="tab-view">View Prompt</button>
+                <button onclick="showEdit()" id="tab-edit">Edit</button>
+            </div>
+            <div class="tab-content">
+                <section id="welcome-screen" class="screen active">
+                    <div class="empty-state">
+                        <h3>Welcome to Prompt Builder Pro</h3>
+                        <p>Select a prompt from the sidebar or create a new one</p>
+                    </div>
+                </section>
+                <section id="view-screen" class="screen" aria-labelledby="view-name">
+                    <div class="view-screen">
+                        <div class="view-left">
+                            <div class="info-display card card-body" style="margin-bottom: 1.5rem;">
+                                <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
+                                <p id="view-desc" style="font-size: 1.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Description</p>
+                                <details id="view-meta-details" style="margin-bottom: 0.5rem;">
+                                  <summary style="cursor:pointer; color: var(--color-primary); font-weight: 500; font-size: 1.05em;">Show Details</summary>
+                                  <div id="view-meta" style="display: flex; flex-direction: column; gap: 0.7em; padding: 0.7em 0 0 0.2em; line-height: 1.6;"></div>
+                                </details>
+                            </div>
+                            <div class="section card card-body" style="margin-bottom: 1.5rem;">
+                                <h4 style="margin-top:0; color: var(--color-primary);">Inputs</h4>
+                                <div id="view-inputs"></div>
+                            </div>
+                        </div>
+                        <div class="view-right">
+                            <div class="btn-group" style="gap: 0.75rem; align-items: center;">
+                                <button class="btn btn-primary" type="button" id="copy-view-output" aria-label="Copy prompt to clipboard">Create Prompt</button>
+                                <button class="btn btn-secondary" type="button" id="toggle-view-output" aria-label="Show or hide generated prompt"><span id="toggle-eye-label">Show Prompt</span></button>
+                            </div>
+                            <div class="card card-body" style="margin-top:1rem;">
+                                <label for="view-output-json" class="visually-hidden">Prompt JSON Output</label>
+                                <textarea id="view-output-json" class="prompt-display" style="display:none; width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section id="edit-screen" class="screen" style="display:none;">
+                    <div class="edit-panel">
+                        <div class="edit-screen">
+                            <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
+                                <h3>⚠️ Required Fields Missing</h3>
+                                <ul id="validation-errors-list"></ul>
+                            </div>
+                            <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
+                                <h3>⚠️ Recommendations</h3>
+                                <ul id="validation-warnings-list"></ul>
+                            </div>
+                            <details open>
+                                <summary>Prompt Info</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The name and description help you and others quickly identify what this prompt is for.<br>
+                                  <strong>Why is it important?</strong> Clear names and descriptions make it easy to find and reuse prompts for different business or technical needs.<br>
+                                  <strong>Business Example:</strong> "Quarterly Sales Report" or "Summarize meeting notes for executives."<br>
+                                  <strong>Technical Example:</strong> "Generate a REST API endpoint for user authentication." or "Create a SQL query to aggregate sales data."
+                                </div>
+                                <div class="edit-fields">
+                                    <label for="prompt-name">Name:</label>
+                                    <input type="text" id="prompt-name" placeholder="e.g., Quarterly Sales Report" aria-required="true">
+                                    <label for="prompt-desc">Description:</label>
+                                    <textarea id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true" rows="3"></textarea>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>1. Objective</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The objective states the main goal of the prompt.<br>
+                                  <strong>Why is it important?</strong> A clear objective ensures the output matches your expectations and business goals.<br>
+                                  <strong>Business Example:</strong> "Summarize the main points from a business meeting in plain language."<br>
+                                  <strong>Technical Example:</strong> "Document the steps to deploy a Node.js application to AWS."
+                                </div>
+                                <div class="edit-fields">
+                                    <label for="objective" class="visually-hidden">Objective</label>
+                                    <textarea id="objective" placeholder="e.g., Summarize the main points from a business meeting in plain language" aria-required="true"></textarea>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>2. Actor</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The actor is the person or role performing the task described by the prompt.<br>
+                                  <strong>Why is it important?</strong> Defining the actor helps tailor the output to the right audience or expertise level.<br>
+                                  <strong>Business Example:</strong> "You are a business analyst preparing a summary for the CEO."<br>
+                                  <strong>Technical Example:</strong> "You are a DevOps engineer automating deployment scripts."
+                                </div>
+                                <div class="edit-fields">
+                                    <label for="actor" class="visually-hidden">Actor</label>
+                                    <textarea id="actor" placeholder="e.g., You are a business analyst preparing a summary for the CEO" aria-required="true"></textarea>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>3. Context</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The context provides background information or the situation for the prompt.<br>
+                                  <strong>Why is it important?</strong> Good context ensures the output is relevant and fits the intended use case.<br>
+                                  <strong>Business Example:</strong> "This summary will be shared with the executive team after each meeting."<br>
+                                  <strong>Technical Example:</strong> "This script will be used by developers to automate database backups."
+                                </div>
+                                <div class="edit-fields">
+                                    <label for="context" class="visually-hidden">Context</label>
+                                    <textarea id="context" placeholder="e.g., This summary will be shared with the executive team after each meeting" aria-required="true"></textarea>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>4. Input</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> Inputs are the information the user must provide for the prompt to work.<br>
+                                  <strong>Why is it important?</strong> Listing inputs ensures nothing is missed and the output is accurate.<br>
+                                  <strong>Business Example:</strong> "Meeting notes, list of attendees, action items."<br>
+                                  <strong>Technical Example:</strong> "API endpoint URL, request parameters, authentication token."
+                                </div>
+                                <div class="edit-fields">
+                                    <div id="inputs-container"></div>
+                                    <button type="button" id="add-input" class="add-btn">
+                                      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
+                                      Add Input Field
+                                    </button>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>5. Constraints</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> Constraints are rules or requirements the output must follow.<br>
+                                  <strong>Why is it important?</strong> Constraints help ensure the results meet business standards or technical requirements.<br>
+                                  <strong>Business Example:</strong> "Keep the summary under 200 words. Avoid technical jargon."<br>
+                                  <strong>Technical Example:</strong> "Response time must be under 2 seconds. Use only GET and POST methods."
+                                </div>
+                                <div class="edit-fields">
+                                    <div id="constraints-container"></div>
+                                    <button type="button" id="add-constraint" class="add-btn">
+                                      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
+                                      Add Constraint
+                                    </button>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>6. Output</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> The output describes what the result should look like.<br>
+                                  <strong>Why is it important?</strong> Defining the output helps you get exactly what you need, in the right format.<br>
+                                  <strong>Business Example:</strong> "A short summary with key decisions and next steps."<br>
+                                  <strong>Technical Example:</strong> "A JSON object with user data and status code."
+                                </div>
+                                <div class="edit-fields">
+                                    <div id="outputs-container"></div>
+                                    <button type="button" id="add-output" class="add-btn">
+                                      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
+                                      Add Output Property
+                                    </button>
+                                </div>
+                            </details>
+                            <details>
+                                <summary>7. Success</summary>
+                                <div class="section-hint">
+                                  <strong>What is this?</strong> Success criteria define how you know the output is good.<br>
+                                  <strong>Why is it important?</strong> Clear success criteria make it easy to check if the results meet your needs.<br>
+                                  <strong>Business Example:</strong> "The summary is clear, easy to read, and covers all important points."<br>
+                                  <strong>Technical Example:</strong> "All unit tests pass and the API returns the expected response."
+                                </div>
+                                <div class="edit-fields">
+                                    <div id="success-container"></div>
+                                    <button type="button" id="add-success" class="add-btn">
+                                      <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
+                                      Add Success Criterion
+                                    </button>
+                                </div>
+                            </details>
+                        </div>
+                        <div class="edit-footer">
+                            <div class="edit-btn-group">
+                                <button type="button" id="cancel-edit" class="btn btn-secondary" aria-label="Cancel">Cancel</button>
+                                <button type="button" id="delete-prompt" class="btn btn-danger" aria-label="Delete">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        <!-- Modal for copy confirmation -->
+        <div id="copy-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
+                <h2>Prompt Copied!</h2>
+                <p>The generated prompt has been copied to your clipboard.<br>Go to your AI tool and paste the prompt to use it.</p>
+                <button id="close-copy-modal" class="btn btn-primary" style="margin-top:1rem;">OK</button>
+            </div>
+        </div>
+        <!-- Modal for delete confirmation -->
+        <div id="delete-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+            <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
+                <h2>Delete Prompt?</h2>
+                <p>This action cannot be undone. Are you sure you want to delete this prompt?</p>
+                <div style="margin-top:1.5rem; display:flex; gap:1rem; justify-content:center;">
+                    <button id="confirm-delete-prompt" class="btn btn-primary" style="background:#ef4444; color:#fff;">Delete</button>
+                    <button id="cancel-delete-prompt" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    window.addEventListener('beforeunload', function (e) {
+        if (window.promptUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+</script>
+<script>
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+window.escapeHtml = escapeHtml;
+</script>
+<script>
+/**
+ * @fileoverview Prompts Editor
+ * @suppress {checkTypes}
+ */
+
+
+/**
+ * Loads a prompt into the edit form.
+ * @param {number} id - The prompt id to edit.
+ */
+function editPrompt(id) {
+    const prompt = prompts.find(p => p.id === id);
+    if (!prompt) {
+        console.error('Prompt not found for editing:', id);
+        return;
+    }
+
+    window.currentPromptId = id;
+
+    // Clear the form first
+    document.getElementById('inputs-container').innerHTML = '';
+    document.getElementById('constraints-container').innerHTML = '';
+    document.getElementById('outputs-container').innerHTML = '';
+    document.getElementById('success-container').innerHTML = '';
+
+    window.inputCounter = 0;
+    window.constraintCounter = 0;
+    window.outputCounter = 0;
+    window.successCounter = 0;
+
+    // Load the prompt data into edit form
+    document.getElementById('prompt-name').value = prompt.name;
+    var descElem = document.getElementById('prompt-desc');
+    descElem.value = prompt.description;
+    // Change to textarea if not already
+    if (descElem.tagName.toLowerCase() !== 'textarea') {
+        var newElem = document.createElement('textarea');
+        newElem.id = 'prompt-desc';
+        newElem.placeholder = descElem.placeholder;
+        newElem.setAttribute('aria-required', 'true');
+        newElem.value = descElem.value;
+        newElem.setAttribute('rows', '3');
+        newElem.style.width = '100%';
+        newElem.style.boxSizing = 'border-box';
+        newElem.style.display = 'block';
+        newElem.style.margin = '0';
+        newElem.style.textAlign = 'left';
+        descElem.parentNode.replaceChild(newElem, descElem);
+        descElem = newElem;
+    } else {
+        descElem.className = '';
+        descElem.removeAttribute('style');
+        descElem.setAttribute('rows', '3');
+        descElem.style.width = '100%';
+        descElem.style.boxSizing = 'border-box';
+        descElem.style.display = 'block';
+        descElem.style.margin = '0';
+        descElem.style.textAlign = 'left';
+    }
+    document.getElementById('objective').value = prompt.objective;
+    document.getElementById('actor').value = prompt.actor;
+    document.getElementById('context').value = prompt.context;
+
+    // Clear outputs container before loading
+    document.getElementById('outputs-container').innerHTML = '';
+    window.outputCounter = 0;
+
+    // Load only this prompt's data
+    prompt.inputs.forEach(i => addInput(i.name, i.description));
+    prompt.constraints.forEach(c => addConstraint(c));
+    prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description));
+    prompt.success.forEach(s => addSuccess(s));
+
+    window.showEdit();
+    window.setTabActive('Edit');
+}
+window.editPrompt = editPrompt;
+
+// =========================
+// Dynamic Field Management
+// =========================
+/**
+ * Adds a new input field to the edit form.
+ * @param {string} [name=''] - Field name.
+ * @param {string} [description=''] - Field description.
+ */
+window.addInput = function (name = '', description = '') {
+    window.inputCounter++;
+    const container = document.getElementById('inputs-container');
+    const id = window.inputCounter;
+    const div = document.createElement('div');
+    div.className = 'edit-card input-item';
+    div.id = `input-item-${id}`;
+    div.draggable = true;
+
+    // Card content
+    const content = document.createElement('div');
+    content.className = 'edit-card-content';
+    content.style.flexDirection = 'column';
+    content.style.gap = '6px';
+
+    // Name label and input
+    const nameLabel = document.createElement('label');
+    nameLabel.setAttribute('for', `input-name-${id}`);
+    nameLabel.textContent = 'Field Name';
+    nameLabel.className = 'edit-card-label';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.id = `input-name-${id}`;
+    nameInput.placeholder = 'Input name';
+    nameInput.value = name;
+    nameInput.setAttribute('aria-label', 'Input name');
+    nameInput.addEventListener('input', regenerateOutput);
+    content.appendChild(nameLabel);
+    content.appendChild(nameInput);
+
+    // Description label and textarea
+    const descLabel = document.createElement('label');
+    descLabel.setAttribute('for', `input-desc-${id}`);
+    descLabel.textContent = 'Description';
+    descLabel.className = 'edit-card-label';
+    const descInput = document.createElement('textarea');
+    descInput.id = `input-desc-${id}`;
+    descInput.placeholder = 'Description (optional)';
+    descInput.value = description;
+    descInput.setAttribute('aria-label', 'Input description');
+    descInput.addEventListener('input', regenerateOutput);
+    descInput.className = 'large-textarea';
+    content.appendChild(descLabel);
+    content.appendChild(descInput);
+
+    div.appendChild(content);
+
+    // Trashcan delete button
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'delete-btn';
+    removeBtn.setAttribute('aria-label', 'Delete input');
+    removeBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>`;
+    removeBtn.onclick = () => removeElement(div.id);
+    div.appendChild(removeBtn);
+
+    container.appendChild(div);
+    window.makeInputsSortable();
+};
+
+/**
+ * Adds a new constraint field.
+ * @param {string} [text=''] - Constraint text.
+ */
+window.addConstraint = function(text = '') {
+    window.constraintCounter++;
+    const container = document.getElementById('constraints-container');
+    const id = window.constraintCounter;
+    const div = document.createElement('div');
+    div.className = 'edit-card constraint-item';
+    div.id = `constraint-item-${id}`;
+    div.style.alignItems = 'center';
+
+    // Remove label for constraint
+    // const label = document.createElement('label');
+    // label.setAttribute('for', `constraint-text-${id}`);
+    // label.textContent = 'Constraint';
+    // label.className = 'edit-card-label';
+    // label.style.marginRight = '8px';
+    // div.appendChild(label);
+
+    const textarea = document.createElement('textarea');
+    textarea.id = `constraint-text-${id}`;
+    textarea.placeholder = 'Constraint';
+    textarea.value = text;
+    textarea.setAttribute('aria-label', 'Constraint');
+    textarea.style.minHeight = '140px';
+    textarea.style.maxHeight = '320px';
+    textarea.style.fontSize = '1.12em';
+    textarea.style.padding = '16px 14px';
+    textarea.addEventListener('input', regenerateOutput);
+    div.appendChild(textarea);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'delete-btn';
+    removeBtn.setAttribute('aria-label', 'Delete constraint');
+    removeBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>`;
+    removeBtn.onclick = () => removeElement(div.id);
+    div.appendChild(removeBtn);
+
+    container.appendChild(div);
+};
+
+/**
+ * Adds a new output field.
+ * @param {string} [name=''] - Output name.
+ * @param {string} [type='string'] - Output type.
+ * @param {string} [description=''] - Output description.
+ */
+window.addOutput = function (name = '', type = 'string', description = '') {
+    window.outputCounter++;
+    const container = document.getElementById('outputs-container');
+    const id = window.outputCounter;
+    const div = document.createElement('div');
+    div.className = 'edit-card output-item';
+    div.id = `output-item-${id}`;
+    div.draggable = true;
+
+    const content = document.createElement('div');
+    content.className = 'edit-card-content';
+    content.style.flexDirection = 'column';
+    content.style.gap = '6px';
+
+    // Name label and input
+    const nameLabel = document.createElement('label');
+    nameLabel.setAttribute('for', `output-name-${id}`);
+    nameLabel.textContent = 'Property Name';
+    nameLabel.className = 'edit-card-label';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.id = `output-name-${id}`;
+    nameInput.placeholder = 'Output name';
+    nameInput.value = name;
+    nameInput.setAttribute('aria-label', 'Output name');
+    nameInput.addEventListener('input', regenerateOutput);
+    content.appendChild(nameLabel);
+    content.appendChild(nameInput);
+
+    // Type label and input
+    const typeLabel = document.createElement('label');
+    typeLabel.setAttribute('for', `output-type-${id}`);
+    typeLabel.textContent = 'Type';
+    typeLabel.className = 'edit-card-label';
+    const typeInput = document.createElement('input');
+    typeInput.type = 'text';
+    typeInput.id = `output-type-${id}`;
+    typeInput.placeholder = 'Type (e.g. string)';
+    typeInput.value = type;
+    typeInput.setAttribute('aria-label', 'Output type');
+    typeInput.addEventListener('input', regenerateOutput);
+    content.appendChild(typeLabel);
+    content.appendChild(typeInput);
+
+    // Description label and textarea
+    const descLabel = document.createElement('label');
+    descLabel.setAttribute('for', `output-desc-${id}`);
+    descLabel.textContent = 'Example / Description';
+    descLabel.className = 'edit-card-label';
+    const descInput = document.createElement('textarea');
+    descInput.id = `output-desc-${id}`;
+    descInput.placeholder = 'Description (optional)';
+    descInput.value = description;
+    descInput.setAttribute('aria-label', 'Output description');
+    descInput.addEventListener('input', regenerateOutput);
+    descInput.className = 'large-textarea';
+    content.appendChild(descLabel);
+    content.appendChild(descInput);
+
+    div.appendChild(content);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'delete-btn';
+    removeBtn.setAttribute('aria-label', 'Delete output');
+    removeBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>`;
+    removeBtn.onclick = () => removeElement(div.id);
+    div.appendChild(removeBtn);
+
+    container.appendChild(div);
+    window.makeOutputsSortable();
+};
+
+/**
+ * Adds a new success criterion field.
+ * @param {string} [text=''] - Success criterion.
+ */
+window.addSuccess = function(text = '') {
+    window.successCounter++;
+    const container = document.getElementById('success-container');
+    const id = window.successCounter;
+    const div = document.createElement('div');
+    div.className = 'edit-card success-item';
+    div.id = `success-item-${id}`;
+    div.style.alignItems = 'center';
+
+    // Remove label for success
+    // const label = document.createElement('label');
+    // label.setAttribute('for', `success-text-${id}`);
+    // label.textContent = 'Success Criterion';
+    // label.className = 'edit-card-label';
+    // label.style.marginRight = '8px';
+    // div.appendChild(label);
+
+    const textarea = document.createElement('textarea');
+    textarea.id = `success-text-${id}`;
+    textarea.placeholder = 'Success criterion';
+    textarea.value = text;
+    textarea.setAttribute('aria-label', 'Success criterion');
+    textarea.style.minHeight = '140px';
+    textarea.style.maxHeight = '320px';
+    textarea.style.fontSize = '1.12em';
+    textarea.style.padding = '16px 14px';
+    textarea.addEventListener('input', regenerateOutput);
+    div.appendChild(textarea);
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'delete-btn';
+    removeBtn.setAttribute('aria-label', 'Delete success criterion');
+    removeBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>`;
+    removeBtn.onclick = () => removeElement(div.id);
+    div.appendChild(removeBtn);
+
+    container.appendChild(div);
+};
+
+function renderInputField(id, name = '', desc = '') {
+    return `
+    <div class="edit-card input-item" draggable="true" id="input-item-${id}">
+        <div class="edit-card-content">
+            <input type="text" id="input-name-${id}" placeholder="Input name" value="${name}" aria-label="Input name">
+            <textarea id="input-desc-${id}" placeholder="Description (optional)" aria-label="Input description">${desc}</textarea>
+        </div>
+        <button type="button" class="delete-btn" aria-label="Delete input" onclick="removeElement('input-item-${id}')">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>
+        </button>
+    </div>`;
+}
+
+function renderConstraintField(id, value = '') {
+    return `
+    <div class="edit-card constraint-item" id="constraint-item-${id}">
+        <textarea id="constraint-text-${id}" placeholder="Constraint" aria-label="Constraint">${value}</textarea>
+        <button type="button" class="delete-btn" aria-label="Delete constraint" onclick="removeElement('constraint-item-${id}')">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>
+        </button>
+    </div>`;
+}
+
+function renderOutputField(id, name = '', type = '', desc = '') {
+    return `
+    <div class="edit-card output-item" draggable="true" id="output-item-${id}">
+        <div class="edit-card-content">
+            <input type="text" id="output-name-${id}" placeholder="Output name" value="${name}" aria-label="Output name">
+            <input type="text" id="output-type-${id}" placeholder="Type (e.g. string)" value="${type}" aria-label="Output type">
+            <textarea id="output-desc-${id}" placeholder="Description (optional)" aria-label="Output description">${desc}</textarea>
+        </div>
+        <button type="button" class="delete-btn" aria-label="Delete output" onclick="removeElement('output-item-${id}')">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>
+        </button>
+    </div>`;
+}
+
+function renderSuccessField(id, value = '') {
+    return `
+    <div class="edit-card success-item" id="success-item-${id}">
+        <textarea id="success-text-${id}" placeholder="Success criterion" aria-label="Success criterion">${value}</textarea>
+        <button type="button" class="delete-btn" aria-label="Delete success criterion" onclick="removeElement('success-item-${id}')">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>
+        </button>
+    </div>`;
+}
+
+// Debounce utility
+function debounce(fn, delay) {
+    let timer = null;
+    return function(...args) {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+    };
+}
+
+// Debounced save
+const debouncedSaveCurrentPrompt = debounce(saveCurrentPrompt, 200);
+
+// Remove any local prompts array, always use window.prompts
+// Remove savePrompts usage, always use window.savePromptsToLocalStorage
+// Add a save indicator
+let saveIndicatorTimeout;
+function showSaveIndicator() {
+    let indicator = document.getElementById('save-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'save-indicator';
+        indicator.style.position = 'fixed';
+        indicator.style.bottom = '24px';
+        indicator.style.right = '32px';
+        indicator.style.background = '#2563eb';
+        indicator.style.color = '#fff';
+        indicator.style.padding = '10px 22px';
+        indicator.style.borderRadius = '6px';
+        indicator.style.fontWeight = 'bold';
+        indicator.style.boxShadow = '0 2px 8px rgba(30,41,59,0.12)';
+        indicator.style.zIndex = '9999';
+        document.body.appendChild(indicator);
+    }
+    indicator.textContent = 'All changes saved';
+    indicator.style.opacity = '1';
+    clearTimeout(saveIndicatorTimeout);
+    saveIndicatorTimeout = setTimeout(() => {
+        indicator.style.opacity = '0';
+    }, 1200);
+}
+
+function saveCurrentPrompt() {
+    if (window.currentPromptId == null) return;
+    if (!window.prompts) return;
+    const idx = window.prompts.findIndex(p => p.id === window.currentPromptId);
+    if (idx === -1) return;
+    // Gather values from the form
+    const prompt = window.prompts[idx];
+    prompt.name = document.getElementById('prompt-name').value;
+    prompt.description = document.getElementById('prompt-desc').value;
+    prompt.objective = document.getElementById('objective').value;
+    prompt.actor = document.getElementById('actor').value;
+    prompt.context = document.getElementById('context').value;
+    // Inputs
+    prompt.inputs = [];
+    for (let i = 1; i <= window.inputCounter; i++) {
+        const name = document.getElementById(`input-name-${i}`);
+        const desc = document.getElementById(`input-desc-${i}`);
+        if (name && name.value.trim()) {
+            prompt.inputs.push({ name: name.value, description: desc ? desc.value : '' });
+        }
+    }
+    // Constraints
+    prompt.constraints = [];
+    for (let i = 1; i <= window.constraintCounter; i++) {
+        const text = document.getElementById(`constraint-text-${i}`);
+        if (text && text.value.trim()) {
+            prompt.constraints.push(text.value);
+        }
+    }
+    // Outputs
+    prompt.outputs = [];
+    for (let i = 1; i <= window.outputCounter; i++) {
+        const name = document.getElementById(`output-name-${i}`);
+        const type = document.getElementById(`output-type-${i}`);
+        const desc = document.getElementById(`output-desc-${i}`);
+        if (name && name.value.trim()) {
+            prompt.outputs.push({ name: name.value, type: type ? type.value : '', description: desc ? desc.value : '' });
+        }
+    }
+    // Success
+    prompt.success = [];
+    for (let i = 1; i <= window.successCounter; i++) {
+        const text = document.getElementById(`success-text-${i}`);
+        if (text && text.value.trim()) {
+            prompt.success.push(text.value);
+        }
+    }
+    if (typeof window.savePromptsToLocalStorage === 'function') {
+        window.savePromptsToLocalStorage();
+    }
+    if (typeof window.renderPromptsList === 'function') {
+        window.renderPromptsList();
+    } else if (typeof renderPromptsList === 'function') {
+        renderPromptsList();
+    }
+    if (typeof regenerateOutput === 'function') regenerateOutput();
+    showSaveIndicator();
+}
+
+// Attach debounced save to all input/textarea fields in the edit screen
+function attachFieldListeners() {
+    const editScreen = document.getElementById('edit-screen');
+    if (!editScreen) return;
+    // Attach to all input and textarea fields
+    const fields = editScreen.querySelectorAll('input, textarea');
+    fields.forEach(field => {
+        // Remove previous listener if any
+        field.removeEventListener('input', field._debouncedSaveListenerReal || (() => {}));
+        // Attach new debounced save
+        field._debouncedSaveListenerReal = function(e) {
+            debouncedSaveCurrentPrompt();
+        };
+        field.addEventListener('input', field._debouncedSaveListenerReal);
+    });
+}
+
+// Patch dynamic field adders to call attachFieldListeners after adding
+const _origAddInput = window.addInput;
+window.addInput = function(...args) {
+    _origAddInput.apply(this, args);
+    attachFieldListeners();
+};
+const _origAddConstraint = window.addConstraint;
+window.addConstraint = function(...args) {
+    _origAddConstraint.apply(this, args);
+    attachFieldListeners();
+};
+const _origAddOutput = window.addOutput;
+window.addOutput = function(...args) {
+    _origAddOutput.apply(this, args);
+    attachFieldListeners();
+};
+const _origAddSuccess = window.addSuccess;
+window.addSuccess = function(...args) {
+    _origAddSuccess.apply(this, args);
+    attachFieldListeners();
+};
+
+// Call attachFieldListeners after loading a prompt for editing
+const _origEditPrompt = window.editPrompt;
+window.editPrompt = function(...args) {
+    _origEditPrompt.apply(this, args);
+    setTimeout(attachFieldListeners, 0); // Ensure DOM is updated before attaching
+};
+
+// Remove the global editScreen input/change listener from attachAutoSave
+function attachAutoSave() {
+    // No-op: now handled by attachFieldListeners
+}
+
+// Call attachAutoSave when edit screen is shown
+window.showEdit = function() {
+    document.getElementById('edit-screen').style.display = '';
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('tab-edit').classList.add('active');
+    document.getElementById('tab-view').classList.remove('active');
+    attachAutoSave();
+};
+
+</script>
+<script>
+function loadPromptsFromLocalStorage() {
+
+    try {
+        const data = localStorage.getItem('prompts');
+        if (data) {
+            const parsed = JSON.parse(data);
+            if (Array.isArray(parsed)) {
+                prompts = parsed;
+            }
+        }
+    } catch (e) {
+        console.warn('Failed to load prompts from localStorage:', e);
+    }
+}
+
+function savePromptsToLocalStorage() {
+    try {
+        localStorage.setItem('prompts', JSON.stringify(prompts));
+    } catch (e) {
+        console.warn('Failed to save prompts to localStorage:', e);
+    }
+}
+
+function resetPrompts() {
+    if (confirm('This will erase all your current prompts and restore the default set. Continue?')) {
+        localStorage.removeItem('prompts');
+        location.reload();
+    }
+}
+
+window.storageManager = { loadPromptsFromLocalStorage, savePromptsToLocalStorage, resetPrompts};
+</script>
+<script>
+window.preloadedPrompts = [
+    {
+        "id": 1770133620570,
+        "name": "Jira Story and Acceptance Criteria Generator",
+        "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
+        "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
+        "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
+        "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+        "inputs": [
+            {
+                "name": "Jira Text",
+                "description": "A freeform block of text copied from a Jira ticket or description field."
+            }
+        ],
+        "constraints": [
+            "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
+            "Keep language clear and concise.",
+            "Preserve meaning and context from the Jira text without adding assumptions."
+        ],
+        "outputs": [
+            {
+                "name": "User Story",
+                "type": "markdown",
+                "example": "```Markdown format"
+            },
+            {
+                "name": "Acceptance Criteria",
+                "type": "markdown",
+                "example": "```Markdown Gherkin format."
+            },
+            {
+                "name": "Estimated Storypoints",
+                "type": "String",
+                "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+            },
+            {
+                "name": "Story point description",
+                "type": "string",
+                "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+            }
+        ],
+        "success": [
+            "The user story accurately reflects the intent of the Jira input.",
+            "Acceptance criteria are testable, unambiguous, and aligned with the story.",
+            "Output is cleanly formatted and ready to paste into Jira or documentation.",
+            "Questions needed to reduce uncertainty are asked in the story point description",
+            "Estimated story points should be exceptionally larger based on uncertainty or complexity."
+        ]
+    },
+    {
+        "id": 1769809000002,
+        "name": "Prompt Builder",
+        "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
+        "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
+        "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
+        "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
+        "inputs": [
+            {
+                "name": "Prompt Idea",
+                "description": "A single freeform description of the kind of prompt the user wants to build, including what it should do and for whom."
+            }
+        ],
+        "constraints": [
+            "Use clear, concise language for every field.",
+            "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
+            "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
+            "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+            "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after."
+        ],
+        "outputs": [
+            {
+                "name": "Field Suggestions",
+                "type": "JSON",
+                "example": "{\n  \"id\": 0,\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
+            }
+        ],
+        "success": [
+            "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success, and no additional wrapper properties.",
+            "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
+            "All suggested content reflects the user's described prompt idea and is specific, not generic."
+        ]
+    }
+];
+
+</script>
+<script>
+// main/js/newApp.js
+
+/**
+ * Prompt Management App
+ * Handles CRUD, UI, drag-and-drop, import/export, and modal logic for prompts.
+ */
+
+// =========================
+// State Variables
+// =========================
+let prompts = [...window.preloadedPrompts];
+
+let currentPromptId = null;
+let isCreatingNewPrompt = false;
+let inputCounter = 0;
+let constraintCounter = 0;
+let outputCounter = 0;
+let successCounter = 0;
+
+// Ensure these are initialized on window for global access
+window.prompts = prompts;
+window.currentPromptId = currentPromptId;
+window.inputCounter = inputCounter;
+window.constraintCounter = constraintCounter;
+window.outputCounter = outputCounter;
+window.successCounter = successCounter;
+
+// =========================
+// Initialization
+// =========================
+/**
+ * Initializes the application, sets up event listeners, and renders the initial UI.
+ */
+function initApp() {
+    setTabBarVisible(false);
+    setupCollapsibleSection();
+    init();
+    setupTabListeners();
+}
+
+/**
+ * Sets up the collapsible section for prompt toggling.
+ */
+function setupCollapsibleSection() {
+    const btn = document.getElementById('togglePrompt');
+    const section = document.getElementById('myCollapsibleSection');
+    if (btn && section) {
+        btn.addEventListener('click', () => {
+            const isOpen = section.classList.toggle('show');
+            btn.setAttribute('aria-expanded', isOpen);
+        });
+    }
+}
+
+/**
+ * Loads prompts, renders the list, and shows the first prompt or welcome screen.
+ */
+function init() {
+    window.loadPromptsFromLocalStorage();
+    renderPromptsList();
+    if (prompts.length > 0) {
+        viewPrompt(prompts[0].id);
+    } else {
+        showWelcome();
+    }
+}
+
+// =========================
+// Prompt CRUD
+// =========================
+/**
+ * Creates a new prompt and switches to edit mode.
+ */
+window.newPrompt = function () {
+    // Create a new prompt object with a unique id and empty fields
+    const newId = Date.now();
+    const newPrompt = {
+        id: newId,
+        name: '',
+        description: '',
+        objective: '',
+        actor: '',
+        context: '',
+        inputs: [],
+        constraints: [],
+        outputs: [],
+        success: []
+    };
+    prompts.push(newPrompt);
+    window.savePromptsToLocalStorage();
+    currentPromptId = newId;
+    isCreatingNewPrompt = false;
+    editPrompt(newId);
+    setTabActive('Edit');
+    setTabBarVisible(true);
+    renderPromptsList();
+};
+
+/**
+ * Deletes a prompt by id after confirmation.
+ * @param {number} id - The prompt id to delete.
+ */
+function deletePrompt(id) {
+    if (!confirm('Delete this prompt?')) return;
+    prompts = prompts.filter(p => p.id !== id);
+    window.savePromptsToLocalStorage();
+    renderPromptsList();
+
+    // If we're viewing the deleted prompt, go back to welcome
+    if (currentPromptId === id) {
+        currentPromptId = null;
+        showWelcome();
+    }
+}
+
+/**
+ * Saves the current prompt from the edit form.
+ */
+function savePrompt() {
+    const name = document.getElementById('prompt-name').value.trim();
+    const description = document.getElementById('prompt-desc').value.trim();
+
+    const inputs = [];
+    document.querySelectorAll('[id^="input-name-"]').forEach((el, i) => {
+        const name = el.value.trim();
+        const desc = document.getElementById(`input-desc-${el.id.split('-')[2]}`).value.trim();
+        if (name) {
+            inputs.push({ name, description: desc });
+        }
+    });
+
+    const constraints = [];
+    document.querySelectorAll('[id^="constraint-text-"]').forEach(el => {
+        if (el.value.trim()) {
+            constraints.push(el.value.trim());
+        }
+    });
+
+    const outputs = [];
+    document.querySelectorAll('[id^="output-name-"]').forEach((el, i) => {
+        const name = el.value.trim();
+        const type = document.getElementById(`output-type-${el.id.split('-')[2]}`).value.trim();
+        const desc = document.getElementById(`output-desc-${el.id.split('-')[2]}`).value.trim();
+        if (name) {
+            outputs.push({ name, type: type || 'string', description: desc });
+        }
+    });
+
+    const success = [];
+    document.querySelectorAll('[id^="success-text-"]').forEach(el => {
+        if (el.value.trim()) {
+            success.push(el.value.trim());
+        }
+    });
+
+    const promptData = {
+        id: currentPromptId || Date.now(),
+        name,
+        description,
+        objective: document.getElementById('objective').value,
+        actor: document.getElementById('actor').value,
+        context: document.getElementById('context').value,
+        inputs,
+        constraints,
+        outputs,
+        success
+    };
+
+    if (currentPromptId) {
+        const index = prompts.findIndex(p => p.id === currentPromptId);
+        prompts[index] = promptData;
+    } else {
+        prompts.push(promptData);
+        currentPromptId = promptData.id;
+    }
+    isCreatingNewPrompt = false;
+    window.savePromptsToLocalStorage();
+    renderPromptsList();
+    // alert('Prompt saved successfully!');
+
+    // // Switch to view mode after saving
+    // viewPrompt(currentPromptId);
+}
+window.savePrompt = savePrompt;
+
+// =========================
+// UI Rendering
+// =========================
+/**
+ * Renders the list of prompts in the sidebar.
+ */
+function renderPromptsList() {
+    const container = document.getElementById('prompts-list');
+    if (prompts.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <h3>No Prompts Yet</h3>
+                <p>Create your first prompt to get started</p>
+            </div>
+        `;
+        return;
+    }
+    container.innerHTML = prompts.map((p, idx) => `
+        <div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
+            ${window.escapeHtml(p.name)}
+        </div>
+    `).join('');
+    // Add event listeners for tile selection
+    container.querySelectorAll('.prompt-tile').forEach(item => {
+        const id = parseInt(item.getAttribute('data-id'));
+        item.addEventListener('click', () => {
+            viewPrompt(id);
+        });
+    });
+    // Drag-and-drop reordering
+    let draggedIdx = null;
+    container.querySelectorAll('.prompt-tile').forEach(item => {
+        item.addEventListener('dragstart', e => {
+            draggedIdx = parseInt(item.getAttribute('data-index'));
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging');
+            draggedIdx = null;
+        });
+        item.addEventListener('dragover', e => {
+            e.preventDefault();
+            item.classList.add('drag-over');
+        });
+        item.addEventListener('dragleave', () => {
+            item.classList.remove('drag-over');
+        });
+        item.addEventListener('drop', e => {
+            e.preventDefault();
+            item.classList.remove('drag-over');
+            const targetIdx = parseInt(item.getAttribute('data-index'));
+            if (draggedIdx !== null && draggedIdx !== targetIdx) {
+                const moved = prompts.splice(draggedIdx, 1)[0];
+                prompts.splice(targetIdx, 0, moved);
+                window.savePromptsToLocalStorage();
+                renderPromptsList();
+            }
+        });
+    });
+}
+
+// Make renderPromptsList globally accessible for auto-save
+window.renderPromptsList = renderPromptsList;
+
+/**
+ * Clears the edit form fields and containers.
+ */
+function clearForm() {
+    // Clear all fields
+    document.getElementById('prompt-name').value = '';
+    document.getElementById('prompt-desc').value = '';
+    document.getElementById('objective').value = '';
+    document.getElementById('actor').value = '';
+    document.getElementById('context').value = '';
+
+    // Clear all dynamic containers
+    document.getElementById('inputs-container').innerHTML = '';
+    document.getElementById('constraints-container').innerHTML = '';
+    document.getElementById('outputs-container').innerHTML = '';
+    document.getElementById('success-container').innerHTML = '';
+
+    // Reset counters
+    inputCounter = 0;
+    constraintCounter = 0;
+    outputCounter = 0;
+    successCounter = 0;
+}
+
+/**
+ * Shows the prompt in view mode.
+ * @param {number} id - The prompt id to view.
+ */
+function viewPrompt(id) {
+    const prompt = prompts.find(p => p.id === id);
+    if (!prompt) return;
+
+    currentPromptId = id;
+    showView();
+    setTabActive('View');
+
+    // Switch tab to View Prompt
+    const tabs = document.querySelectorAll('#tabs button');
+    tabs.forEach(btn => {
+        if (btn.textContent.includes('View')) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    document.getElementById('view-name').textContent = prompt.name;
+    document.getElementById('view-desc').textContent = prompt.description;
+    // Add meta info (objective, actor, context)
+    const meta = [];
+    if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
+    if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
+    if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
+    document.getElementById('view-meta').innerHTML = meta.join('');
+
+    const inputsContainer = document.getElementById('view-inputs');
+    if (prompt.inputs.length === 0) {
+        inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
+    } else {
+        inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
+            <div style="margin-bottom: 1rem;">
+                <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                  <textarea
+                    id="input-value-${idx}"
+                    class="view-textarea"
+                    rows="6"
+                    placeholder="${window.escapeHtml(i.description)}"
+                    oninput="generateViewPrompt()"
+                ></textarea>
+            </div>
+        `).join('');
+    }
+
+    generateViewPrompt();
+    renderPromptsList();
+}
+
+
+
+/**
+ * Removes a dynamic field by id.
+ * @param {string} id - Element id to remove.
+ */
+function removeElement(id) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.remove();
+        regenerateOutput();
+    }
+}
+
+// =========================
+// Drag-and-Drop Sorting
+// =========================
+/**
+ * Makes input fields sortable via drag-and-drop.
+ */
+function makeInputsSortable() {
+    const container = document.getElementById('inputs-container');
+    let dragged = null;
+
+    container.querySelectorAll('.input-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+            dragged = item;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        item.addEventListener('dragend', () => {
+            if (dragged) {
+                dragged.classList.remove('dragging');
+                dragged = null;
+                regenerateOutput(); // update JSON order
+            }
+        });
+
+        item.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (!dragged || dragged === item) return;
+
+            const rect = item.getBoundingClientRect();
+            const before = e.clientY < rect.top + rect.height / 2;
+            if (before) {
+                container.insertBefore(dragged, item);
+            } else {
+                container.insertBefore(dragged, item.nextSibling);
+            }
+        });
+    });
+}
+
+window.makeInputsSortable = makeOutputsSortable;
+
+/**
+ * Makes output fields sortable via drag-and-drop.
+ */
+function makeOutputsSortable() {
+    const container = document.getElementById('outputs-container');
+    let dragged = null;
+
+    container.querySelectorAll('.output-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+            dragged = item;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+        });
+
+        item.addEventListener('dragend', () => {
+            if (dragged) {
+                dragged.classList.remove('dragging');
+                dragged = null;
+                regenerateOutput(); // update JSON order
+            }
+        });
+
+        item.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (!dragged || dragged === item) return;
+
+            const rect = item.getBoundingClientRect();
+            const before = e.clientY < rect.top + rect.height / 2;
+            if (before) {
+                container.insertBefore(dragged, item);
+            } else {
+                container.insertBefore(dragged, item.nextSibling);
+            }
+        });
+    });
+}
+
+// =========================
+// Prompt Output Generation
+// =========================
+/**
+ * Generates the prompt JSON for the view screen.
+ */
+function generateViewPrompt() {
+    const prompt = prompts.find(p => p.id === currentPromptId);
+    if (!prompt) return;
+
+    const inputs = {};
+    prompt.inputs.forEach((i, idx) => {
+        const inputField = document.getElementById(`input-value-${idx}`);
+        inputs[i.name] = inputField ? inputField.value : '';
+    });
+
+    const outputProperties = {};
+    const requiredFields = [];
+
+    prompt.outputs.forEach(o => {
+        outputProperties[o.name] = {
+            type: o.type,
+            description: o.description || undefined
+        };
+        requiredFields.push(o.name);
+    });
+
+    const promptJson = {};
+
+    if (prompt.objective) promptJson.objective = prompt.objective;
+    if (prompt.actor) promptJson.actor = prompt.actor;
+    if (prompt.context) promptJson.context = prompt.context;
+    if (Object.keys(inputs).length > 0) promptJson.input = inputs;
+    if (prompt.constraints.length > 0) promptJson.constraints = prompt.constraints;
+
+    promptJson.output_schema = {
+        type: 'object',
+        properties: outputProperties,
+        required: requiredFields
+    };
+
+    if (prompt.success.length > 0) promptJson.success_criteria = prompt.success;
+    const outputExample = Object.keys(outputProperties).join(', ');
+    if (outputExample) {
+        promptJson.output_instructions = `Return only the output exactly as specified by the properties: ${outputExample}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`;
+    } else {
+        promptJson.output_instructions = 'Return only the output exactly as specified by the defined properties. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array';
+    }
+
+    document.getElementById('view-output-json').textContent = JSON.stringify(promptJson, null, 2);
+}
+
+/**
+ * Regenerates the output JSON in the edit screen.
+ */
+window.regenerateOutput = function () {
+    // Check if we're in edit screen
+    const editScreen = document.getElementById('edit-screen');
+    if (!editScreen.classList.contains('active')) {
+        return;
+    }
+
+    const objective = document.getElementById('objective').value;
+    const actor = document.getElementById('actor').value;
+    const context = document.getElementById('context').value;
+
+    const inputs = {};
+    document.querySelectorAll('[id^="input-name-"]').forEach(el => {
+        const name = el.value.trim();
+        const desc = document.getElementById(`input-desc-${el.id.split('-')[2]}`).value.trim();
+        if (name) {
+            inputs[name] = desc || '';
+        }
+    });
+
+    const constraints = [];
+    document.querySelectorAll('[id^="constraint-text-"]').forEach(el => {
+        if (el.value.trim()) constraints.push(el.value.trim());
+    });
+
+    const success = [];
+    document.querySelectorAll('[id^="success-text-"]').forEach(el => {
+        if (el.value.trim()) success.push(el.value.trim());
+    });
+
+    const outputs = {};
+    const requiredFields = [];
+    document.querySelectorAll('[id^="output-name-"]').forEach(el => {
+        const name = el.value.trim();
+        const type = document.getElementById(`output-type-${el.id.split('-')[2]}`).value.trim();
+        const desc = document.getElementById(`output-desc-${el.id.split('-')[2]}`).value.trim();
+        if (name) {
+            outputs[name] = {
+                type: type || 'string',
+                description: desc || undefined
+            };
+            requiredFields.push(name);
+        }
+    });
+
+    const prompt = {};
+
+    if (objective) prompt.objective = objective;
+    if (actor) prompt.actor = actor;
+    if (context) prompt.context = context;
+    if (Object.keys(inputs).length > 0) prompt.input = inputs;
+    if (constraints.length > 0) prompt.constraints = constraints;
+
+    prompt.output_schema = {
+        type: 'object',
+        properties: outputs,
+        required: requiredFields
+    };
+
+    if (success.length > 0) prompt.success_criteria = success;
+    const outputExample = Object.keys(outputs).join(', '); // e.g. "USER STORY, ACCEPTANCE CRITERIA, DESCRIPTION"
+
+    prompt.output_instructions = `Return only the output exactly as specified by the properties: ${outputExample}. Do not include any extra prose, comments, or code fences.`;
+
+    const outputElement = document.getElementById('generated-output');
+    if (outputElement) {
+        outputElement.textContent = JSON.stringify(prompt, null, 2);
+    }
+    if (document.getElementById('view-screen').classList.contains('active')) {
+        generateViewPrompt();
+    }
+    savePrompt();
+};
+
+// =========================
+// Tab and Screen Management
+// =========================
+/**
+ * Sets the active tab by name.
+ * @param {string|null} tabName - Tab name to activate.
+ */
+function setTabActive(tabName) {
+    const tabs = document.querySelectorAll('#tabs button');
+    tabs.forEach(btn => {
+        if (tabName && btn.textContent.includes(tabName)) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+}
+
+window.setTabActive = setTabActive;
+
+/**
+ * Shows or hides the tab bar.
+ * @param {boolean} visible - Whether to show the tab bar.
+ */
+function setTabBarVisible(visible) {
+    // No longer needed: tab bar is always visible in new layout
+}
+
+/**
+ * Shows the welcome screen.
+ */
+function showWelcome() {
+    document.getElementById('tab-edit').classList.remove('active');
+    document.getElementById('tab-view').classList.remove('active');
+    document.getElementById('welcome-screen').classList.add('active');
+    document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('edit-screen').classList.remove('active');
+}
+
+/**
+ * Shows the view screen.
+ */
+function showView() {
+    document.getElementById('tab-view').classList.add('active');
+    document.getElementById('tab-edit').classList.remove('active');
+    document.getElementById('view-screen').classList.add('active');
+    document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('welcome-screen').classList.remove('active');
+}
+
+/**
+ * Shows the edit screen.
+ */
+function showEdit() {
+    document.getElementById('tab-edit').classList.add('active');
+    document.getElementById('tab-view').classList.remove('active');
+    document.getElementById('edit-screen').classList.add('active');
+    document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('welcome-screen').classList.remove('active');
+}
+window.showEdit = showEdit;
+window.showView = showView;
+
+/**
+ * Cancels editing and returns to the previous screen.
+ */
+window.cancelEdit = function() {
+    if (currentPromptId) {
+        isCreatingNewPrompt = false;
+        viewPrompt(currentPromptId);
+        setTabActive('View');
+    } else {
+        isCreatingNewPrompt = false;
+        showWelcome();
+        setTabActive(null);
+    }
+};
+
+// =========================
+// Import/Export
+// =========================
+/**
+ * Exports all prompts as a JSON file.
+ */
+window.exportPrompts = function() {
+    if (prompts.length === 0) {
+        alert('No prompts to export');
+        return;
+    }
+
+    const dataStr = JSON.stringify(prompts, null, 2);
+
+    // Try normal download first
+    try {
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `prompts-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Show fallback option
+        setTimeout(() => {
+            if (confirm('Download started. If the file did not download, click OK to see the data to copy manually.')) {
+                showExportModal(dataStr);
+            }
+        }, 1000);
+    } catch (err) {
+        // Fallback: show in modal
+        showExportModal(dataStr);
+    }
+};
+
+/**
+ * Shows the export modal with prompt data.
+ * @param {string} data - JSON string to show.
+ */
+function showExportModal(data) {
+    const modal = document.getElementById('export-modal');
+    const textarea = document.getElementById('export-modal-textarea');
+    textarea.value = data;
+    modal.style.display = 'flex';
+    textarea.select();
+
+    document.getElementById('export-modal-copy').onclick = function() {
+        textarea.select();
+        document.execCommand('copy');
+    };
+    document.getElementById('export-modal-close').onclick = function() {
+        modal.style.display = 'none';
+    };
+    // Optional: close modal when clicking outside
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.style.display = 'none';
+    };
+}
+
+/**
+ * Opens the file input for importing prompts.
+ */
+window.importPrompts = function() {
+    document.getElementById('import-file').click();
+};
+
+/**
+ * Handles importing prompts from a file.
+ * @param {Event} event - File input change event.
+ */
+function handleImport(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (prompts.length > 0 && !confirm('This will replace all current prompts. Continue?')) {
+        event.target.value = '';
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const loaded = JSON.parse(e.target.result);
+            if (!Array.isArray(loaded)) {
+                alert('Invalid format: Expected array of prompts');
+                return;
+            }
+            prompts = loaded;
+            window.savePromptsToLocalStorage();
+            renderPromptsList();
+            showWelcome();
+            alert(`Imported ${loaded.length} prompt(s) successfully!`);
+        } catch (err) {
+            alert('Error parsing JSON file: ' + err.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = '';
+}
+
+// =========================
+// Modal Logic
+// =========================
+/**
+ * Sets up the new prompt modal and its event handlers.
+ */
+function setupNewPromptModal() {
+    const openBtn = document.getElementById('new-prompt-main');
+    const modal = document.getElementById('new-prompt-modal');
+    const modalContent = document.getElementById('new-prompt-modal-content');
+    const choiceScreen = document.getElementById('new-prompt-choice');
+    const jsonScreen = document.getElementById('new-prompt-json-import');
+    const blankBtn = document.getElementById('start-blank-prompt');
+    const jsonBtn = document.getElementById('start-json-prompt');
+    const cancelBtn = document.getElementById('new-prompt-cancel');
+    const backBtn = document.getElementById('json-import-back');
+    const jsonImportCancel = document.getElementById('json-import-cancel');
+    const uploadBtn = document.getElementById('json-import-upload');
+    const fileInput = document.getElementById('json-import-file');
+    const filenameSpan = document.getElementById('json-import-filename');
+    const textarea = document.getElementById('json-import-textarea');
+    const errorDiv = document.getElementById('json-import-error');
+    const confirmBtn = document.getElementById('json-import-confirm');
+
+    function showModal() {
+        modal.style.display = 'flex';
+        choiceScreen.style.display = 'block';
+        jsonScreen.style.display = 'none';
+        setTimeout(() => blankBtn.focus(), 50);
+    }
+    function closeModal() {
+        modal.style.display = 'none';
+        textarea.value = '';
+        fileInput.value = '';
+        filenameSpan.textContent = '';
+        errorDiv.textContent = '';
+    }
+    openBtn.onclick = function(e) {
+        e.preventDefault();
+        showModal();
+    };
+    cancelBtn.onclick = closeModal;
+    jsonImportCancel.onclick = closeModal;
+    modal.onclick = function(e) {
+        if (e.target === modal) closeModal();
+    };
+    modal.onkeydown = function(e) {
+        if (e.key === 'Escape') closeModal();
+    };
+    blankBtn.onclick = function(e) {
+        e.preventDefault();
+        closeModal();
+        window.newPrompt();
+    };
+    jsonBtn.onclick = function(e) {
+        e.preventDefault();
+        choiceScreen.style.display = 'none';
+        jsonScreen.style.display = 'flex';
+        setTimeout(() => textarea.focus(), 50);
+    };
+    backBtn.onclick = function(e) {
+        e.preventDefault();
+        jsonScreen.style.display = 'none';
+        choiceScreen.style.display = 'block';
+        setTimeout(() => blankBtn.focus(), 50);
+    };
+    uploadBtn.onclick = function() {
+        fileInput.click();
+    };
+    fileInput.onchange = function() {
+        const file = fileInput.files[0];
+        if (!file) return;
+        filenameSpan.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+            textarea.value = ev.target.result;
+        };
+        reader.readAsText(file);
+    };
+    confirmBtn.onclick = function() {
+        let json;
+        try {
+            json = JSON.parse(textarea.value);
+        } catch (err) {
+            errorDiv.textContent = 'Invalid JSON: ' + err.message;
+            return;
+        }
+        let promptObj = null;
+        if (Array.isArray(json)) {
+            if (json.length === 0) {
+                errorDiv.textContent = 'JSON array is empty.';
+                return;
+            }
+            promptObj = json[0];
+        } else {
+            promptObj = json;
+        }
+        if (!promptObj || typeof promptObj !== 'object') {
+            errorDiv.textContent = 'JSON must be a prompt object or array.';
+            return;
+        }
+        const newPrompt = {
+            id: Date.now(),
+            name: promptObj.name || '',
+            description: promptObj.description || '',
+            objective: promptObj.objective || '',
+            actor: promptObj.actor || '',
+            context: promptObj.context || '',
+            inputs: Array.isArray(promptObj.inputs) ? promptObj.inputs : [],
+            constraints: Array.isArray(promptObj.constraints) ? promptObj.constraints : [],
+            outputs: Array.isArray(promptObj.outputs) ? promptObj.outputs : [],
+            success: Array.isArray(promptObj.success) ? promptObj.success : []
+        };
+        prompts.push(newPrompt);
+        window.savePromptsToLocalStorage();
+        currentPromptId = newPrompt.id;
+        isCreatingNewPrompt = false;
+        editPrompt(newPrompt.id);
+        setTabActive('Edit');
+        setTabBarVisible(true);
+        renderPromptsList();
+        closeModal();
+        setTimeout(() => alert('Prompt loaded!'), 100);
+    };
+}
+
+/**
+ * Sets up tab button event listeners.
+ */
+function setupTabListeners() {
+    // Add event listeners for Edit tab
+    const editTabBtn = document.querySelector('#tabs button:nth-child(2)');
+    if (editTabBtn) {
+        editTabBtn.addEventListener('click', function() {
+            if (currentPromptId) {
+                editPrompt(currentPromptId);
+            } else {
+                clearForm();
+                showEdit();
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initApp();
+        // Add event listeners for Save and Cancel buttons
+        const saveBtn = document.getElementById('save-prompt');
+        if (saveBtn) saveBtn.addEventListener('click', savePrompt);
+        const cancelBtn = document.getElementById('cancel-edit');
+        if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+        // Add event listeners for both tab buttons
+        const viewTabBtn = document.querySelector('#tabs button:nth-child(1)');
+        if (viewTabBtn) {
+            viewTabBtn.addEventListener('click', function() {
+                if (currentPromptId) {
+                    showView();
+                }
+            });
+        }
+        const editTabBtn = document.querySelector('#tabs button:nth-child(2)');
+        if (editTabBtn) {
+            editTabBtn.addEventListener('click', function() {
+                if (currentPromptId) {
+                    editPrompt(currentPromptId);
+                }
+            });
+        }
+        var addSuccessBtn = document.getElementById('add-success');
+        if (addSuccessBtn) {
+            addSuccessBtn.addEventListener('click', function() {
+                window.addSuccess();
+            });
+        }
+    });
+}
+
+// =========================
+// App Startup
+// =========================
+/**
+ * Starts the app and attaches all necessary event listeners.
+ */
+function startApp() {
+    initApp();
+    // Add event listeners for Save and Cancel buttons
+    const saveBtn = document.getElementById('save-prompt');
+    if (saveBtn) saveBtn.addEventListener('click', savePrompt);
+    const cancelBtn = document.getElementById('cancel-edit');
+    if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+    // Add event listeners for both tab buttons
+    const viewTabBtn = document.querySelector('#tabs button:nth-child(1)');
+    if (viewTabBtn) {
+        viewTabBtn.addEventListener('click', function() {
+            if (currentPromptId) {
+                showView();
+            }
+        });
+    }
+    const editTabBtn = document.querySelector('#tabs button:nth-child(2)');
+    if (editTabBtn) {
+        editTabBtn.addEventListener('click', function() {
+            if (currentPromptId) {
+                editPrompt(currentPromptId);
+            }
+        });
+    }
+    // Attach delete modal logic here so it always works
+    var deleteBtn = document.getElementById('delete-prompt');
+    var deleteModal = document.getElementById('delete-modal');
+    var confirmDeleteBtn = document.getElementById('confirm-delete-prompt');
+    var cancelDeleteBtn = document.getElementById('cancel-delete-prompt');
+    if (deleteBtn && deleteModal && confirmDeleteBtn && cancelDeleteBtn) {
+        deleteBtn.onclick = function() {
+            deleteModal.style.display = 'flex';
+        };
+        cancelDeleteBtn.onclick = function() {
+            deleteModal.style.display = 'none';
+        };
+        confirmDeleteBtn.onclick = function() {
+            deleteModal.style.display = 'none';
+            if (typeof currentPromptId !== 'undefined' && currentPromptId !== null) {
+                deletePrompt(currentPromptId);
+            }
+        };
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === deleteModal) deleteModal.style.display = 'none';
+        });
+    }
+    // Attach new prompt modal logic after DOM is ready
+    setupNewPromptModal();
+}
+
+// Call startApp() directly since script is at end of body
+startApp();
+
+</script>
+
+<script>
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var copyBtn = document.getElementById('copy-view-output');
+        var toggleBtn = document.getElementById('toggle-view-output');
+        var pre = document.getElementById('view-output-json');
+        var modal = document.getElementById('copy-modal');
+        var closeModal = document.getElementById('close-copy-modal');
+        var eyeLabel = document.getElementById('toggle-eye-label');
+        if (copyBtn) {
+            copyBtn.onclick = function() {
+                if (pre) {
+                    navigator.clipboard.writeText(pre.value).then(function() {
+                        if (modal) modal.style.display = 'flex';
+                    });
+                }
+            };
+        }
+        if (toggleBtn) {
+            toggleBtn.onclick = function() {
+                if (pre) {
+                    var isVisible = pre.style.display === 'block';
+                    pre.style.display = isVisible ? 'none' : 'block';
+                    if (eyeLabel) {
+                        eyeLabel.textContent = isVisible ? 'Show Prompt' : 'Hide Prompt';
+                    }
+                }
+            };
+        }
+        if (closeModal) {
+            closeModal.onclick = function() {
+                modal.style.display = 'none';
+            };
+        }
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.style.display = 'none';
+            });
+        }
+        // Wire up add buttons for input, constraint, output
+        var addInputBtn = document.getElementById('add-input');
+        if (addInputBtn) {
+            addInputBtn.addEventListener('click', function() {
+                if (window.addInput) window.addInput();
+            });
+        }
+        var addConstraintBtn = document.getElementById('add-constraint');
+        if (addConstraintBtn) {
+            addConstraintBtn.addEventListener('click', function() {
+                if (window.addConstraint) window.addConstraint();
+            });
+        }
+        var addOutputBtn = document.getElementById('add-output');
+        if (addOutputBtn) {
+            addOutputBtn.addEventListener('click', function() {
+                if (window.addOutput) window.addOutput();
+            });
+        }
+        var addSuccessBtn = document.getElementById('add-success');
+        if (addSuccessBtn) {
+            addSuccessBtn.addEventListener('click', function() {
+                if (window.addSuccess) window.addSuccess();
+            });
+        }
+    });
+})();
+</script>
+</body>
+</html>
+
+<div id="export-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+        <h2 style="margin-bottom: 1rem; color: #2563eb;">Export Data</h2>
+        <p style="margin-bottom: 1rem; color: #666;">Copy this JSON data and save it to a .json file:</p>
+        <label for="export-modal-textarea" class="visually-hidden">Exported JSON Data</label>
+        <textarea id="export-modal-textarea" readonly style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 1rem; background: #fff; border: 1px solid #ccc; border-radius: 6px; color: #222; resize: none;"></textarea>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button class="btn btn-primary" id="export-modal-copy">Copy to Clipboard</button>
+            <button class="btn btn-secondary" id="export-modal-close">Close</button>
+        </div>
+    </div>
+</div>
