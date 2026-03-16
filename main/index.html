@@ -66,8 +66,9 @@
     <div id="main-content" style="margin-left:260px;">
         <div class="main-panel">
             <div id="tabs">
-                <button onclick="showView()" id="tab-view">View Prompt</button>
-                <button onclick="showEdit()" id="tab-edit">Edit</button>
+                <button onclick="showView()" id="tab-view">Use Template</button>
+                <button onclick="showEdit()" id="tab-edit">Edit Template</button>
+                <button onclick="showHistory()" id="tab-history">Template History</button>
             </div>
             <div class="tab-content">
                 <section id="welcome-screen" class="screen active">
@@ -102,6 +103,12 @@
                                 <textarea id="view-output-json" class="prompt-display" style="display:none; width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
                             </div>
                         </div>
+                    </div>
+                </section>
+                <section id="history-screen" class="screen" style="display:none;">
+                    <div class="history-panel">
+                        <h3 style="color:var(--color-primary);margin-bottom:1rem;">Input History</h3>
+                        <div id="history-list"></div>
                     </div>
                 </section>
                 <section id="edit-screen" class="screen" style="display:none;">
@@ -288,15 +295,6 @@
         var modal = document.getElementById('copy-modal');
         var closeModal = document.getElementById('close-copy-modal');
         var eyeLabel = document.getElementById('toggle-eye-label');
-        if (copyBtn) {
-            copyBtn.onclick = function() {
-                if (pre) {
-                    navigator.clipboard.writeText(pre.value).then(function() {
-                        if (modal) modal.style.display = 'flex';
-                    });
-                }
-            };
-        }
         if (toggleBtn) {
             toggleBtn.onclick = function() {
                 if (pre) {

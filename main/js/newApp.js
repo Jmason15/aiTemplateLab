@@ -57,6 +57,7 @@ function setupCollapsibleSection() {
  */
 function init() {
     window.loadPromptsFromLocalStorage();
+    prompts = prompts.map(normalizePrompt);
     renderPromptsList();
     if (prompts.length > 0) {
         viewPrompt(prompts[0].id);
@@ -583,49 +584,109 @@ function setTabBarVisible(visible) {
 function showWelcome() {
     document.getElementById('tab-edit').classList.remove('active');
     document.getElementById('tab-view').classList.remove('active');
+    document.getElementById('tab-history').classList.remove('active');
+    document.getElementById('welcome-screen').style.display = 'block';
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('edit-screen').style.display = 'none';
+    document.getElementById('history-screen').style.display = 'none';
     document.getElementById('welcome-screen').classList.add('active');
     document.getElementById('view-screen').classList.remove('active');
     document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('history-screen').classList.remove('active');
 }
 
 /**
  * Shows the view screen.
  */
 function showView() {
-    document.getElementById('tab-view').classList.add('active');
+    // Remove active from all tab buttons
+    document.getElementById('tab-view').classList.remove('active');
     document.getElementById('tab-edit').classList.remove('active');
+    document.getElementById('tab-history').classList.remove('active');
+    // Add active to view tab
+    document.getElementById('tab-view').classList.add('active');
+    // Hide all screens
+    document.getElementById('view-screen').style.display = 'block';
+    document.getElementById('edit-screen').style.display = 'none';
+    document.getElementById('history-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
+    // Show view screen
     document.getElementById('view-screen').classList.add('active');
     document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('history-screen').classList.remove('active');
     document.getElementById('welcome-screen').classList.remove('active');
 }
 
-/**
- * Shows the edit screen.
- */
 function showEdit() {
-    document.getElementById('tab-edit').classList.add('active');
     document.getElementById('tab-view').classList.remove('active');
-    document.getElementById('edit-screen').classList.add('active');
+    document.getElementById('tab-edit').classList.remove('active');
+    document.getElementById('tab-history').classList.remove('active');
+    document.getElementById('tab-edit').classList.add('active');
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('edit-screen').style.display = 'block';
+    document.getElementById('history-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('edit-screen').classList.add('active');
+    document.getElementById('history-screen').classList.remove('active');
     document.getElementById('welcome-screen').classList.remove('active');
 }
-window.showEdit = showEdit;
-window.showView = showView;
+
+function showHistory() {
+    document.getElementById('tab-view').classList.remove('active');
+    document.getElementById('tab-edit').classList.remove('active');
+    document.getElementById('tab-history').classList.remove('active');
+    document.getElementById('tab-history').classList.add('active');
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('edit-screen').style.display = 'none';
+    document.getElementById('history-screen').style.display = 'block';
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('history-screen').classList.add('active');
+    document.getElementById('welcome-screen').classList.remove('active');
+    renderHistoryList(currentPromptId);
+}
+window.showHistory = showHistory;
 
 /**
- * Cancels editing and returns to the previous screen.
+ * Renders the history list for the history tab.
+ * @param {number} promptId - The prompt id to render history for.
  */
-window.cancelEdit = function() {
-    if (currentPromptId) {
-        isCreatingNewPrompt = false;
-        viewPrompt(currentPromptId);
-        setTabActive('View');
-    } else {
-        isCreatingNewPrompt = false;
-        showWelcome();
-        setTabActive(null);
+function renderHistoryList(promptId) {
+    console.log('[HISTORY] renderHistoryList called:', promptId);
+    const history = getPromptInputHistory(promptId);
+    const container = document.getElementById('history-list');
+    if (!container) { console.log('[HISTORY] history-list container missing'); return; }
+    if (!history || history.length === 0) {
+        container.innerHTML = '<span style="color:#888;font-size:0.95em;">No input history for this prompt.</span>';
+        console.log('[HISTORY] No input history for this prompt');
+        return;
     }
-};
+    container.innerHTML = history.map((h, idx) => {
+        const items = Object.entries(h).map(([k,v]) => `<div><strong>${k}:</strong> ${v ? window.escapeHtml(v) : '<em>(empty)</em>'}</div>`).join('');
+        return `<div class="history-entry">
+            <div><strong>Entry #${idx+1}</strong></div>
+            ${items}
+            <button class="restore-btn" data-idx="${idx}">Restore</button>
+        </div>`;
+    }).join('');
+    container.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.onclick = function() {
+            const idx = parseInt(btn.getAttribute('data-idx'));
+            const selected = history[idx];
+            if (!selected) return;
+            console.log('[HISTORY] Restore clicked, entry:', selected);
+            showView();
+            Object.entries(selected).forEach(([k,v]) => {
+                const input = Array.from(document.querySelectorAll('[id^="input-value-"]')).find(el => el.previousElementSibling && el.previousElementSibling.textContent.replace(':','') === k);
+                if (input) input.value = v;
+            });
+            generateViewPrompt();
+        };
+    });
+    console.log('[HISTORY] History rendered:', history);
+}
 
 // =========================
 // Import/Export
@@ -1006,3 +1067,187 @@ function showSessionStorageToast() {
 // Call toast on app load
 window.addEventListener('DOMContentLoaded', showSessionStorageToast);
 
+// Input history management (global table)
+function getPromptInputHistoryAll() {
+    const raw = localStorage.getItem('promptInputHistory');
+    if (!raw) return [];
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return [];
+    }
+}
+function savePromptInputHistory(templateId, inputObj) {
+    console.log('[HISTORY] savePromptInputHistory called:', templateId, inputObj);
+    if (!templateId || !inputObj) return;
+    let history = getPromptInputHistoryAll();
+    // Only store non-empty input sets
+    if (Object.values(inputObj).every(v => !v)) {
+        console.log('[HISTORY] All input values empty, not saving');
+        return;
+    }
+    history.unshift({ templateId, inputValues: inputObj });
+    // Limit history to last 50
+    history = history.slice(0, 50);
+    localStorage.setItem('promptInputHistory', JSON.stringify(history));
+    console.log('[HISTORY] History saved:', history);
+}
+function getPromptInputHistory(templateId) {
+    const all = getPromptInputHistoryAll();
+    const filtered = all.filter(h => h.templateId === templateId).map(h => h.inputValues);
+    console.log('[HISTORY] getPromptInputHistory for', templateId, '=>', filtered);
+    return filtered;
+}
+function renderHistoryList(promptId) {
+    console.log('[HISTORY] renderHistoryList called:', promptId);
+    const history = getPromptInputHistory(promptId);
+    const container = document.getElementById('history-list');
+    if (!container) { console.log('[HISTORY] history-list container missing'); return; }
+    if (!history || history.length === 0) {
+        container.innerHTML = '<span style="color:#888;font-size:0.95em;">No input history for this prompt.</span>';
+        console.log('[HISTORY] No input history for this prompt');
+        return;
+    }
+    container.innerHTML = history.map((h, idx) => {
+        const items = Object.entries(h).map(([k,v]) => `<div><strong>${k}:</strong> ${v ? window.escapeHtml(v) : '<em>(empty)</em>'}</div>`).join('');
+        return `<div class="history-entry">
+            <div><strong>Entry #${idx+1}</strong></div>
+            ${items}
+            <button class="restore-btn" data-idx="${idx}">Restore</button>
+        </div>`;
+    }).join('');
+    container.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.onclick = function() {
+            const idx = parseInt(btn.getAttribute('data-idx'));
+            const selected = history[idx];
+            if (!selected) return;
+            console.log('[HISTORY] Restore clicked, entry:', selected);
+            showView();
+            Object.entries(selected).forEach(([k,v]) => {
+                const input = Array.from(document.querySelectorAll('[id^="input-value-"]')).find(el => el.previousElementSibling && el.previousElementSibling.textContent.replace(':','') === k);
+                if (input) input.value = v;
+            });
+            generateViewPrompt();
+        };
+    });
+    console.log('[HISTORY] History rendered:', history);
+}
+
+// Update Create Prompt button handler to save input history
+const copyBtn = document.getElementById('copy-view-output');
+if (copyBtn) {
+    copyBtn.onclick = function() {
+        console.log('[HISTORY] Create Prompt button clicked');
+        const prompt = prompts.find(p => p.id === currentPromptId);
+        if (!prompt) {
+            console.log('[HISTORY] No prompt found for currentPromptId:', currentPromptId);
+            return;
+        }
+        // Save input history
+        const inputs = {};
+        prompt.inputs.forEach((i, idx) => {
+            const inputField = document.getElementById(`input-value-${idx}`);
+            console.log('[HISTORY] inputField:', inputField, 'for', i.name);
+            inputs[i.name] = inputField ? inputField.value : '';
+        });
+        console.log('[HISTORY] Inputs to save:', inputs);
+        savePromptInputHistory(prompt.id, inputs);
+        // Immediately update history tab if visible
+        if (document.getElementById('history-screen').classList.contains('active')) {
+            renderHistoryList(prompt.id);
+        }
+        // ...existing code for copying...
+        const pre = document.getElementById('view-output-json');
+        const modal = document.getElementById('copy-modal');
+        if (pre) {
+            navigator.clipboard.writeText(pre.value).then(function() {
+                if (modal) modal.style.display = 'flex';
+            });
+        }
+    };
+}
+
+// Render input history dropdown in viewPrompt
+function viewPrompt(id) {
+    const prompt = prompts.find(p => p.id === id);
+    if (!prompt) return;
+
+    currentPromptId = id;
+    showView();
+    setTabActive('View');
+
+    // Switch tab to View Prompt
+    const tabs = document.querySelectorAll('#tabs button');
+    tabs.forEach(btn => {
+        if (btn.textContent.includes('View')) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    document.getElementById('view-name').textContent = prompt.name;
+    document.getElementById('view-desc').textContent = prompt.description;
+    // Add meta info (objective, actor, context)
+    const meta = [];
+    if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
+    if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
+    if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
+    document.getElementById('view-meta').innerHTML = meta.join('');
+
+    const inputsContainer = document.getElementById('view-inputs');
+    if (prompt.inputs.length === 0) {
+        inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
+    } else {
+        inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
+            <div style="margin-bottom: 1rem;">
+                <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                  <textarea
+                    id="input-value-${idx}"
+                    class="view-textarea"
+                    rows="6"
+                    placeholder="${window.escapeHtml(i.description)}"
+                    oninput="generateViewPrompt()"
+                ></textarea>
+            </div>
+        `).join('');
+    }
+
+    generateViewPrompt();
+    renderPromptsList();
+}
+
+// =========================
+// Global Functions
+// =========================
+/**
+ * Cancels the current edit and switches to view mode for the current prompt, or shows the welcome screen if no prompt is selected.
+ */
+function cancelEdit() {
+    if (typeof currentPromptId !== 'undefined' && currentPromptId !== null) {
+        viewPrompt(currentPromptId);
+    } else {
+        showWelcome();
+    }
+}
+window.cancelEdit = cancelEdit;
+
+/**
+ * Normalizes a prompt object to ensure consistent structure.
+ * @param {Object} prompt - The prompt object to normalize.
+ * @returns {Object} The normalized prompt object.
+ */
+function normalizePrompt(prompt) {
+    // Ensure constraints and success are always arrays of strings
+    if (Array.isArray(prompt.constraints)) {
+        prompt.constraints = prompt.constraints.map(c => typeof c === 'string' ? c : (c.rule || ''));
+    } else {
+        prompt.constraints = [];
+    }
+    if (Array.isArray(prompt.success)) {
+        prompt.success = prompt.success.map(s => typeof s === 'string' ? s : (s.criterion || ''));
+    } else {
+        prompt.success = [];
+    }
+    return prompt;
+}

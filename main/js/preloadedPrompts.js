@@ -49,7 +49,7 @@ window.preloadedPrompts = [
     },
     {
         "id": 1769809000002,
-        "name": "Prompt Builder",
+        "name": "Template Builder",
         "description": "A single freeform description of the kind of prompt or prompts the user wants to build, including what they should do and for whom.",
         "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
         "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
