@@ -743,142 +743,81 @@ function handleImport(event) {
  * Sets up the new prompt modal and its event handlers.
  */
 function setupNewPromptModal() {
-    const openBtn = document.getElementById('new-prompt-main');
+    // Only reference elements that exist in the new modal
     const modal = document.getElementById('new-prompt-modal');
-    const modalContent = document.getElementById('new-prompt-modal-content');
-    const choiceScreen = document.getElementById('new-prompt-choice');
-    const jsonScreen = document.getElementById('new-prompt-json-import');
-    const blankBtn = document.getElementById('start-blank-prompt');
-    const jsonBtn = document.getElementById('start-json-prompt');
     const cancelBtn = document.getElementById('new-prompt-cancel');
-    const backBtn = document.getElementById('json-import-back');
-    const jsonImportCancel = document.getElementById('json-import-cancel');
-    const uploadBtn = document.getElementById('json-import-upload');
-    const fileInput = document.getElementById('json-import-file');
-    const filenameSpan = document.getElementById('json-import-filename');
+    const confirmBtn = document.getElementById('json-import-confirm');
     const textarea = document.getElementById('json-import-textarea');
     const errorDiv = document.getElementById('json-import-error');
-    const confirmBtn = document.getElementById('json-import-confirm');
 
-    function showModal() {
-        modal.style.display = 'flex';
-        choiceScreen.style.display = 'block';
-        jsonScreen.style.display = 'none';
-        setTimeout(() => blankBtn.focus(), 50);
+    // Cancel button
+    if (cancelBtn) {
+        cancelBtn.onclick = function() {
+            if (modal) modal.style.display = 'none';
+            if (textarea) textarea.value = '';
+            if (errorDiv) errorDiv.textContent = '';
+        };
     }
-    function closeModal() {
+    // Confirm button
+    if (confirmBtn) {
+        confirmBtn.onclick = function() {
+            if (!textarea) return;
+            if (!errorDiv) return;
+            errorDiv.style.display = 'none';
+            try {
+                const json = JSON.parse(textarea.value);
+                importPromptFromJson(json);
+            } catch (e) {
+                errorDiv.textContent = 'Invalid JSON: ' + e.message;
+                errorDiv.style.display = 'block';
+            }
+        };
+    }
+    // Modal background click closes
+    if (modal) {
+        modal.onclick = function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+        modal.onkeydown = function(e) {
+            if (e.key === 'Escape') modal.style.display = 'none';
+        };
+    }
+}
+
+/**
+ * Closes the New Prompt modal and clears fields.
+ */
+function closeNewPromptModal() {
+    const modal = document.getElementById('new-prompt-modal');
+    if (modal) {
         modal.style.display = 'none';
+        const textarea = document.getElementById('json-import-textarea');
         if (textarea) textarea.value = '';
-        if (fileInput) fileInput.value = '';
-        if (filenameSpan) filenameSpan.textContent = '';
+        const errorDiv = document.getElementById('json-import-error');
         if (errorDiv) errorDiv.textContent = '';
     }
-    openBtn.onclick = function(e) {
-        e.preventDefault();
-        showModal();
+}
+window.closeNewPromptModal = closeNewPromptModal;
+
+// Update modal event bindings
+const newPromptCancelBtn = document.getElementById('new-prompt-cancel');
+if (newPromptCancelBtn) {
+    newPromptCancelBtn.onclick = function() {
+        closeNewPromptModal();
     };
-    cancelBtn.onclick = closeModal;
-    jsonImportCancel.onclick = closeModal;
-    modal.onclick = function(e) {
-        if (e.target === modal) closeModal();
-    };
-    modal.onkeydown = function(e) {
-        if (e.key === 'Escape') closeModal();
-    };
-    blankBtn.onclick = function(e) {
-        e.preventDefault();
-        closeModal();
-        window.newPrompt();
-    };
-    jsonBtn.onclick = function(e) {
-        e.preventDefault();
-        choiceScreen.style.display = 'none';
-        jsonScreen.style.display = 'flex';
-        setTimeout(() => textarea.focus(), 50);
-    };
-    backBtn.onclick = function(e) {
-        e.preventDefault();
-        jsonScreen.style.display = 'none';
-        choiceScreen.style.display = 'block';
-        setTimeout(() => blankBtn.focus(), 50);
-    };
-    // Remove uploadBtn and fileInput logic if not needed
-    if (uploadBtn && fileInput) {
-        uploadBtn.onclick = function() {
-            fileInput.click();
-        };
-        fileInput.onchange = function() {
-            const file = fileInput.files[0];
-            if (!file) return;
-            if (filenameSpan) filenameSpan.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                if (textarea) textarea.value = ev.target.result;
-            };
-            reader.readAsText(file);
-        };
-    }
-    confirmBtn.onclick = function() {
-        let json;
+}
+const jsonImportConfirmBtn = document.getElementById('json-import-confirm');
+if (jsonImportConfirmBtn) {
+    jsonImportConfirmBtn.onclick = function() {
+        var textarea = document.getElementById('json-import-textarea');
+        var errorDiv = document.getElementById('json-import-error');
+        errorDiv.style.display = 'none';
         try {
-            json = JSON.parse(textarea.value);
-        } catch (err) {
-            errorDiv.textContent = 'Invalid JSON: ' + err.message;
-            return;
-        }
-        let incomingPrompts = [];
-        if (Array.isArray(json)) {
-            if (json.length === 0) {
-                errorDiv.textContent = 'JSON array is empty.';
-                return;
-            }
-            incomingPrompts = json;
-        } else if (typeof json === 'object') {
-            // Check for nested templates in outputs
-            if (Array.isArray(json.outputs) && json.outputs.length > 0 && json.outputs.every(t => typeof t === 'object')) {
-                // Import each template in outputs as a separate prompt
-                incomingPrompts = json.outputs;
-                // Optionally, add the parent suite as a prompt too
-                incomingPrompts.unshift(json);
-            } else {
-                incomingPrompts = [json];
-            }
-        } else {
-            errorDiv.textContent = 'JSON must be a prompt object or array.';
-            return;
-        }
-        // Check for existing IDs
-        const existingIds = prompts.map(p => p.id);
-        let addedCount = 0;
-        incomingPrompts.forEach(promptObj => {
-            if (!promptObj || typeof promptObj !== 'object') return;
-            if (existingIds.includes(promptObj.id)) return; // skip if ID exists
-            const newPrompt = {
-                id: promptObj.id || Date.now(),
-                name: promptObj.name || '',
-                description: promptObj.description || '',
-                objective: promptObj.objective || '',
-                actor: promptObj.actor || '',
-                context: promptObj.context || '',
-                inputs: Array.isArray(promptObj.inputs) ? promptObj.inputs : [],
-                constraints: Array.isArray(promptObj.constraints) ? promptObj.constraints : [],
-                outputs: Array.isArray(promptObj.outputs) ? promptObj.outputs : [],
-                success: Array.isArray(promptObj.success) ? promptObj.success : []
-            };
-            prompts.push(newPrompt);
-            addedCount++;
-        });
-        if (addedCount > 0) {
-            window.savePromptsToLocalStorage();
-            renderPromptsList();
-            currentPromptId = prompts[prompts.length - 1].id;
-            isCreatingNewPrompt = false;
-            editPrompt(currentPromptId);
-            setTabActive('Edit');
-            closeModal();
-            setTimeout(() => alert(`Imported ${addedCount} new prompt(s)!`), 100);
-        } else {
-            errorDiv.textContent = 'No new prompts were added (all IDs already exist).';
+            var json = JSON.parse(textarea.value);
+            importPromptFromJson(json);
+        } catch (e) {
+            errorDiv.textContent = 'Invalid JSON: ' + e.message;
+            errorDiv.style.display = 'block';
         }
     };
 }
@@ -1189,3 +1128,52 @@ function normalizePrompt(prompt) {
     return prompt;
 }
 
+/**
+ * Opens the New Prompt modal (Import JSON).
+ */
+function openNewPromptModal() {
+    const modal = document.getElementById('new-prompt-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Focus textarea for accessibility
+        const textarea = document.getElementById('json-import-textarea');
+        if (textarea) setTimeout(() => textarea.focus(), 50);
+    }
+}
+window.openNewPromptModal = openNewPromptModal;
+
+/**
+ * Imports prompt(s) from JSON pasted in the modal.
+ * Accepts a single prompt object or an array of prompt objects.
+ * Adds only prompts with unique IDs (does not overwrite existing ones).
+ * Normalizes imported prompts for structure.
+ */
+function importPromptFromJson(json) {
+    let importedPrompts = [];
+    if (Array.isArray(json)) {
+        importedPrompts = json;
+    } else if (typeof json === 'object' && json !== null) {
+        importedPrompts = [json];
+    } else {
+        alert('Invalid JSON: Must be a prompt object or array of prompt objects');
+        return;
+    }
+    // Filter out prompts with duplicate IDs
+    const existingIds = new Set(prompts.map(p => p.id));
+    const newPrompts = importedPrompts
+        .map(normalizePrompt)
+        .filter(p => p.id && !existingIds.has(p.id));
+    if (newPrompts.length === 0) {
+        alert('No new prompts to import (all IDs already exist)');
+        return;
+    }
+    prompts = prompts.concat(newPrompts);
+    window.savePromptsToLocalStorage();
+    renderPromptsList();
+    closeNewPromptModal();
+    showWelcome();
+    alert(`Imported ${newPrompts.length} prompt(s) successfully!`);
+}
+window.importPromptFromJson = importPromptFromJson;
+
+// Remove dropdown logic for New Prompt split button (handled in index.html)
