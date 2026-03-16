@@ -28,40 +28,33 @@
         </div>
 
         <!-- Modal for new prompt creation -->
-        <div id="new-prompt-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-            <div id="new-prompt-modal-content" style="background:#fff; padding:2rem; border-radius:10px; max-width:95vw; min-width:320px; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center; display:flex; flex-direction:column; gap:1.5rem;">
+        <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
+            <div id="new-prompt-modal-content">
                 <!-- Choice screen -->
                 <div id="new-prompt-choice">
-                    <h2 style="margin-bottom:1.5rem;">Create New Prompt</h2>
-                    <div style="display:flex; gap:2rem; justify-content:center; flex-wrap:wrap;">
-                        <button class="btn btn-primary" id="start-blank-prompt" style="flex:1; min-width:180px; max-width:220px; padding:2em 1em; font-size:1.2em; display:flex; flex-direction:column; align-items:center; gap:0.5em;">
+                    <h2>Create New Prompt</h2>
+                    <div>
+                        <button class="btn btn-primary" id="start-blank-prompt">
                             <span style="font-size:2em;">📝</span>
                             Start from Blank
-                            <span style="font-size:0.95em; color:#2563eb;">Create a new empty prompt</span>
+                            <span>Create a new empty prompt</span>
                         </button>
-                        <button class="btn btn-secondary" id="start-json-prompt" style="flex:1; min-width:180px; max-width:220px; padding:2em 1em; font-size:1.2em; display:flex; flex-direction:column; align-items:center; gap:0.5em;">
-                            <span style="font-size:2em;">⬆️</span>
+                        <button class="btn btn-secondary" id="start-json-prompt">
+                            <span style="font-size:2em;">📋</span>
                             Import from JSON
-                            <span style="font-size:0.95em; color:#2563eb;">Paste or upload a prompt JSON</span>
+                            <span>Paste prompt JSON</span>
                         </button>
                     </div>
-                    <button class="btn btn-secondary" id="new-prompt-cancel" style="margin-top:2rem;">Cancel</button>
+                    <button class="btn btn-secondary" id="new-prompt-cancel">Cancel</button>
                 </div>
                 <!-- JSON import screen (hidden by default) -->
-                <div id="new-prompt-json-import" style="display:none; flex-direction:column; gap:1rem; align-items:center;">
-                    <div style="width:100%; display:flex; align-items:center; gap:1em;">
-                        <button id="json-import-back" class="btn btn-secondary" style="font-size:1.1em;">← Back</button>
-                        <h3 style="flex:1; text-align:center; margin:0;">Import Prompt from JSON</h3>
-                    </div>
+                <div id="new-prompt-json-import" style="display:none;">
+                    <h3 class="modal-title">Import Prompt from JSON</h3>
                     <label for="json-import-textarea" class="visually-hidden">Paste prompt JSON here</label>
-                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical;"></textarea>
-                    <div style="display:flex; gap:1em; align-items:center; justify-content:center; width:100%;">
-                        <input type="file" id="json-import-file" accept=".json" style="display:none;">
-                        <button class="btn btn-secondary" id="json-import-upload">Upload JSON File</button>
-                        <span id="json-import-filename" style="color:#888; font-size:0.95em;"></span>
-                    </div>
-                    <div id="json-import-error" style="color:#ef4444; min-height:1.5em;"></div>
-                    <div style="display:flex; gap:1em; justify-content:center; width:100%;">
+                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..."></textarea>
+                    <div id="json-import-error"></div>
+                    <div class="modal-btn-group">
+                        <button id="json-import-back" class="btn btn-secondary">← Back</button>
                         <button class="btn btn-primary" id="json-import-confirm">Import</button>
                         <button class="btn btn-secondary" id="json-import-cancel">Cancel</button>
                     </div>
