@@ -69,6 +69,7 @@
                 <button onclick="showView()" id="tab-view">Use Template</button>
                 <button onclick="showEdit()" id="tab-edit">Edit Template</button>
                 <button onclick="showHistory()" id="tab-history">Template History</button>
+                <button onclick="showPromptOutput()" id="tab-output">Show Prompt</button>
             </div>
             <div class="tab-content">
                 <section id="welcome-screen" class="screen active">
@@ -96,13 +97,15 @@
                         <div class="view-right">
                             <div class="btn-group" style="gap: 0.75rem; align-items: center;">
                                 <button class="btn btn-primary" type="button" id="copy-view-output" aria-label="Copy prompt to clipboard">Create Prompt</button>
-                                <button class="btn btn-secondary" type="button" id="toggle-view-output" aria-label="Show or hide generated prompt"><span id="toggle-eye-label">Show Prompt</span></button>
-                            </div>
-                            <div class="card card-body" style="margin-top:1rem;">
-                                <label for="view-output-json" class="visually-hidden">Prompt JSON Output</label>
-                                <textarea id="view-output-json" class="prompt-display" style="display:none; width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
                             </div>
                         </div>
+                    </div>
+                </section>
+                <section id="output-screen" class="screen" style="display:none;">
+                    <div class="output-panel">
+                        <h3 style="color:var(--color-primary);margin-bottom:1rem;">Prompt Output</h3>
+                        <label for="view-output-json" class="visually-hidden">Prompt JSON Output</label>
+                        <textarea id="view-output-json" class="prompt-display" style="width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
                     </div>
                 </section>
                 <section id="history-screen" class="screen" style="display:none;">
