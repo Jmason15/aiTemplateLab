@@ -50,14 +50,24 @@ window.preloadedPrompts = [
     {
         "id": 1769809000002,
         "name": "Prompt Builder",
-        "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
+        "description": "A single freeform description of the kind of prompt or prompts the user wants to build, including what they should do and for whom.",
         "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
         "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
-        "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
+        "context": "The user provides a single block of text describing the kind of prompt they want to build " +
+            "(e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts')." +
+            "\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n" +
+            "- Ask a few targeted clarification questions only if truly necessary.\n" +
+            "- Propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, " +
+            "constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, " +
+            "not just invent them arbitrarily. The user may ask for a single prompt definition or for several related " +
+            " prompt definitions at once. In either case you must return a single top-level JSON object. That object may " +
+            "describe one prompt or multiple prompts by including multiple items in its outputs array, where each item " +
+            "is a complete prompt specification object (with id, name, description, objective, actor, context, inputs, " +
+            "constraints, outputs, success).",
         "inputs": [
             {
                 "name": "Prompt Idea",
-                "description": "A single freeform description of the kind of prompt the user wants to build, including what it should do and for whom."
+                "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description, including optional multi-step workflows that may require multiple objects in the output."
             }
         ],
         "constraints": [
@@ -65,19 +75,38 @@ window.preloadedPrompts = [
             "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
             "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
             "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
-            "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after."
+            "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after.",
+            "When the user's idea clearly implies multiple related prompts, the assistant may include multiple complete prompt specification objects inside the outputs array of the returned JSON."
         ],
         "outputs": [
             {
                 "name": "Field Suggestions",
                 "type": "JSON",
-                "example": "{\n  \"id\": 0,\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
+                "example": "{\n  \"id\": 0,\n  " +
+                    "\"name\": \"\",\n  " +
+                    "\"description\": \"\",\n  " +
+                    "\"objective\": \"\",\n  " +
+                    "\"actor\": \"\",\n  " +
+                    "\"context\": \"\",\n  " +
+                    "\"inputs\": [\n    {\n      " +
+                        "\"name\": \"\",\n      " +
+                        "\"description\": \"\"\n    }\n  ],\n  " +
+                    "\"constraints\": [\n  ],\n  " +
+                    "\"outputs\": [\n    {\n      " +
+                        "\"name\": \"\",\n      " +
+                        "\"type\": \"\",\n      " +
+                        "\"example\": \"\"\n    }\n  ],\n " +
+                    "\"success\": [\n  ]\n}"
             }
         ],
         "success": [
             "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success, and no additional wrapper properties.",
             "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
-            "All suggested content reflects the user's described prompt idea and is specific, not generic."
+            "All suggested content reflects the user's described prompt idea and is specific, not generic.",
+            "The id field is set to a non-negative integer that is randomly chosen and not a fixed constant like 0.",
+            "The inputs, constraints, outputs, and success fields are always JSON arrays of objects (never primitives), " +
+                "and if there are no items yet they must still be returned as empty arrays of objects " +
+                "(for example: \"inputs\": [], \"constraints\": [], \"outputs\": [], \"success\": [])."
         ]
     }
 ];
