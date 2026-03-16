@@ -631,9 +631,11 @@ textarea, input[type="text"] {
 }
 .toast-warning {
     position: fixed;
-    top: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 2rem;
+    right: 2rem;
+    left: auto;
+    top: auto;
+    transform: translateY(40px);
     background: #fffbe6;
     color: #b45309;
     border: 1px solid #facc15;
@@ -643,13 +645,14 @@ textarea, input[type="text"] {
     font-size: 1.1em;
     z-index: 10000;
     opacity: 0;
-    transition: opacity 0.4s, top 0.4s;
+    transition: opacity 0.4s, bottom 0.4s, transform 0.4s;
     pointer-events: none;
 }
 .toast-warning.show {
     opacity: 1;
     pointer-events: auto;
-    top: 2.5rem;
+    bottom: 2.5rem;
+    transform: translateY(0);
 }
 @media (max-width: 600px) {
   #new-prompt-modal-content {
