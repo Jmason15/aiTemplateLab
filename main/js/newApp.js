@@ -96,6 +96,33 @@ window.newPrompt = function () {
 };
 
 /**
+ * Creates a new blank prompt and switches to edit mode.
+ */
+function startBlankPrompt() {
+    const newId = Date.now();
+    const newPrompt = {
+        id: newId,
+        name: 'New Prompt',
+        description: '',
+        objective: '',
+        actor: '',
+        context: '',
+        inputs: [],
+        constraints: [],
+        outputs: [],
+        success: []
+    };
+    prompts.push(newPrompt);
+    window.savePromptsToLocalStorage();
+    currentPromptId = newId;
+    isCreatingNewPrompt = false;
+    editPrompt(newId);
+    setTabActive('Edit');
+    renderPromptsList();
+}
+window.startBlankPrompt = startBlankPrompt;
+
+/**
  * Deletes a prompt by id after confirmation.
  * @param {number} id - The prompt id to delete.
  */
