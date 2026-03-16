@@ -101,7 +101,7 @@ window.newPrompt = function () {
  * @param {number} id - The prompt id to delete.
  */
 function deletePrompt(id) {
-    if (!confirm('Delete this prompt?')) return;
+   // if (!confirm('Delete this prompt?')) return;
     prompts = prompts.filter(p => p.id !== id);
     window.savePromptsToLocalStorage();
     renderPromptsList();
