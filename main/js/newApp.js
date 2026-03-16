@@ -1039,14 +1039,26 @@ function renderHistoryList(promptId) {
         container.innerHTML = '<span style="color:#888;font-size:0.95em;">No input history for this prompt.</span>';
         return;
     }
-    container.innerHTML = history.map((h, idx) => {
-        const items = Object.entries(h).map(([k,v]) => `<div><strong>${k}:</strong> ${v ? window.escapeHtml(v) : '<em>(empty)</em>'}</div>`).join('');
-        return `<div class="history-entry">
-            <div><strong>Entry #${idx+1}</strong></div>
-            ${items}
-            <button class="restore-btn" data-idx="${idx}">Restore</button>
-        </div>`;
-    }).join('');
+    // Collect all unique field names for header
+    const allFields = Array.from(new Set(history.flatMap(h => Object.keys(h))));
+    // Find index of Jira Text column
+    const jiraIdx = allFields.findIndex(f => f.toLowerCase().includes('jira text'));
+    // Set CSS variable for columns
+    container.style.setProperty('--history-cols', allFields.length + 1);
+    container.innerHTML = `
+        <div class="history-grid">
+            <div class="history-row history-header">
+                ${allFields.map(f => `<div class="history-cell history-header-cell${f.toLowerCase().includes('jira text') ? ' jira-text-cell' : ''}">${window.escapeHtml(f)}</div>`).join('')}
+                <div class="history-cell history-header-cell">Action</div>
+            </div>
+            ${history.map((h, idx) => `
+                <div class="history-row">
+                    ${allFields.map((f, i) => `<div class="history-cell${i === jiraIdx ? ' jira-text-cell' : ''}">${h[f] ? window.escapeHtml(h[f]) : '<em>(empty)</em>'}</div>`).join('')}
+                    <div class="history-cell"><button class="restore-btn" data-idx="${idx}">Restore</button></div>
+                </div>
+            `).join('')}
+        </div>
+    `;
     container.querySelectorAll('.restore-btn').forEach(btn => {
         btn.onclick = function() {
             const idx = parseInt(btn.getAttribute('data-idx'));
