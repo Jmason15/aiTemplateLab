@@ -670,17 +670,24 @@ window.exportPrompts = function() {
 function showExportModal(data) {
     const modal = document.getElementById('export-modal');
     const textarea = document.getElementById('export-modal-textarea');
+    if (!modal || !textarea) return;
     textarea.value = data;
     modal.style.display = 'flex';
     textarea.select();
 
-    document.getElementById('export-modal-copy').onclick = function() {
-        textarea.select();
-        document.execCommand('copy');
-    };
-    document.getElementById('export-modal-close').onclick = function() {
-        modal.style.display = 'none';
-    };
+    const copyBtn = document.getElementById('export-modal-copy');
+    const closeBtn = document.getElementById('export-modal-close');
+    if (copyBtn) {
+        copyBtn.onclick = function() {
+            textarea.select();
+            document.execCommand('copy');
+        };
+    }
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+    }
     // Optional: close modal when clicking outside
     modal.onclick = function(e) {
         if (e.target === modal) modal.style.display = 'none';
@@ -758,10 +765,10 @@ function setupNewPromptModal() {
     }
     function closeModal() {
         modal.style.display = 'none';
-        textarea.value = '';
-        fileInput.value = '';
-        filenameSpan.textContent = '';
-        errorDiv.textContent = '';
+        if (textarea) textarea.value = '';
+        if (fileInput) fileInput.value = '';
+        if (filenameSpan) filenameSpan.textContent = '';
+        if (errorDiv) errorDiv.textContent = '';
     }
     openBtn.onclick = function(e) {
         e.preventDefault();
@@ -792,19 +799,22 @@ function setupNewPromptModal() {
         choiceScreen.style.display = 'block';
         setTimeout(() => blankBtn.focus(), 50);
     };
-    uploadBtn.onclick = function() {
-        fileInput.click();
-    };
-    fileInput.onchange = function() {
-        const file = fileInput.files[0];
-        if (!file) return;
-        filenameSpan.textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            textarea.value = ev.target.result;
+    // Remove uploadBtn and fileInput logic if not needed
+    if (uploadBtn && fileInput) {
+        uploadBtn.onclick = function() {
+            fileInput.click();
         };
-        reader.readAsText(file);
-    };
+        fileInput.onchange = function() {
+            const file = fileInput.files[0];
+            if (!file) return;
+            if (filenameSpan) filenameSpan.textContent = file.name;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                if (textarea) textarea.value = ev.target.result;
+            };
+            reader.readAsText(file);
+        };
+    }
     confirmBtn.onclick = function() {
         let json;
         try {
@@ -813,42 +823,53 @@ function setupNewPromptModal() {
             errorDiv.textContent = 'Invalid JSON: ' + err.message;
             return;
         }
-        let promptObj = null;
+        let incomingPrompts = [];
         if (Array.isArray(json)) {
             if (json.length === 0) {
                 errorDiv.textContent = 'JSON array is empty.';
                 return;
             }
-            promptObj = json[0];
+            incomingPrompts = json;
+        } else if (typeof json === 'object') {
+            incomingPrompts = [json];
         } else {
-            promptObj = json;
-        }
-        if (!promptObj || typeof promptObj !== 'object') {
             errorDiv.textContent = 'JSON must be a prompt object or array.';
             return;
         }
-        const newPrompt = {
-            id: Date.now(),
-            name: promptObj.name || '',
-            description: promptObj.description || '',
-            objective: promptObj.objective || '',
-            actor: promptObj.actor || '',
-            context: promptObj.context || '',
-            inputs: Array.isArray(promptObj.inputs) ? promptObj.inputs : [],
-            constraints: Array.isArray(promptObj.constraints) ? promptObj.constraints : [],
-            outputs: Array.isArray(promptObj.outputs) ? promptObj.outputs : [],
-            success: Array.isArray(promptObj.success) ? promptObj.success : []
-        };
-        prompts.push(newPrompt);
-        window.savePromptsToLocalStorage();
-        currentPromptId = newPrompt.id;
-        isCreatingNewPrompt = false;
-        editPrompt(newPrompt.id);
-        setTabActive('Edit');
-        setTabBarVisible(true);
-        renderPromptsList();
-        closeModal();
-        setTimeout(() => alert('Prompt loaded!'), 100);
+        // Check for existing IDs
+        const existingIds = prompts.map(p => p.id);
+        let addedCount = 0;
+        incomingPrompts.forEach(promptObj => {
+            if (!promptObj || typeof promptObj !== 'object') return;
+            if (existingIds.includes(promptObj.id)) return; // skip if ID exists
+            const newPrompt = {
+                id: promptObj.id || Date.now(),
+                name: promptObj.name || '',
+                description: promptObj.description || '',
+                objective: promptObj.objective || '',
+                actor: promptObj.actor || '',
+                context: promptObj.context || '',
+                inputs: Array.isArray(promptObj.inputs) ? promptObj.inputs : [],
+                constraints: Array.isArray(promptObj.constraints) ? promptObj.constraints : [],
+                outputs: Array.isArray(promptObj.outputs) ? promptObj.outputs : [],
+                success: Array.isArray(promptObj.success) ? promptObj.success : []
+            };
+            prompts.push(newPrompt);
+            addedCount++;
+        });
+        if (addedCount > 0) {
+            window.savePromptsToLocalStorage();
+            renderPromptsList();
+            currentPromptId = prompts[prompts.length - 1].id;
+            isCreatingNewPrompt = false;
+            editPrompt(currentPromptId);
+            setTabActive('Edit');
+            setTabBarVisible(true);
+            closeModal();
+            setTimeout(() => alert(`Imported ${addedCount} new prompt(s)!`), 100);
+        } else {
+            errorDiv.textContent = 'No new prompts were added (all IDs already exist).';
+        }
     };
 }
 
