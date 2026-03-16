@@ -101,13 +101,15 @@ window.newPrompt = function () {
  * @param {number} id - The prompt id to delete.
  */
 function deletePrompt(id) {
-   // if (!confirm('Delete this prompt?')) return;
     prompts = prompts.filter(p => p.id !== id);
     window.savePromptsToLocalStorage();
     renderPromptsList();
 
-    // If we're viewing the deleted prompt, go back to welcome
-    if (currentPromptId === id) {
+    // If there are prompts left, select the first one
+    if (prompts.length > 0) {
+        currentPromptId = prompts[0].id;
+        viewPrompt(currentPromptId);
+    } else {
         currentPromptId = null;
         showWelcome();
     }
