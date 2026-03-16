@@ -629,6 +629,28 @@ textarea, input[type="text"] {
 #json-import-cancel.btn:hover {
   background: var(--color-danger-dark);
 }
+.toast-warning {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fffbe6;
+    color: #b45309;
+    border: 1px solid #facc15;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    padding: 1rem 2rem;
+    font-size: 1.1em;
+    z-index: 10000;
+    opacity: 0;
+    transition: opacity 0.4s, top 0.4s;
+    pointer-events: none;
+}
+.toast-warning.show {
+    opacity: 1;
+    pointer-events: auto;
+    top: 2.5rem;
+}
 @media (max-width: 600px) {
   #new-prompt-modal-content {
     max-width: 98vw;

@@ -991,3 +991,18 @@ function startApp() {
 
 // Call startApp() directly since script is at end of body
 startApp();
+
+// Toast logic: show session storage warning on load
+function showSessionStorageToast() {
+    const toast = document.getElementById('toast-warning');
+    if (!toast) return;
+    toast.classList.add('show');
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
+    }, 4000); // Show for 4 seconds
+}
+// Call toast on app load
+window.addEventListener('DOMContentLoaded', showSessionStorageToast);
+
