@@ -803,3 +803,15 @@ textarea, input[type="text"] {
 .restore-btn:hover {
     background: #1d4ed8;
 }
+#view-output-json.prompt-display {
+    min-height: 800px !important;
+    height: 800px !important;
+    font-family: monospace;
+    font-size: 1em;
+    padding: 1em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: vertical;
+    background: #f9f9f9;
+    color: #222;
+}
