@@ -32,20 +32,20 @@
             <div id="new-prompt-modal-content">
                 <!-- Choice screen -->
                 <div id="new-prompt-choice">
-                    <h2>Create New Prompt</h2>
-                    <div>
+                    <h2 class="modal-title">Create New Prompt</h2>
+                    <div class="modal-btn-group">
                         <button class="btn btn-primary" id="start-blank-prompt">
                             <span style="font-size:2em;">📝</span>
                             Start from Blank
-                            <span>Create a new empty prompt</span>
+                            <span style="font-size:0.95em; color:#2563eb;">Create a new empty prompt</span>
                         </button>
                         <button class="btn btn-secondary" id="start-json-prompt">
                             <span style="font-size:2em;">📋</span>
                             Import from JSON
-                            <span>Paste prompt JSON</span>
+                            <span style="font-size:0.95em; color:#2563eb;">Paste prompt JSON</span>
                         </button>
                     </div>
-                    <button class="btn btn-secondary" id="new-prompt-cancel">Cancel</button>
+                    <button class="btn btn-secondary" id="new-prompt-cancel" style="margin-top:1.5rem;">Cancel</button>
                 </div>
                 <!-- JSON import screen (hidden by default) -->
                 <div id="new-prompt-json-import" style="display:none;">

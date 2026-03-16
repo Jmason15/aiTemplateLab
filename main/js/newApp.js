@@ -831,7 +831,15 @@ function setupNewPromptModal() {
             }
             incomingPrompts = json;
         } else if (typeof json === 'object') {
-            incomingPrompts = [json];
+            // Check for nested templates in outputs
+            if (Array.isArray(json.outputs) && json.outputs.length > 0 && json.outputs.every(t => typeof t === 'object')) {
+                // Import each template in outputs as a separate prompt
+                incomingPrompts = json.outputs;
+                // Optionally, add the parent suite as a prompt too
+                incomingPrompts.unshift(json);
+            } else {
+                incomingPrompts = [json];
+            }
         } else {
             errorDiv.textContent = 'JSON must be a prompt object or array.';
             return;
