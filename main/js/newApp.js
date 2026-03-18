@@ -666,53 +666,60 @@ window.exportPrompts = function() {
         alert('No prompts to export');
         return;
     }
-
-    const dataStr = JSON.stringify(prompts, null, 2);
-
-    // Try normal download first
-    try {
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `prompts-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        // Show fallback option
-        setTimeout(() => {
-            if (confirm('Download started. If the file did not download, click OK to see the data to copy manually.')) {
-                showExportModal(dataStr);
-            }
-        }, 1000);
-    } catch (err) {
-        // Fallback: show in modal
-        showExportModal(dataStr);
-    }
+    showExportModal();
 };
 
-/**
- * Shows the export modal with prompt data.
- * @param {string} data - JSON string to show.
- */
-function showExportModal(data) {
+function showExportModal() {
     const modal = document.getElementById('export-modal');
-    const textarea = document.getElementById('export-modal-textarea');
-    if (!modal || !textarea) return;
-    textarea.value = data;
-    modal.style.display = 'flex';
-    textarea.select();
+    const grid = document.getElementById('export-template-grid');
+    const fileNameInput = document.getElementById('export-file-name');
+    if (!modal || !grid || !fileNameInput) return;
 
-    const copyBtn = document.getElementById('export-modal-copy');
-    const closeBtn = document.getElementById('export-modal-close');
-    if (copyBtn) {
-        copyBtn.onclick = function() {
-            textarea.select();
-            document.execCommand('copy');
+    // Render grid of checkboxes
+    grid.innerHTML = prompts.map(p =>
+        `<div style='display:flex;align-items:center;margin-bottom:6px;'>
+            <input type='checkbox' id='export-tpl-${p.id}' value='${p.id}' style='margin-right:8px;' checked>
+            <label for='export-tpl-${p.id}' style='cursor:pointer;'>${window.escapeHtml(p.name)}</label>
+        </div>`
+    ).join('');
+
+    // Set default file name
+    fileNameInput.value = `prompts-${Date.now()}.json`;
+
+    modal.style.display = 'flex';
+
+    // Download button
+    const downloadBtn = document.getElementById('export-modal-download');
+    if (downloadBtn) {
+        downloadBtn.onclick = function() {
+            // Collect checked templates
+            const checkedIds = Array.from(grid.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+            const selectedPrompts = prompts.filter(p => checkedIds.includes(String(p.id)));
+            if (selectedPrompts.length === 0) {
+                alert('Please select at least one template to export.');
+                return;
+            }
+            let fileName = fileNameInput.value.trim();
+            if (!fileName) fileName = `prompts-${Date.now()}.json`;
+            if (!fileName.endsWith('.json')) fileName += '.json';
+            try {
+                const blob = new Blob([JSON.stringify(selectedPrompts, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                modal.style.display = 'none';
+            } catch (err) {
+                alert('Download failed: ' + err.message);
+            }
         };
     }
+    // Close button
+    const closeBtn = document.getElementById('export-modal-close');
     if (closeBtn) {
         closeBtn.onclick = function() {
             modal.style.display = 'none';
