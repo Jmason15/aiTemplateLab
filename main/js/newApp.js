@@ -1217,7 +1217,11 @@ function viewPrompt(id) {
     if (infoDisplay) infoDisplay.style.display = '';
 }
 
-// In showWelcome(), ensure info-display is hidden
+
+
+/**
+ * Shows the welcome screen and hides other screens.
+ */
 function showWelcome() {
     // Hide info-display, tabs, and tab-content
     const infoDisplay = document.getElementById('info-display');
@@ -1946,8 +1950,10 @@ if (createTemplateGroupConfirm) {
         environment.templateGroups[groupName] = [];
         environment.history[groupName] = [];
         currentTemplateGroup = groupName;
+        currentPromptId = null; // Ensure no template is selected
         updateTemplateGroupDropdown();
         renderPromptsList();
+        showWelcome(); // Show home screen
         document.getElementById('create-template-group-modal').style.display = 'none';
         errorDiv.style.display = 'none';
         alert(`Template group '${groupName}' created successfully!`);
