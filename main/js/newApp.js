@@ -1354,7 +1354,7 @@ if (loadWorkspaceWarningModal) {
     };
 }
 
-// Load Workspace file input handler
+// Enhanced Load Workspace file input handler
 const loadWorkspaceFile = document.getElementById('load-workspace-file');
 if (loadWorkspaceFile) {
     loadWorkspaceFile.onchange = function(event) {
@@ -1364,15 +1364,26 @@ if (loadWorkspaceFile) {
         reader.onload = function(e) {
             try {
                 const loaded = JSON.parse(e.target.result);
-                if (!loaded.templates || !Array.isArray(loaded.templates)) {
-                    alert('Invalid workspace file: missing templates array');
+                // Validate structure
+                if (!loaded || typeof loaded !== 'object') {
+                    alert('Invalid workspace file: not a valid JSON object');
                     return;
                 }
-                prompts = loaded.templates.map(normalizePrompt);
+                if (!Array.isArray(loaded.templates)) {
+                    alert('Invalid workspace file: missing or malformed templates array');
+                    return;
+                }
+                // Validate templates
+                const validTemplates = loaded.templates.filter(t => t && typeof t === 'object' && t.id);
+                if (validTemplates.length === 0) {
+                    alert('Workspace file contains no valid templates');
+                    return;
+                }
+                prompts = validTemplates.map(normalizePrompt);
                 window.savePromptsToLocalStorage();
                 renderPromptsList();
                 // Replace input history
-                if (loaded.inputHistory && Array.isArray(loaded.inputHistory)) {
+                if (Array.isArray(loaded.inputHistory)) {
                     localStorage.setItem('promptInputHistory', JSON.stringify(loaded.inputHistory));
                 } else {
                     localStorage.removeItem('promptInputHistory');
@@ -1394,3 +1405,56 @@ if (loadWorkspaceFile) {
         event.target.value = '';
     };
 }
+
+// App Bar Overflow Menu Logic
+const kebabBtn = document.getElementById('app-bar-kebab');
+const menu = document.getElementById('app-bar-menu');
+if (kebabBtn && menu) {
+    kebabBtn.onclick = function(e) {
+        e.stopPropagation();
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    };
+    // Close menu on outside click
+    document.addEventListener('click', function(e) {
+        if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== kebabBtn) {
+            menu.style.display = 'none';
+        }
+    });
+    // Keyboard accessibility
+    kebabBtn.onkeydown = function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+    };
+}
+// Menu actions
+const menuSaveWorkspace = document.getElementById('menu-save-workspace');
+const menuLoadWorkspace = document.getElementById('menu-load-workspace');
+const menuDeleteWorkspace = document.getElementById('menu-delete-workspace');
+const menuExportTemplates = document.getElementById('menu-export-templates');
+const menuImportFile = document.getElementById('menu-import-file');
+const menuResetTemplates = document.getElementById('menu-reset-templates');
+if (menuSaveWorkspace) menuSaveWorkspace.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('save-workspace-btn').click();
+};
+if (menuLoadWorkspace) menuLoadWorkspace.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('load-workspace-btn').click();
+};
+if (menuDeleteWorkspace) menuDeleteWorkspace.onclick = function() {
+    // Disabled, show tooltip or do nothing
+};
+if (menuExportTemplates) menuExportTemplates.onclick = function() {
+    menu.style.display = 'none';
+    window.exportPrompts();
+};
+if (menuImportFile) menuImportFile.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('import-file').click();
+};
+if (menuResetTemplates) menuResetTemplates.onclick = function() {
+    menu.style.display = 'none';
+    window.resetPrompts();
+};
+

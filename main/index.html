@@ -141,6 +141,96 @@ hr {
 .sidebar-actions {
     margin-bottom:1.2em;
 }
+
+/* Top App Bar */
+#app-bar {
+    position:fixed;
+    top:0;
+    left:0;
+    right:0;
+    height:56px;
+    background:#232a36;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    z-index:10000;
+    box-shadow:0 2px 8px rgba(30,41,59,0.08);
+    padding:0 2rem;
+}
+#app-bar-actions {
+    display:flex;
+    gap:1.2em;
+    align-items:center;
+}
+#workspace-pill {
+    background:#334155;
+    color:#fff;
+    border-radius:16px;
+    padding:0.35em 1.2em;
+    font-size:1em;
+    font-weight:500;
+    opacity:0.95;
+    margin-right:0.5em;
+    cursor:default;
+}
+#app-bar-kebab {
+    background:none;
+    border:none;
+    color:#fff;
+    font-size:1.5em;
+    padding:0.2em 0.6em;
+    border-radius:50%;
+    cursor:pointer;
+}
+#app-bar-menu {
+    display:none;
+    position:absolute;
+    top:56px;
+    right:2rem;
+    min-width:220px;
+    background:#232a36;
+    color:#fff;
+    border-radius:8px;
+    box-shadow:0 8px 32px rgba(30,41,59,0.18);
+    z-index:10001;
+    padding:0.5em 0;
+}
+.menu-item {
+    width:100%;
+    background:none;
+    border:none;
+    color:#fff;
+    text-align:left;
+    font-size:1em;
+    padding:0.45em 1.2em;
+    cursor:pointer;
+    border-radius:6px;
+    transition:background 0.15s;
+}
+.menu-item:hover:not(.disabled):not([disabled]) {
+    background:#475569;
+}
+.menu-item.disabled, .menu-item[disabled] {
+    opacity:0.5;
+    cursor:not-allowed;
+}
+hr {
+    border:none;
+    border-top:1px solid #475569;
+    margin:0.5em 0;
+}
+#container {
+    margin-top:56px;
+}
+@media (max-width:600px) {
+    #app-bar {
+        padding:0 1em;
+    }
+    #container {
+        margin-top:56px;
+    }
+}
     </style>
 </head>
 <body>
@@ -152,16 +242,28 @@ hr {
 <!-- Move dropdown menu to body for fixed overlay -->
 <div id="new-prompt-dropdown" class="dropdown-menu" role="menu" style="display:none; position:fixed; min-width:180px; z-index:9999;"></div>
 <div id="container">
-    <div id="sidebar" class="sidebar">
-        <div class="sidebar-header">
-            <!-- New Prompt button at top -->
-            <div class="sidebar-actions">
-                <button class="btn btn-success btn-block" id="new-prompt-main" style="border-radius:8px; background:#16a34a; color:#fff; font-weight:600;">New Template</button>
-            </div>
-            <div>
-                <h2 style="margin-bottom:1.2em; font-size:1.2em; font-weight:700;">Prompt templates:</h2>
+    <!-- Top App Bar -->
+    <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:56px; background:#232a36; color:#fff; display:flex; align-items:center; justify-content:space-between; z-index:10000; box-shadow:0 2px 8px rgba(30,41,59,0.08); padding:0 2rem;">
+        <div style="font-size:1.35em; font-weight:700; letter-spacing:0.02em;">aiTemplateLab</div>
+        <div id="app-bar-actions" style="display:flex; gap:1.2em; align-items:center;">
+            <span id="workspace-pill" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; margin-right:0.5em; cursor:default;">Current workspace</span>
+            <button id="app-bar-kebab" aria-label="More actions" style="background:none; border:none; color:#fff; font-size:1.5em; padding:0.2em 0.6em; border-radius:50%; cursor:pointer;">
+                <span style="font-size:1.5em;">&#x22EE;</span>
+            </button>
+            <div id="app-bar-menu" style="display:none; position:absolute; top:56px; right:2rem; min-width:220px; background:#232a36; color:#fff; border-radius:8px; box-shadow:0 8px 32px rgba(30,41,59,0.18); z-index:10001; padding:0.5em 0;">
+                <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Workspace</div>
+                <button class="menu-item" id="menu-save-workspace">Save workspace</button>
+                <button class="menu-item" id="menu-load-workspace">Load workspace…</button>
+                <button class="menu-item disabled" id="menu-delete-workspace" title="Coming soon" disabled style="opacity:0.5; cursor:not-allowed;">Delete workspace</button>
+                <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
+                <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Templates</div>
+                <button class="menu-item" id="menu-export-templates">Export templates…</button>
+                <button class="menu-item" id="menu-import-file">Import file…</button>
+                <button class="menu-item" id="menu-reset-templates">Reset default templates</button>
             </div>
         </div>
+    </header>
+    <div id="sidebar" class="sidebar">
         <div class="templates-container template-list-card">
             <div id="prompts-list">
                 <!-- Prompt tiles will be rendered here -->
@@ -170,10 +272,8 @@ hr {
         <div class="sidebar-footer">
             <!-- Fixed bottom actions -->
             <div class="sidebar-actions sidebar-actions-bottom" style="padding:1em 1em 1.2em 1em;">
-                <button class="btn btn-outline btn-block" onclick="exportPrompts()" style="border-radius:8px; font-weight:500;">Export Templates</button>
-                <button class="btn btn-success btn-block" id="save-workspace-btn" style="margin-top:0.5rem; border-radius:8px; font-weight:500;">Save Workspace</button>
-                <button class="btn btn-outline btn-block" id="load-workspace-btn" style="margin-top:0.5rem; border-radius:8px; font-weight:500;">Load Workspace</button>
-                <button class="btn btn-danger btn-block" onclick="resetPrompts()" style="margin-top: 0.5rem; border-radius:8px; font-weight:500; background:#7b2c2c; color:#fff; border:1.5px solid #7b2c2c;">Reset Templates</button>
+                <button class="btn btn-outline btn-block" id="import-json-btn" style="border-radius:8px; font-weight:500;">Import JSON</button>
+                <button class="btn btn-success btn-block" id="blank-prompt-btn" style="margin-top: 0.5rem; border-radius:8px; font-weight:500;">Blank Prompt</button>
             </div>
 
             <!-- Modal for pure JSON import -->
@@ -429,6 +529,10 @@ hr {
         <!-- Add hidden file input for importing prompts -->
         <input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)" />
         <input type="file" id="load-workspace-file" accept=".json" style="display:none;" />
+
+        <!-- Hidden buttons for workspace actions -->
+        <button id="save-workspace-btn" style="display:none"></button>
+        <button id="load-workspace-btn" style="display:none"></button>
     </div>
 </div>
 <script>
@@ -623,6 +727,20 @@ hr {
                     closeNewPromptModal();
                 }
             });
+        }
+        // Remove New Template dropdown logic
+        // Add sidebar footer button logic
+        var importJsonBtn = document.getElementById('import-json-btn');
+        if (importJsonBtn) {
+            importJsonBtn.onclick = function() {
+                openNewPromptModal();
+            };
+        }
+        var blankPromptBtn = document.getElementById('blank-prompt-btn');
+        if (blankPromptBtn) {
+            blankPromptBtn.onclick = function() {
+                startBlankPrompt();
+            };
         }
     });
 })();
