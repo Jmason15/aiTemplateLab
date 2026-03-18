@@ -261,7 +261,7 @@ textarea, input[type="text"] {
   font-weight: bold;
 }
 .btn-primary {
-  background: var(--color-primary);
+  background: #3b82f6;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -272,12 +272,12 @@ textarea, input[type="text"] {
   cursor: pointer;
 }
 .btn-primary:hover, .btn-primary:focus {
-  background: var(--color-primary-dark);
+  background: #60a5fa;
 }
 .btn-secondary {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
+  background: #e0e7ef;
+  color: #2563eb;
+  border: 1px solid #cbd5e1;
   border-radius: 5px;
   font-weight: 500;
   transition: background 0.2s, color 0.2s;
@@ -286,11 +286,11 @@ textarea, input[type="text"] {
   cursor: pointer;
 }
 .btn-secondary:hover, .btn-secondary:focus {
-  background: var(--color-primary);
-  color: #fff;
+  background: #cbd5e1;
+  color: #1d4ed8;
 }
 .btn-danger {
-  background: var(--color-danger);
+  background: #ef4444;
   color: #fff;
   border: none;
   border-radius: 5px;
@@ -301,7 +301,8 @@ textarea, input[type="text"] {
   cursor: pointer;
 }
 .btn-danger:hover, .btn-danger:focus {
-  background: var(--color-danger-dark);
+  background: #f87171;
+  color: #fff;
 }
 .edit-footer {
   position: sticky;
@@ -464,148 +465,919 @@ textarea, input[type="text"] {
 .section-hint .hint-icon {
   display: none;
 }
-@media (max-width: 1100px) {
-  .main-panel {
-    margin: 16px;
-    max-width: 100%;
-  }
+/* Modal improvements for user-friendly look */
+#new-prompt-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(30,41,59,0.65);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  animation: fadeInModalBg 0.3s;
 }
-@media (max-width: 800px) {
-  #container {
-    flex-direction: column;
-  }
-  #sidebar {
-    position: static;
-    width: 100%;
-    min-height: unset;
-    height: auto;
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 10px;
-  }
-  #main-content {
-    margin-left: 0;
-  }
-  .main-panel {
-    margin: 8px;
-    min-width: 0;
-    min-height: 0;
-  }
+#new-prompt-modal.show {
+  display: flex !important;
 }
-@media (max-width: 600px) {
-  .edit-footer {
-    padding: 8px 0 0 0;
-  }
-  .edit-btn-group {
-    flex-direction: column;
-    gap: 8px;
-    align-items: stretch;
-  }
-  .edit-btn-group .btn {
+/* Improved modal layout and spacing */
+#new-prompt-modal-content {
+  background: var(--color-card);
+  padding: 1.5rem 1.2rem;
+  border-radius: 16px;
+  max-width: 380px;
+  min-width: 240px;
+  box-shadow: 0 8px 32px rgba(30,41,59,0.18);
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  animation: fadeInModalContent 0.35s;
+}
+#new-prompt-modal-content h2 {
+  font-size: 1.5em;
+  color: var(--color-primary);
+  margin-bottom: 1.2rem;
+  text-align: left;
+}
+#new-prompt-modal-content label {
+  font-weight: 500;
+  color: #222;
+  margin-bottom: 0.2em;
+  display: block;
+}
+#new-prompt-modal-content textarea {
+  margin-bottom: 0.3em;
+  width: 100%;
+  min-height: 120px;
+  font-family: monospace;
+  font-size: 1em;
+  padding: 1em;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  resize: vertical;
+  background: #f9f9f9;
+}
+#new-prompt-modal-content .modal-btn-bar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.7em;
+  margin-top: 0.7em;
+}
+#new-prompt-modal-content .btn-primary {
+  font-size: 1em;
+  padding: 0.5em 1.2em;
+  border-radius: 6px;
+  box-shadow: none;
+  font-weight: 500;
+}
+#new-prompt-modal-content .btn-text {
+  font-size: 1em;
+  padding: 0.5em 1.2em;
+  border-radius: 6px;
+  box-shadow: none;
+  font-weight: 500;
+}
+.dropdown-group {
+    position: relative;
     width: 100%;
-    justify-content: center;
-  }
-  .edit-card {
-    flex-direction: column;
+}
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+    min-width: 180px;
+    z-index: 1000;
+    padding: 0.5em 0;
+}
+.dropdown-item {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.7em 1.2em;
+    font-size: 1.08em;
+    color: #2563eb;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+    background: #e0e7ef;
+    color: #1d4ed8;
+}
+.btn-text {
+    background: none;
+    color: #2563eb;
+    border: none;
+    font-size: 1.08em;
+    font-weight: 500;
+    padding: 0.5em 1.2em;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.2s;
+    box-shadow: none;
+    text-align: right;
+}
+.btn-text:hover, .btn-text:focus {
+    color: #1d4ed8;
+    background: #e0e7ef;
+}
+#tab-history {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 8px 8px 0 0;
+  font-size: 1.1em;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+#tab-history.active, #tab-history:focus {
+  background: var(--color-card);
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  outline: none;
+}
+.history-panel {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  box-shadow: var(--color-shadow);
+  padding: 2rem;
+  margin: 32px auto;
+  max-width: 700px;
+  min-height: 300px;
+}
+#history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+.history-entry {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+  font-size: 1em;
+  color: #222;
+  box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+}
+.history-entry .restore-btn {
+  align-self: flex-end;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 0.5em;
+  transition: background 0.2s;
+}
+.history-entry .restore-btn:hover {
+  background: var(--color-primary-dark);
+}
+.history-grid {
+    display: grid;
+    grid-template-columns: 1fr;
     gap: 0.5rem;
-    padding: 8px 6px;
-  }
-  .edit-card-content {
+    margin-top: 1rem;
+}
+.history-row {
+    display: grid;
+    /* Dynamically set columns, Jira Text wider if present */
+    grid-template-columns: repeat(var(--history-cols), 1fr);
+    align-items: center;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(30,41,59,0.06);
+    border: 1px solid #e5e7eb;
+    padding: 0.5rem 0.7rem;
+    min-height: 40px;
+}
+.history-row .jira-text-cell {
+    grid-column: auto;
+    min-width: 528px;
+    max-width: 1540px;
+    flex: 7 1 0;
+    font-size: 1.13em;
+    word-break: break-word;
+    white-space: pre-wrap;
+    background: #f9fafb;
+}
+.history-header {
+    background: #f3f6fa;
+    font-weight: 600;
+    color: var(--color-primary);
+    border-bottom: 2px solid var(--color-primary-light);
+}
+.history-cell {
+    padding: 0.3em 0.7em;
+    font-size: 1em;
+    color: #222;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+}
+.history-header-cell {
+    font-size: 1.05em;
+    color: #2563eb;
+    font-weight: 600;
+}
+.restore-btn {
+    background: var(--color-primary, #2563eb);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 0.4em 1.2em;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.restore-btn:hover {
+    background: #1d4ed8;
+}
+#view-output-json.prompt-display {
+    min-height: 800px !important;
+    height: 800px !important;
+    font-family: monospace;
+    font-size: 1em;
+    padding: 1em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    resize: vertical;
+    background: #f9f9f9;
+    color: #222;
+}
+.accent-tile {
+    border: 2px solid var(--color-primary);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(30,41,59,0.08);
+    transition: border 0.2s, background 0.2s, color 0.2s;
+}
+.accent-tile:hover, .accent-tile:focus {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary-dark);
+}
+.import-section {
+    margin-top: 0.2em;
+    display: flex;
     flex-direction: column;
-    gap: 6px;
-    align-items: stretch;
+    gap: 0.5em;
+}
+.import-tile {
+    font-size: 1.08em;
+    background: #f3f6fa;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary-light);
+    border-radius: 10px;
+    font-weight: 500;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+}
+.import-tile:hover, .import-tile:focus {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary-dark);
+}
+.tile-subtitle {
+    font-size: 0.98em;
+    color: #64748b;
+    margin-top: 0.2em;
+    font-weight: 400;
+    display: block;
+    text-align: center;
+    line-height: 1.3;
+}
+#new-prompt-choice {
+    padding-top: 0.7em;
+    padding-bottom: 0.7em;
+}
+#new-prompt-choice .modal-title {
+    margin-bottom: 0.7em;
+}
+#new-prompt-choice .modal-btn-group {
+    gap: 0.7em;
+}
+#new-prompt-choice button {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.1em 1em;
+    margin-bottom: 0.2em;
+}
+.primary-card {
+    width: 100%;
+    max-width: 340px;
+    margin: 0 auto;
+    border: 2px solid var(--color-primary);
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 1.15em;
+    box-shadow: 0 2px 12px rgba(30,41,59,0.12);
+    border-radius: 12px;
+    padding: 1.3em 1em;
+    transition: border 0.2s, background 0.2s, color 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.primary-card:hover, .primary-card:focus {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary-dark);
+}
+.secondary-card {
+    min-width: 160px;
+    max-width: 200px;
+    border: 1px solid var(--color-primary-light);
+    background: #f3f6fa;
+    color: var(--color-primary);
+    border-radius: 10px;
+    font-weight: 500;
+    font-size: 1.08em;
+    box-shadow: 0 1px 6px rgba(30,41,59,0.08);
+    padding: 1.1em 1em;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+.secondary-card:hover, .secondary-card:focus {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary-dark);
+}
+.divider-label {
+    margin: 1em 0 0.5em 0;
+    text-align: center;
+    color: #64748b;
+    font-weight: 600;
+    font-size: 1.05em;
+    letter-spacing: 0.02em;
+}
+.other-options-group {
+    display: flex;
+    gap: 0.7em;
+    justify-content: center;
+    margin-bottom: 0.5em;
+}
+#new-prompt-choice .btn-secondary {
+    min-width: 120px;
+    font-size: 1em;
+    padding: 0.5em 1.2em;
+    border-radius: 6px;
+    box-shadow: none;
+    font-weight: 500;
+}
+#new-prompt-choice .btn-primary, #new-prompt-choice .btn-danger {
+    font-size: 1em;
+    padding: 0.5em 1.2em;
+    border-radius: 6px;
+    box-shadow: none;
+    font-weight: 500;
+}
+.import-json-section {
+    margin-bottom: 1.2em;
+}
+.import-json-section textarea {
+    margin-bottom: 0.3em;
+    width: 100%;
+    min-height: 120px;
+    font-family: monospace;
+    font-size: 1em;
+    padding: 1em;
+    border-radius: 8px;
+    border: 1.5px solid #e5e7eb;
+    resize: vertical;
+    background: #f9f9f9;
+}
+.import-json-section label {
+    font-weight: 500;
+    color: #222;
+    margin-bottom: 0.2em;
+    display: block;
+}
+.import-json-section .modal-btn-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.7em;
+    margin-top: 0.7em;
+}
+.split-btn-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+}
+.btn-caret {
+    background: #334155;
+    color: #fff;
+    border: none;
+    border-radius: 0 6px 6px 0;
+    width: 38px;
+    padding: 0;
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+.btn-caret:hover, .btn-caret:focus {
+    background: #2563eb;
+    color: #fff;
+}
+.dropdown-menu-dark {
+    display: none;
+    position: absolute;
+    min-width: 160px;
+    max-width: 220px;
+    background: #334155;
+    color: #fff;
+    border: 1px solid #222e3a;
+    border-radius: 8px;
+    box-shadow: 0 8px 32px rgba(30,41,59,0.18);
+    padding: 4px 0;
+    z-index: 1000;
+    margin: 12px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.dropdown-item-dark {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 8px 18px;
+    font-size: 1.08em;
+    color: #fff;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+    font-weight: 500;
+    outline: none;
+}
+.dropdown-item-dark:hover, .dropdown-item-dark:focus {
+    background: #2563eb;
+    color: #fff;
+}
+
+.btn {
+  border-radius:8px;
+  font-weight:500;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.btn-block {
+  width:100%;
+  display:block;
+}
+.btn-success {
+  background:#16a34a;
+  color:#fff;
+}
+.btn-success:hover, .btn-success:focus {
+  background:#15803d;
+  color:#fff;
+  box-shadow:0 2px 8px rgba(22,163,74,0.12);
+}
+.btn-outline {
+  background:#232a36;
+  color:#e5e7eb;
+  border:1.5px solid #475569;
+}
+.btn-outline:hover, .btn-outline:focus {
+  background:#334155;
+  color:#fff;
+  box-shadow:0 2px 8px rgba(59,130,246,0.08);
+}
+.btn-danger {
+  background:#232a36;
+  color:#7b2c2c;
+  border:1.5px solid #7b2c2c;
+}
+.btn-danger:hover, .btn-danger:focus {
+  background:#7b2c2c;
+  color:#fff;
+}
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-width: 240px;
+  background: #232a36;
+  color: #e5e7eb;
+  padding: 0;
+}
+.sidebar-header {
+  padding: 16px 16px 8px;
+  flex-shrink: 0;
+  background: #232a36;
+  z-index: 2;
+}
+.templates-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 16px 16px;
+  min-height: 0;
+  z-index: 1;
+}
+.sidebar-footer {
+  padding: 12px 16px 16px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  flex-shrink: 0;
+  background: #232a36;
+  z-index: 2;
+}
+.dropdown-menu {
+  background:#232a36;
+  color:#fff;
+  border:1px solid #222e3a;
+  border-radius:8px;
+  box-shadow:0 8px 32px rgba(30,41,59,0.18);
+  padding:4px 0;
+  min-width:180px;
+  max-width:220px;
+  width:220px;
+}
+.dropdown-item {
+  border-radius:6px;
+  font-weight:500;
+  padding:0.45em 0.9em;
+  font-size:1em;
+  background:none;
+  color:#fff;
+  border:none;
+  text-align:left;
+  width:100%;
+  cursor:pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.dropdown-item:hover, .dropdown-item:focus {
+  background:#475569;
+  color:#fff;
+}
+.template-list-card {
+  background:none;
+  border:none;
+  border-radius:0;
+  padding:0;
+  min-height:60px;
+  margin-bottom:2em;
+}
+.prompt-card {
+  background:#334155;
+  color:#fff;
+  border-radius:8px;
+  margin-bottom:0.7em;
+  border-left:4px solid transparent;
+  box-shadow:none;
+  font-weight:400;
+  transition:border-color 0.15s, font-weight 0.15s;
+  padding:0.8em 1em;
+}
+.prompt-card.selected {
+  border-left:4px solid #16a34a;
+  border-top:2px solid #16a34a;
+  border-bottom:2px solid #16a34a;
+  border-right:2px solid #16a34a;
+  font-weight:700;
+  background:#334155;
+  color:#fff;
+  box-shadow:0 0 0 2px #16a34a inset;
+}
+.prompt-card:hover {
+  background:#475569;
+  color:#fff;
+}
+hr {
+  border:none;
+  border-top:1px solid #475569;
+  margin:0.5em 0 1em 0;
+}
+.sidebar-actions {
+  margin-bottom:1.2em;
+}
+
+/* Top App Bar */
+#app-bar {
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  height:56px;
+  background:#232a36;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  z-index:10000;
+  box-shadow:0 2px 8px rgba(30,41,59,0.08);
+  padding:0 2rem;
+}
+#app-bar-center {
+  flex:1;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+#template-group-dropdown {
+  background:#334155;
+  color:#fff;
+  border-radius:16px;
+  padding:0.35em 1.2em;
+  font-size:1em;
+  font-weight:500;
+  opacity:0.95;
+  border:none;
+  outline:none;
+  min-width:180px;
+  text-align:center;
+}
+#app-bar-actions {
+  display:flex;
+  gap:1.2em;
+  align-items:center;
+}
+#app-bar-kebab {
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:1.5em;
+  padding:0.2em 0.6em;
+  border-radius:50%;
+  cursor:pointer;
+}
+#app-bar-menu {
+  display:none;
+  position:absolute;
+  top:56px;
+  right:2rem;
+  min-width:220px;
+  background:#232a36;
+  color:#fff;
+  border-radius:8px;
+  box-shadow:0 8px 32px rgba(30,41,59,0.18);
+  z-index:10001;
+  padding:0.5em 0;
+}
+.menu-item {
+  width:100%;
+  background:none;
+  border:none;
+  color:#fff;
+  text-align:left;
+  font-size:1em;
+  padding:0.45em 1.2em;
+  cursor:pointer;
+  border-radius:6px;
+  transition:background 0.15s;
+}
+.menu-item:hover:not(.disabled):not([disabled]) {
+  background:#475569;
+}
+.menu-item.disabled, .menu-item[disabled] {
+  opacity:0.5;
+  cursor:not-allowed;
+}
+hr {
+  border:none;
+  border-top:1px solid #475569;
+  margin:0.5em 0;
+}
+#container {
+  margin-top:56px;
+}
+@media (max-width:600px) {
+  #app-bar {
+    padding:0 1em;
+  }
+  #container {
+    margin-top:56px;
   }
 }
 
 </style>
+    <style>
+
+    </style>
 </head>
 <body>
-<div class="warning-banner" role="alert">
+<!-- Toast notification container -->
+<div id="toast-warning" class="toast-warning" role="alert" aria-live="assertive" style="display:none;">
     <strong>⚠️ Session Storage Only</strong>
     Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
 </div>
+<!-- Move dropdown menu to body for fixed overlay -->
+<div id="new-prompt-dropdown" class="dropdown-menu" role="menu" style="display:none; position:fixed; min-width:180px; z-index:9999;"></div>
 <div id="container">
+    <!-- Top App Bar -->
+    <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:56px; background:#232a36; color:#fff; display:flex; align-items:center; justify-content:space-between; z-index:10000; box-shadow:0 2px 8px rgba(30,41,59,0.08); padding:0 2rem;">
+        <div style="font-size:1.35em; font-weight:700; letter-spacing:0.02em;">aiTemplateLab</div>
+        <div id="app-bar-center" style="flex:1; display:flex; justify-content:center; align-items:center;">
+            <select id="template-group-dropdown" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; border:none; outline:none; min-width:180px; text-align:center;">
+                <!-- Template group options will be rendered dynamically by JS -->
+            </select>
+        </div>
+        <div id="app-bar-actions" style="display:flex; gap:1.2em; align-items:center;">
+            <button id="app-bar-kebab" aria-label="More actions" style="background:none; border:none; color:#fff; font-size:1.5em; padding:0.2em 0.6em; border-radius:50%; cursor:pointer;">
+                <span style="font-size:1.5em;">&#x22EE;</span>
+            </button>
+            <div id="app-bar-menu" style="display:none; position:absolute; top:56px; right:2rem; min-width:220px; background:#232a36; color:#fff; border-radius:8px; box-shadow:0 8px 32px rgba(30,41,59,0.18); z-index:10001; padding:0.5em 0;">
+                <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Workspace</div>
+                <button class="menu-item" id="menu-save-workspace">Save Workspace</button>
+                <button class="menu-item" id="menu-load-workspace">Load Workspace…</button>
+                <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
+                <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Template Groups</div>
+                <button class="menu-item" id="menu-create-template-group">Create Template Group…</button>
+                <button class="menu-item" id="menu-save-template-group">Save Template Group…</button>
+                <button class="menu-item" id="menu-load-template-group">Load Template Group…</button>
+                <button class="menu-item" id="menu-delete-template-group" title="Delete Template Group">Delete Template Group</button>
+                <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
+                <button class="menu-item" id="menu-export-templates">Export Templates…</button>
+                <button class="menu-item" id="menu-import-templates">Import Templates…</button>
+                <button class="menu-item" id="menu-reset-templates" style="display:none;">Reset Default Templates</button>
+            </div>
+        </div>
+    </header>
     <div id="sidebar" class="sidebar">
-        <div>
-            <h2>Prompt templates:</h2>
+        <div class="templates-container template-list-card">
+            <div id="prompts-list">
+                <!-- Prompt tiles will be rendered here -->
+            </div>
         </div>
-        <div id="prompts-list">
-            <!-- Prompt tiles will be rendered here -->
-        </div>
-        <div class="sidebar-actions">
-            <button class="btn btn-primary btn-block" id="new-prompt-main">+ New Template</button>
-            <button class="btn btn-secondary btn-block" onclick="exportPrompts()" style="margin-top: 0.5rem;">Export Templates</button>
-            <button class="btn btn-secondary btn-block" onclick="importPrompts()" style="margin-top: 0.5rem;">Import Templates</button>
-            <button class="btn btn-secondary btn-block" onclick="resetPrompts()" style="margin-top: 0.5rem; background: #ef4444; color: #fff;">Reset Templates</button>
-            <input type="file" id="import-file" accept=".json" style="display: none;" onchange="handleImport(event)">
-        </div>
+        <div class="sidebar-footer">
+            <!-- Fixed bottom actions -->
+            <div class="sidebar-actions sidebar-actions-bottom" style="padding:1em 1em 1.2em 1em;">
+                <button class="btn btn-outline btn-block" id="import-json-btn" style="border-radius:8px; font-weight:500;">Import JSON</button>
+                <button class="btn btn-success btn-block" id="blank-prompt-btn" style="margin-top: 0.5rem; border-radius:8px; font-weight:500;">Blank Prompt</button>
+            </div>
 
-        <!-- Modal for new prompt creation -->
-        <div id="new-prompt-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-            <div id="new-prompt-modal-content" style="background:#fff; padding:2rem; border-radius:10px; max-width:95vw; min-width:320px; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center; display:flex; flex-direction:column; gap:1.5rem;">
-                <!-- Choice screen -->
-                <div id="new-prompt-choice">
-                    <h2 style="margin-bottom:1.5rem;">Create New Prompt</h2>
-                    <div style="display:flex; gap:2rem; justify-content:center; flex-wrap:wrap;">
-                        <button class="btn btn-primary" id="start-blank-prompt" style="flex:1; min-width:180px; max-width:220px; padding:2em 1em; font-size:1.2em; display:flex; flex-direction:column; align-items:center; gap:0.5em;">
-                            <span style="font-size:2em;">📝</span>
-                            Start from Blank
-                            <span style="font-size:0.95em; color:#2563eb;">Create a new empty prompt</span>
-                        </button>
-                        <button class="btn btn-secondary" id="start-json-prompt" style="flex:1; min-width:180px; max-width:220px; padding:2em 1em; font-size:1.2em; display:flex; flex-direction:column; align-items:center; gap:0.5em;">
-                            <span style="font-size:2em;">⬆️</span>
-                            Import from JSON
-                            <span style="font-size:0.95em; color:#2563eb;">Paste or upload a prompt JSON</span>
-                        </button>
-                    </div>
-                    <button class="btn btn-secondary" id="new-prompt-cancel" style="margin-top:2rem;">Cancel</button>
-                </div>
-                <!-- JSON import screen (hidden by default) -->
-                <div id="new-prompt-json-import" style="display:none; flex-direction:column; gap:1rem; align-items:center;">
-                    <div style="width:100%; display:flex; align-items:center; gap:1em;">
-                        <button id="json-import-back" class="btn btn-secondary" style="font-size:1.1em;">← Back</button>
-                        <h3 style="flex:1; text-align:center; margin:0;">Import Prompt from JSON</h3>
-                    </div>
-                    <label for="json-import-textarea" class="visually-hidden">Paste prompt JSON here</label>
-                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical;"></textarea>
-                    <div style="display:flex; gap:1em; align-items:center; justify-content:center; width:100%;">
-                        <input type="file" id="json-import-file" accept=".json" style="display:none;">
-                        <button class="btn btn-secondary" id="json-import-upload">Upload JSON File</button>
-                        <span id="json-import-filename" style="color:#888; font-size:0.95em;"></span>
-                    </div>
-                    <div id="json-import-error" style="color:#ef4444; min-height:1.5em;"></div>
-                    <div style="display:flex; gap:1em; justify-content:center; width:100%;">
+            <!-- Modal for pure JSON import -->
+            <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
+                <div id="new-prompt-modal-content">
+                    <h2 class="modal-title">Import Prompt from JSON</h2>
+                    <label for="json-import-textarea" style="font-weight:500; color:#222; margin-bottom:0.2em; display:block;">Prompt JSON</label>
+                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="margin-bottom:0.3em; width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:8px; border:1.5px solid #e5e7eb; resize:vertical; background:#f9f9f9;"></textarea>
+                    <div style="font-size:0.97em; color:#64748b; margin-bottom:0.2em;">Paste an existing prompt JSON to load it.</div>
+                    <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
+                    <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
+                        <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
                         <button class="btn btn-primary" id="json-import-confirm">Import</button>
-                        <button class="btn btn-secondary" id="json-import-cancel">Cancel</button>
                     </div>
                 </div>
             </div>
+
+            <!-- Save Workspace Modal -->
+            <div id="save-workspace-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #2563eb;">Save Workspace</h2>
+                    <label for="save-workspace-filename">Workspace File Name:</label>
+                    <input type="text" id="save-workspace-filename" placeholder="e.g., workspace.json" style="margin-bottom: 1rem;" />
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-success" id="save-workspace-confirm">Save</button>
+                        <button class="btn btn-secondary" id="save-workspace-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load Workspace Warning Modal -->
+            <div id="load-workspace-warning-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #ef4444;">Warning: Replace Workspace</h2>
+                    <p style="margin-bottom: 1rem; color: #333;">Loading a workspace will <strong>replace all templates and history</strong>.<br>If you want to add templates, use <strong>Import File</strong> instead.</p>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-danger" id="load-workspace-continue">Continue</button>
+                        <button class="btn btn-secondary" id="load-workspace-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Template Group Modal -->
+            <div id="save-template-group-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #2563eb;">Save Template Group</h2>
+                    <label for="save-template-group-select">Template Group:</label>
+                    <select id="save-template-group-select" style="margin-bottom: 1rem;"></select>
+                    <label for="save-template-group-filename">Template Group File Name:</label>
+                    <input type="text" id="save-template-group-filename" placeholder="e.g., template-group.json" style="margin-bottom: 1rem;" />
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-success" id="save-template-group-confirm">Save</button>
+                        <button class="btn btn-secondary" id="save-template-group-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Template Group Modal -->
+            <div id="delete-template-group-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #ef4444;">Delete Template Group</h2>
+                    <label for="delete-template-group-select">Select Template Group to Delete:</label>
+                    <select id="delete-template-group-select" style="margin-bottom: 1rem;"></select>
+                    <div id="delete-template-group-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-danger" id="delete-template-group-confirm">Delete</button>
+                        <button class="btn btn-secondary" id="delete-template-group-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for pure JSON import -->
+            <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
+                <div id="new-prompt-modal-content">
+                    <h2 class="modal-title">Import Prompt from JSON</h2>
+                    <label for="json-import-textarea" style="font-weight:500; color:#222; margin-bottom:0.2em; display:block;">Prompt JSON</label>
+                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="margin-bottom:0.3em; width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:8px; border:1.5px solid #e5e7eb; resize:vertical; background:#f9f9f9;"></textarea>
+                    <div style="font-size:0.97em; color:#64748b; margin-bottom:0.2em;">Paste an existing prompt JSON to load it.</div>
+                    <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
+                    <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
+                        <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
+                        <button class="btn btn-primary" id="json-import-confirm">Import</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for copy confirmation -->
+            <div id="copy-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
+                    <h2>Prompt Copied!</h2>
+                    <p>The generated prompt has been copied to your clipboard.<br>Go to your AI tool and paste the prompt to use it.</p>
+                    <button id="close-copy-modal" class="btn btn-primary" style="margin-top:1rem;">OK</button>
+                </div>
+            </div>
+            <!-- Modal for delete confirmation -->
+            <div id="delete-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
+                    <h2>Delete Prompt?</h2>
+                    <p>This action cannot be undone. Are you sure you want to delete this prompt?</p>
+                    <div style="margin-top:1.5rem; display:flex; gap:1rem; justify-content:center;">
+                        <button id="confirm-delete-prompt" class="btn btn-primary" style="background:#ef4444; color:#fff;">Delete</button>
+                        <button id="cancel-delete-prompt" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Template Group Modal -->
+            <div id="create-template-group-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #2563eb;">Create Template Group</h2>
+                    <label for="create-template-group-name">Template Group Name:</label>
+                    <input type="text" id="create-template-group-name" placeholder="e.g., New Group" style="margin-bottom: 1rem;" />
+                    <div id="create-template-group-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-success" id="create-template-group-confirm">Create</button>
+                        <button class="btn btn-secondary" id="create-template-group-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     <div id="main-content" style="margin-left:260px;">
         <div class="main-panel">
+            <section id="welcome-screen" class="screen active">
+                <div class="empty-state">
+                    <h3>Welcome to Prompt Builder Pro</h3>
+                    <p>Select a prompt from the sidebar or create a new one</p>
+                </div>
+            </section>
+            <div class="info-display card card-body" style="margin-bottom: 1.5rem;">
+                <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
+                <p id="view-desc" style="font-size: 1.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Description</p>
+                <details id="view-meta-details" style="margin-bottom: 0.5rem;">
+                    <summary style="cursor:pointer; color: var(--color-primary); font-weight: 500; font-size: 1.05em;">Show Details</summary>
+                    <div id="view-meta" style="display: flex; flex-direction: column; gap: 0.7em; padding: 0.7em 0 0 0.2em; line-height: 1.6;"></div>
+                </details>
+            </div>
             <div id="tabs">
-                <button onclick="showView()" id="tab-view">View Prompt</button>
-                <button onclick="showEdit()" id="tab-edit">Edit</button>
+                <button onclick="showView()" id="tab-view">Use Template</button>
+                <button onclick="showEdit()" id="tab-edit">Edit Template</button>
+                <button onclick="showHistory()" id="tab-history">Template History</button>
+                <button onclick="showPromptOutput()" id="tab-output">Output</button>
             </div>
             <div class="tab-content">
-                <section id="welcome-screen" class="screen active">
-                    <div class="empty-state">
-                        <h3>Welcome to Prompt Builder Pro</h3>
-                        <p>Select a prompt from the sidebar or create a new one</p>
-                    </div>
-                </section>
                 <section id="view-screen" class="screen" aria-labelledby="view-name">
                     <div class="view-screen">
                         <div class="view-left">
-                            <div class="info-display card card-body" style="margin-bottom: 1.5rem;">
-                                <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
-                                <p id="view-desc" style="font-size: 1.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Description</p>
-                                <details id="view-meta-details" style="margin-bottom: 0.5rem;">
-                                  <summary style="cursor:pointer; color: var(--color-primary); font-weight: 500; font-size: 1.05em;">Show Details</summary>
-                                  <div id="view-meta" style="display: flex; flex-direction: column; gap: 0.7em; padding: 0.7em 0 0 0.2em; line-height: 1.6;"></div>
-                                </details>
-                            </div>
+
                             <div class="section card card-body" style="margin-bottom: 1.5rem;">
                                 <h4 style="margin-top:0; color: var(--color-primary);">Inputs</h4>
                                 <div id="view-inputs"></div>
@@ -614,13 +1386,20 @@ textarea, input[type="text"] {
                         <div class="view-right">
                             <div class="btn-group" style="gap: 0.75rem; align-items: center;">
                                 <button class="btn btn-primary" type="button" id="copy-view-output" aria-label="Copy prompt to clipboard">Create Prompt</button>
-                                <button class="btn btn-secondary" type="button" id="toggle-view-output" aria-label="Show or hide generated prompt"><span id="toggle-eye-label">Show Prompt</span></button>
-                            </div>
-                            <div class="card card-body" style="margin-top:1rem;">
-                                <label for="view-output-json" class="visually-hidden">Prompt JSON Output</label>
-                                <textarea id="view-output-json" class="prompt-display" style="display:none; width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
                             </div>
                         </div>
+                    </div>
+                </section>
+                <section id="output-screen" class="screen" style="display:none;">
+                    <div class="output-panel">
+                        <h3 style="color:var(--color-primary);margin-bottom:1rem;">Prompt Output</h3>
+                        <label for="view-output-json" class="visually-hidden">Prompt JSON Output</label>
+                        <textarea id="view-output-json" class="prompt-display" style="width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
+                    </div>
+                </section>
+                <section id="history-screen" class="screen" style="display:none;">
+                    <div class="history-panel">
+                        <div id="history-list"></div>
                     </div>
                 </section>
                 <section id="edit-screen" class="screen" style="display:none;">
@@ -782,6 +1561,17 @@ textarea, input[type="text"] {
                 </div>
             </div>
         </div>
+        <!-- Add hidden file input for importing prompts -->
+        <input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)" />
+        <input type="file" id="load-workspace-file" accept=".json" style="display:none" />
+        <input type="file" id="load-template-group-file" accept=".json" style="display:none" />
+
+        <!-- Hidden buttons for workspace actions -->
+        <button id="save-workspace-btn" style="display:none"></button>
+        <button id="load-workspace-btn" style="display:none"></button>
+        <button id="save-template-group-btn" style="display:none"></button>
+        <button id="load-template-group-btn" style="display:none"></button>
+        <button id="create-template-group-btn" style="display:none"></button>
     </div>
 </div>
 <script>
@@ -1405,38 +2195,52 @@ window.preloadedPrompts = [
     },
     {
         "id": 1769809000002,
-        "name": "Prompt Builder",
-        "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
-        "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
+        "name": "Template Builder",
+        "description": "Write a single freeform description of the prompt you want to create.\n\nExplain what the prompt should do and who it is for.\n\nRun this description as a prompt in your AI tool to generate a template prompt.\n\nThen copy the AI’s output and return to this program, and use Import JSON (bottom-left) to load the generated template.",        "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
         "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
-        "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
+        "context": "The user provides a single block of text describing the kind of prompt or prompts they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts'). From that one input, you must: infer the likely purpose, target user, and usage scenario; ask a few targeted clarification questions only if truly necessary; and propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, constraints, outputs, success. Your goal is to help the user think through and finalize these fields, not just invent them arbitrarily. You must always respond with a JSON array. Each element of the array is a complete prompt definition object (with id, name, description, objective, actor, context, inputs, constraints, outputs, success). If the user's idea covers multiple related prompts, include multiple objects in this array; otherwise include a single object.",
         "inputs": [
             {
                 "name": "Prompt Idea",
-                "description": "A single freeform description of the kind of prompt the user wants to build, including what it should do and for whom."
+                "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description, including optional multi-step workflows that may require multiple objects in the output."
             }
         ],
         "constraints": [
             "Use clear, concise language for every field.",
-            "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
-            "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
-            "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
-            "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after."
+             "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
+             "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
+             "Return a JSON array of one or more prompt specification objects. Each object must directly contain the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+             "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after.",
+             "When the user's idea clearly implies multiple related prompts, the assistant may include multiple complete prompt specification objects inside the outputs array of the returned JSON."
         ],
         "outputs": [
             {
                 "name": "Field Suggestions",
                 "type": "JSON",
-                "example": "{\n  \"id\": 0,\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
+                "example": "[\n  {\n    \"id\": 0,\n    \"name\": \"\",\n    \"description\": \"\",\n    \"objective\": \"\",\n    \"actor\": \"\",\n    \"context\": \"\",\n    \"inputs\": [\n      {\n        \"name\": \"\",\n        \"description\": \"\"\n      }\n    ],\n    \"constraints\": [\"\"],\n    \"outputs\": [\n      {\n        \"name\": \"\",\n        \"type\": \"\",\n        \"example\": \"\"\n      }\n    ],\n    \"success\": [\"\"]\n  },\n  {\n    \"id\": 0,\n    \"name\": \"\",\n    \"description\": \"\",\n    \"objective\": \"\",\n    \"actor\": \"\",\n    \"context\": \"\",\n    \"inputs\": [],\n    \"constraints\": [],\n    \"outputs\": [],\n    \"success\": []\n  }\n]"
             }
         ],
         "success": [
             "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success, and no additional wrapper properties.",
-            "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
-            "All suggested content reflects the user's described prompt idea and is specific, not generic."
+             "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
+             "All suggested content reflects the user's described prompt idea and is specific, not generic.",
+            "The id field is set to a non-negative integer that is randomly chosen and not a fixed constant like 0.",
+            "The inputs and outputs fields are always JSON arrays of objects (never primitives), and if there are no items yet they must still be returned as empty arrays of objects (for example: \"inputs\": [],  \"outputs\": []).",
+            "The constraints and success fields are always JSON arrays of strings (never objects), and if there are no items yet they must still be returned as empty arrays of objects (for example: \"constraints\": [],  \"success\": [])."
         ]
     }
 ];
+
+window.preloadedWorkspaces = {
+    "Default": {
+        templates: window.preloadedPrompts.filter(p => p.name === "Template Builder"),
+        inputHistory: []
+    },
+    "Jira": {
+        templates: window.preloadedPrompts.filter(p => p.name === "Jira Story and Acceptance Criteria Generator"),
+        inputHistory: []
+    }
+};
 
 </script>
 <script>
@@ -1459,6 +2263,13 @@ let constraintCounter = 0;
 let outputCounter = 0;
 let successCounter = 0;
 
+// Environment state
+let environment = {
+    templateGroups: {}, // { groupName: [templates] }
+    history: {} // { groupName: [history] }
+};
+let currentTemplateGroup = 'Default';
+
 // Ensure these are initialized on window for global access
 window.prompts = prompts;
 window.currentPromptId = currentPromptId;
@@ -1474,8 +2285,7 @@ window.successCounter = successCounter;
  * Initializes the application, sets up event listeners, and renders the initial UI.
  */
 function initApp() {
-    setTabBarVisible(false);
-    setupCollapsibleSection();
+    // setupCollapsibleSection();
     init();
     setupTabListeners();
 }
@@ -1499,6 +2309,7 @@ function setupCollapsibleSection() {
  */
 function init() {
     window.loadPromptsFromLocalStorage();
+    prompts = prompts.map(normalizePrompt);
     renderPromptsList();
     if (prompts.length > 0) {
         viewPrompt(prompts[0].id);
@@ -1506,6 +2317,21 @@ function init() {
         showWelcome();
     }
 }
+
+// Initialize template groups from preloadedWorkspaces
+if (window.preloadedWorkspaces) {
+    environment.templateGroups = {
+        "Default": window.preloadedWorkspaces["Default"].templates,
+        "Jira": window.preloadedWorkspaces["Jira"].templates
+    };
+    currentTemplateGroup = "Default";
+    // Removed early updateTemplateGroupDropdown() call
+}
+
+// Ensure dropdown is populated after DOM is ready
+window.addEventListener('DOMContentLoaded', function() {
+    updateTemplateGroupDropdown();
+});
 
 // =========================
 // Prompt CRUD
@@ -1534,22 +2360,54 @@ window.newPrompt = function () {
     isCreatingNewPrompt = false;
     editPrompt(newId);
     setTabActive('Edit');
-    setTabBarVisible(true);
     renderPromptsList();
 };
+
+/**
+ * Creates a new blank prompt and switches to edit mode.
+ */
+function startBlankPrompt() {
+    const newId = Date.now();
+    const newPrompt = {
+        id: newId,
+        name: 'New Prompt',
+        description: '',
+        objective: '',
+        actor: '',
+        context: '',
+        inputs: [],
+        constraints: [],
+        outputs: [],
+        success: []
+    };
+    // Add to current template group
+    if (environment.templateGroups[currentTemplateGroup]) {
+        environment.templateGroups[currentTemplateGroup].push(newPrompt);
+        prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
+        window.savePromptsToLocalStorage();
+        currentPromptId = newId;
+        isCreatingNewPrompt = false;
+        editPrompt(newId);
+        setTabActive('Edit');
+        renderPromptsList();
+    }
+}
+window.startBlankPrompt = startBlankPrompt;
 
 /**
  * Deletes a prompt by id after confirmation.
  * @param {number} id - The prompt id to delete.
  */
 function deletePrompt(id) {
-    if (!confirm('Delete this prompt?')) return;
     prompts = prompts.filter(p => p.id !== id);
     window.savePromptsToLocalStorage();
     renderPromptsList();
 
-    // If we're viewing the deleted prompt, go back to welcome
-    if (currentPromptId === id) {
+    // If there are prompts left, select the first one
+    if (prompts.length > 0) {
+        currentPromptId = prompts[0].id;
+        viewPrompt(currentPromptId);
+    } else {
         currentPromptId = null;
         showWelcome();
     }
@@ -1633,20 +2491,15 @@ window.savePrompt = savePrompt;
  */
 function renderPromptsList() {
     const container = document.getElementById('prompts-list');
-    if (prompts.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <h3>No Prompts Yet</h3>
-                <p>Create your first prompt to get started</p>
-            </div>
-        `;
+    if (!container) return;
+    const templates = environment.templateGroups[currentTemplateGroup] || [];
+    if (templates.length === 0) {
+        container.innerHTML = `<div class="empty-state"><h3>No Templates Yet</h3><p>Create your first template to get started</p></div>`;
         return;
     }
-    container.innerHTML = prompts.map((p, idx) => `
-        <div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
-            ${window.escapeHtml(p.name)}
-        </div>
-    `).join('');
+    container.innerHTML = templates.map((p, idx) =>
+        `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">${window.escapeHtml(p.name)}</div>`
+    ).join('');
     // Add event listeners for tile selection
     container.querySelectorAll('.prompt-tile').forEach(item => {
         const id = parseInt(item.getAttribute('data-id'));
@@ -1686,8 +2539,6 @@ function renderPromptsList() {
         });
     });
 }
-
-// Make renderPromptsList globally accessible for auto-save
 window.renderPromptsList = renderPromptsList;
 
 /**
@@ -1721,50 +2572,62 @@ function clearForm() {
 function viewPrompt(id) {
     const prompt = prompts.find(p => p.id === id);
     if (!prompt) return;
-
     currentPromptId = id;
-    showView();
-    setTabActive('View');
-
+    // Show info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabsElem = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = '';
+    if (tabsElem) tabsElem.style.display = '';
+    if (tabContent) tabContent.style.display = '';
+    // Hide welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'none';
+        welcomeScreen.classList.remove('active');
+    }
     // Switch tab to View Prompt
-    const tabs = document.querySelectorAll('#tabs button');
-    tabs.forEach(btn => {
+    const tabButtons = document.querySelectorAll('#tabs button');
+    tabButtons.forEach(btn => {
         if (btn.textContent.includes('View')) {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
         }
     });
-
-    document.getElementById('view-name').textContent = prompt.name;
-    document.getElementById('view-desc').textContent = prompt.description;
+    const viewName = document.getElementById('view-name');
+    const viewDesc = document.getElementById('view-desc');
+    if (viewName) viewName.textContent = prompt.name;
+    if (viewDesc) viewDesc.textContent = prompt.description;
     // Add meta info (objective, actor, context)
     const meta = [];
     if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
     if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
     if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
-    document.getElementById('view-meta').innerHTML = meta.join('');
-
+    const viewMeta = document.getElementById('view-meta');
+    if (viewMeta) viewMeta.innerHTML = meta.join('');
     const inputsContainer = document.getElementById('view-inputs');
-    if (prompt.inputs.length === 0) {
-        inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
-    } else {
-        inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
-            <div style="margin-bottom: 1rem;">
-                <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
-                  <textarea
-                    id="input-value-${idx}"
-                    class="view-textarea"
-                    rows="6"
-                    placeholder="${window.escapeHtml(i.description)}"
-                    oninput="generateViewPrompt()"
-                ></textarea>
-            </div>
-        `).join('');
+    if (inputsContainer) {
+        if (prompt.inputs.length === 0) {
+            inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
+        } else {
+            inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
+                <div style="margin-bottom: 1rem;">
+                    <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                      <textarea
+                        id="input-value-${idx}"
+                        class="view-textarea"
+                        rows="6"
+                        placeholder="${window.escapeHtml(i.description)}"
+                        oninput="generateViewPrompt()"
+                    ></textarea>
+                </div>
+            `).join('');
+        }
     }
-
     generateViewPrompt();
     renderPromptsList();
+    if (infoDisplay) infoDisplay.style.display = '';
 }
 
 
@@ -1997,75 +2860,78 @@ window.regenerateOutput = function () {
  * @param {string|null} tabName - Tab name to activate.
  */
 function setTabActive(tabName) {
+    // Remove 'active' from all tab buttons
     const tabs = document.querySelectorAll('#tabs button');
-    tabs.forEach(btn => {
-        if (tabName && btn.textContent.includes(tabName)) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    });
+    tabs.forEach(btn => btn.classList.remove('active'));
+    // Add 'active' to the selected tab
+    if (tabName) {
+        const selectedBtn = Array.from(tabs).find(btn => btn.textContent.trim() === tabName);
+        if (selectedBtn) selectedBtn.classList.add('active');
+    }
 }
 
-window.setTabActive = setTabActive;
-
-/**
- * Shows or hides the tab bar.
- * @param {boolean} visible - Whether to show the tab bar.
- */
-function setTabBarVisible(visible) {
-    // No longer needed: tab bar is always visible in new layout
-}
-
-/**
- * Shows the welcome screen.
- */
-function showWelcome() {
-    document.getElementById('tab-edit').classList.remove('active');
-    document.getElementById('tab-view').classList.remove('active');
-    document.getElementById('welcome-screen').classList.add('active');
-    document.getElementById('view-screen').classList.remove('active');
-    document.getElementById('edit-screen').classList.remove('active');
-}
-
-/**
- * Shows the view screen.
- */
 function showView() {
-    document.getElementById('tab-view').classList.add('active');
-    document.getElementById('tab-edit').classList.remove('active');
+    setTabActive('Use Template');
+    // Hide all screens
+    document.getElementById('view-screen').style.display = 'block';
+    document.getElementById('edit-screen').style.display = 'none';
+    document.getElementById('history-screen').style.display = 'none';
+    document.getElementById('output-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
+    // Set active class
     document.getElementById('view-screen').classList.add('active');
     document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('history-screen').classList.remove('active');
+    document.getElementById('output-screen').classList.remove('active');
     document.getElementById('welcome-screen').classList.remove('active');
 }
 
-/**
- * Shows the edit screen.
- */
 function showEdit() {
-    document.getElementById('tab-edit').classList.add('active');
-    document.getElementById('tab-view').classList.remove('active');
-    document.getElementById('edit-screen').classList.add('active');
+    setTabActive('Edit Template');
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('edit-screen').style.display = 'block';
+    document.getElementById('history-screen').style.display = 'none';
+    document.getElementById('output-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('edit-screen').classList.add('active');
+    document.getElementById('history-screen').classList.remove('active');
+    document.getElementById('output-screen').classList.remove('active');
+}
+
+function showHistory() {
+    setTabActive('Template History');
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('edit-screen').style.display = 'none';
+    document.getElementById('history-screen').style.display = 'block';
+    document.getElementById('output-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('history-screen').classList.add('active');
+    document.getElementById('output-screen').classList.remove('active');
+    document.getElementById('welcome-screen').classList.remove('active');
+    renderHistoryList(currentPromptId);
+}
+
+function showPromptOutput() {
+    setTabActive('Show Prompt');
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('edit-screen').style.display = 'none';
+    document.getElementById('history-screen').style.display = 'none';
+    document.getElementById('output-screen').style.display = 'block';
+    document.getElementById('welcome-screen').style.display = 'none';
+    document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('history-screen').classList.remove('active');
+    document.getElementById('output-screen').classList.add('active');
     document.getElementById('welcome-screen').classList.remove('active');
 }
-window.showEdit = showEdit;
+window.showPromptOutput = showPromptOutput;
 window.showView = showView;
-
-/**
- * Cancels editing and returns to the previous screen.
- */
-window.cancelEdit = function() {
-    if (currentPromptId) {
-        isCreatingNewPrompt = false;
-        viewPrompt(currentPromptId);
-        setTabActive('View');
-    } else {
-        isCreatingNewPrompt = false;
-        showWelcome();
-        setTabActive(null);
-    }
-};
+window.showEdit = showEdit;
+window.showHistory = showHistory;
+window.setTabActive = setTabActive;
 
 // =========================
 // Import/Export
@@ -2078,51 +2944,65 @@ window.exportPrompts = function() {
         alert('No prompts to export');
         return;
     }
-
-    const dataStr = JSON.stringify(prompts, null, 2);
-
-    // Try normal download first
-    try {
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `prompts-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        // Show fallback option
-        setTimeout(() => {
-            if (confirm('Download started. If the file did not download, click OK to see the data to copy manually.')) {
-                showExportModal(dataStr);
-            }
-        }, 1000);
-    } catch (err) {
-        // Fallback: show in modal
-        showExportModal(dataStr);
-    }
+    showExportModal();
 };
 
-/**
- * Shows the export modal with prompt data.
- * @param {string} data - JSON string to show.
- */
-function showExportModal(data) {
+function showExportModal() {
     const modal = document.getElementById('export-modal');
-    const textarea = document.getElementById('export-modal-textarea');
-    textarea.value = data;
-    modal.style.display = 'flex';
-    textarea.select();
+    const grid = document.getElementById('export-template-grid');
+    const fileNameInput = document.getElementById('export-file-name');
+    if (!modal || !grid || !fileNameInput) return;
 
-    document.getElementById('export-modal-copy').onclick = function() {
-        textarea.select();
-        document.execCommand('copy');
-    };
-    document.getElementById('export-modal-close').onclick = function() {
-        modal.style.display = 'none';
-    };
+    // Render grid of checkboxes
+    grid.innerHTML = prompts.map(p =>
+        `<div style='display:flex;align-items:center;margin-bottom:6px;'>
+            <input type='checkbox' id='export-tpl-${p.id}' value='${p.id}' style='margin-right:8px;' checked>
+            <label for='export-tpl-${p.id}' style='cursor:pointer;'>${window.escapeHtml(p.name)}</label>
+        </div>`
+    ).join('');
+
+    // Set default file name
+    fileNameInput.value = `prompts-${Date.now()}.json`;
+
+    modal.style.display = 'flex';
+
+    // Download button
+    const downloadBtn = document.getElementById('export-modal-download');
+    if (downloadBtn) {
+        downloadBtn.onclick = function() {
+            // Collect checked templates
+            const checkedIds = Array.from(grid.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+            const selectedPrompts = prompts.filter(p => checkedIds.includes(String(p.id)));
+            if (selectedPrompts.length === 0) {
+                alert('Please select at least one template to export.');
+                return;
+            }
+            let fileName = fileNameInput.value.trim();
+            if (!fileName) fileName = `prompts-${Date.now()}.json`;
+            if (!fileName.endsWith('.json')) fileName += '.json';
+            try {
+                const blob = new Blob([JSON.stringify(selectedPrompts, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                modal.style.display = 'none';
+            } catch (err) {
+                alert('Download failed: ' + err.message);
+            }
+        };
+    }
+    // Close button
+    const closeBtn = document.getElementById('export-modal-close');
+    if (closeBtn) {
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+    }
     // Optional: close modal when clicking outside
     modal.onclick = function(e) {
         if (e.target === modal) modal.style.display = 'none';
@@ -2143,23 +3023,20 @@ window.importPrompts = function() {
 function handleImport(event) {
     const file = event.target.files[0];
     if (!file) return;
-    if (prompts.length > 0 && !confirm('This will replace all current prompts. Continue?')) {
-        event.target.value = '';
-        return;
-    }
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
             const loaded = JSON.parse(e.target.result);
-            if (!Array.isArray(loaded)) {
-                alert('Invalid format: Expected array of prompts');
+            let allTemplates = Array.isArray(loaded) ? loaded : [loaded];
+            // Filter out templates with duplicate ids
+            const existingIds = new Set(prompts.map(p => p.id));
+            const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
+            if (uniqueTemplates.length === 0) {
+                alert('No new templates to import (all IDs already exist or invalid).');
+                event.target.value = '';
                 return;
             }
-            prompts = loaded;
-            window.savePromptsToLocalStorage();
-            renderPromptsList();
-            showWelcome();
-            alert(`Imported ${loaded.length} prompt(s) successfully!`);
+            showImportModal(uniqueTemplates, allTemplates);
         } catch (err) {
             alert('Error parsing JSON file: ' + err.message);
         }
@@ -2168,129 +3045,151 @@ function handleImport(event) {
     event.target.value = '';
 }
 
-// =========================
-// Modal Logic
-// =========================
+function showImportModal(templates, allTemplates) {
+    const modal = document.getElementById('import-modal');
+    const grid = document.getElementById('import-template-grid');
+    const alreadyGrid = document.getElementById('import-already-grid');
+    const errorDiv = document.getElementById('import-modal-error');
+    if (!modal || !grid || !alreadyGrid || !errorDiv) return;
+    errorDiv.style.display = 'none';
+
+    // Show already imported templates
+    const existingIds = new Set(prompts.map(p => p.id));
+    const duplicates = (allTemplates || []).filter(t => t.id && existingIds.has(t.id));
+    if (duplicates.length > 0) {
+        alreadyGrid.innerHTML = `<strong>Already imported templates:</strong><ul style='margin:0.3em 0 0.7em 1.2em;'>` +
+            duplicates.map(t => `<li>${window.escapeHtml(t.name)}</li>`).join('') + '</ul>';
+    } else {
+        alreadyGrid.innerHTML = '';
+    }
+
+    // Render grid of checkboxes for unique templates
+    grid.innerHTML = templates.map(t =>
+        `<div style='display:flex;align-items:center;margin-bottom:6px;'>
+            <input type='checkbox' id='import-tpl-${t.id}' value='${t.id}' style='margin-right:8px;' checked>
+            <label for='import-tpl-${t.id}' style='cursor:pointer;'>${window.escapeHtml(t.name)}</label>
+        </div>`
+    ).join('');
+    modal.style.display = 'flex';
+    // Confirm button
+    const confirmBtn = document.getElementById('import-modal-confirm');
+    if (confirmBtn) {
+        confirmBtn.onclick = function() {
+            const checkedIds = Array.from(grid.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+            const selectedTemplates = templates.filter(t => checkedIds.includes(String(t.id)));
+            if (selectedTemplates.length === 0) {
+                errorDiv.textContent = 'Please select at least one template to import.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            // Add only unique templates
+            const existingIds = new Set(prompts.map(p => p.id));
+            const newTemplates = selectedTemplates.filter(t => t.id && !existingIds.has(t.id));
+            if (newTemplates.length === 0) {
+                errorDiv.textContent = 'No new templates to import (all IDs already exist).';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            // Add to current template group
+            if (environment.templateGroups[currentTemplateGroup]) {
+                environment.templateGroups[currentTemplateGroup] = environment.templateGroups[currentTemplateGroup].concat(newTemplates);
+                prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
+                window.savePromptsToLocalStorage();
+                renderPromptsList();
+                modal.style.display = 'none';
+                errorDiv.style.display = 'none';
+                alert(`Imported ${newTemplates.length} template(s) successfully!`);
+            }
+        };
+    }
+    // Cancel button
+    const cancelBtn = document.getElementById('import-modal-cancel');
+    if (cancelBtn) {
+        cancelBtn.onclick = function() {
+            modal.style.display = 'none';
+            errorDiv.style.display = 'none';
+        };
+    }
+    // Optional: close modal when clicking outside
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.style.display = 'none';
+    };
+}
+
 /**
  * Sets up the new prompt modal and its event handlers.
  */
 function setupNewPromptModal() {
-    const openBtn = document.getElementById('new-prompt-main');
+    // Only reference elements that exist in the new modal
     const modal = document.getElementById('new-prompt-modal');
-    const modalContent = document.getElementById('new-prompt-modal-content');
-    const choiceScreen = document.getElementById('new-prompt-choice');
-    const jsonScreen = document.getElementById('new-prompt-json-import');
-    const blankBtn = document.getElementById('start-blank-prompt');
-    const jsonBtn = document.getElementById('start-json-prompt');
     const cancelBtn = document.getElementById('new-prompt-cancel');
-    const backBtn = document.getElementById('json-import-back');
-    const jsonImportCancel = document.getElementById('json-import-cancel');
-    const uploadBtn = document.getElementById('json-import-upload');
-    const fileInput = document.getElementById('json-import-file');
-    const filenameSpan = document.getElementById('json-import-filename');
+    const confirmBtn = document.getElementById('json-import-confirm');
     const textarea = document.getElementById('json-import-textarea');
     const errorDiv = document.getElementById('json-import-error');
-    const confirmBtn = document.getElementById('json-import-confirm');
 
-    function showModal() {
-        modal.style.display = 'flex';
-        choiceScreen.style.display = 'block';
-        jsonScreen.style.display = 'none';
-        setTimeout(() => blankBtn.focus(), 50);
-    }
-    function closeModal() {
-        modal.style.display = 'none';
-        textarea.value = '';
-        fileInput.value = '';
-        filenameSpan.textContent = '';
-        errorDiv.textContent = '';
-    }
-    openBtn.onclick = function(e) {
-        e.preventDefault();
-        showModal();
-    };
-    cancelBtn.onclick = closeModal;
-    jsonImportCancel.onclick = closeModal;
-    modal.onclick = function(e) {
-        if (e.target === modal) closeModal();
-    };
-    modal.onkeydown = function(e) {
-        if (e.key === 'Escape') closeModal();
-    };
-    blankBtn.onclick = function(e) {
-        e.preventDefault();
-        closeModal();
-        window.newPrompt();
-    };
-    jsonBtn.onclick = function(e) {
-        e.preventDefault();
-        choiceScreen.style.display = 'none';
-        jsonScreen.style.display = 'flex';
-        setTimeout(() => textarea.focus(), 50);
-    };
-    backBtn.onclick = function(e) {
-        e.preventDefault();
-        jsonScreen.style.display = 'none';
-        choiceScreen.style.display = 'block';
-        setTimeout(() => blankBtn.focus(), 50);
-    };
-    uploadBtn.onclick = function() {
-        fileInput.click();
-    };
-    fileInput.onchange = function() {
-        const file = fileInput.files[0];
-        if (!file) return;
-        filenameSpan.textContent = file.name;
-        const reader = new FileReader();
-        reader.onload = function(ev) {
-            textarea.value = ev.target.result;
+    // Cancel button
+    if (cancelBtn) {
+        cancelBtn.onclick = function() {
+            if (modal) modal.style.display = 'none';
+            if (textarea) textarea.value = '';
+            if (errorDiv) errorDiv.textContent = '';
         };
-        reader.readAsText(file);
-    };
-    confirmBtn.onclick = function() {
-        let json;
-        try {
-            json = JSON.parse(textarea.value);
-        } catch (err) {
-            errorDiv.textContent = 'Invalid JSON: ' + err.message;
-            return;
-        }
-        let promptObj = null;
-        if (Array.isArray(json)) {
-            if (json.length === 0) {
-                errorDiv.textContent = 'JSON array is empty.';
-                return;
+    }
+    // Confirm button
+    if (confirmBtn) {
+        confirmBtn.onclick = function() {
+            if (!textarea) return;
+            if (!errorDiv) return;
+            errorDiv.style.display = 'none';
+            try {
+                const json = JSON.parse(textarea.value);
+                importPromptFromJson(json);
+            } catch (e) {
+                errorDiv.textContent = 'Invalid JSON: ' + e.message;
+                errorDiv.style.display = 'block';
             }
-            promptObj = json[0];
-        } else {
-            promptObj = json;
-        }
-        if (!promptObj || typeof promptObj !== 'object') {
-            errorDiv.textContent = 'JSON must be a prompt object or array.';
-            return;
-        }
-        const newPrompt = {
-            id: Date.now(),
-            name: promptObj.name || '',
-            description: promptObj.description || '',
-            objective: promptObj.objective || '',
-            actor: promptObj.actor || '',
-            context: promptObj.context || '',
-            inputs: Array.isArray(promptObj.inputs) ? promptObj.inputs : [],
-            constraints: Array.isArray(promptObj.constraints) ? promptObj.constraints : [],
-            outputs: Array.isArray(promptObj.outputs) ? promptObj.outputs : [],
-            success: Array.isArray(promptObj.success) ? promptObj.success : []
         };
-        prompts.push(newPrompt);
-        window.savePromptsToLocalStorage();
-        currentPromptId = newPrompt.id;
-        isCreatingNewPrompt = false;
-        editPrompt(newPrompt.id);
-        setTabActive('Edit');
-        setTabBarVisible(true);
-        renderPromptsList();
-        closeModal();
-        setTimeout(() => alert('Prompt loaded!'), 100);
+    }
+    // Modal background click closes
+    if (modal) {
+        modal.onclick = function(e) {
+            if (e.target === modal) modal.style.display = 'none';
+        };
+        modal.onkeydown = function(e) {
+            if (e.key === 'Escape') modal.style.display = 'none';
+        };
+    }
+}
+
+/**
+ * Closes the New Prompt modal and clears fields.
+ */
+function closeNewPromptModal() {
+    const modal = document.getElementById('new-prompt-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        const textarea = document.getElementById('json-import-textarea');
+        if (textarea) textarea.value = '';
+        const errorDiv = document.getElementById('json-import-error');
+        if (errorDiv) errorDiv.textContent = '';
+    }
+}
+window.closeNewPromptModal = closeNewPromptModal;
+
+// Update modal event bindings
+const jsonImportConfirmBtn = document.getElementById('json-import-confirm');
+if (jsonImportConfirmBtn) {
+    jsonImportConfirmBtn.onclick = function() {
+        var textarea = document.getElementById('json-import-textarea');
+        var errorDiv = document.getElementById('json-import-error');
+        errorDiv.style.display = 'none';
+        try {
+            var json = JSON.parse(textarea.value);
+            importPromptFromJson(json);
+        } catch (e) {
+            errorDiv.textContent = 'Invalid JSON: ' + e.message;
+            errorDiv.style.display = 'block';
+        }
     };
 }
 
@@ -2403,6 +3302,966 @@ function startApp() {
 // Call startApp() directly since script is at end of body
 startApp();
 
+// Toast logic: show session storage warning on load
+function showSessionStorageToast() {
+    const toast = document.getElementById('toast-warning');
+    if (!toast) return;
+    toast.classList.add('show');
+    toast.style.display = 'block';
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => { toast.style.display = 'none'; }, 400);
+    }, 4000); // Show for 4 seconds
+}
+// Call toast on app load
+window.addEventListener('DOMContentLoaded', showSessionStorageToast);
+
+// Input history management (global table)
+function getPromptInputHistoryAll() {
+    const raw = localStorage.getItem('promptInputHistory');
+    if (!raw) return [];
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return [];
+    }
+}
+function savePromptInputHistory(templateId, inputObj) {
+    if (!templateId || !inputObj) return;
+    let history = getPromptInputHistoryAll();
+    // Only store non-empty input sets
+    if (Object.values(inputObj).every(v => !v)) return;
+    history.unshift({ templateId, inputValues: inputObj });
+    // Limit history to last 50
+    history = history.slice(0, 50);
+    localStorage.setItem('promptInputHistory', JSON.stringify(history));
+}
+function getPromptInputHistory(templateId) {
+    const all = getPromptInputHistoryAll();
+    const filtered = all.filter(h => h.templateId === templateId).map(h => h.inputValues);
+    return filtered;
+}
+function renderHistoryList(promptId) {
+    const history = getPromptInputHistory(promptId);
+    const container = document.getElementById('history-list');
+    if (!container) { return; }
+    if (!history || history.length === 0) {
+        container.innerHTML = '<span style="color:#888;font-size:0.95em;">No input history for this prompt.</span>';
+        return;
+    }
+    // Collect all unique field names for header
+    const allFields = Array.from(new Set(history.flatMap(h => Object.keys(h))));
+    // Find index of Jira Text column
+    const jiraIdx = allFields.findIndex(f => f.toLowerCase().includes('jira text'));
+    // Set CSS variable for columns
+    container.style.setProperty('--history-cols', allFields.length + 1);
+    container.innerHTML = `
+        <div class="history-grid">
+            <div class="history-row history-header">
+                ${allFields.map(f => `<div class="history-cell history-header-cell${f.toLowerCase().includes('jira text') ? ' jira-text-cell' : ''}">${window.escapeHtml(f)}</div>`).join('')}
+                <div class="history-cell history-header-cell">Action</div>
+            </div>
+            ${history.map((h, idx) => `
+                <div class="history-row">
+                    ${allFields.map((f, i) => `<div class="history-cell${i === jiraIdx ? ' jira-text-cell' : ''}">${h[f] ? window.escapeHtml(h[f]) : '<em>(empty)</em>'}</div>`).join('')}
+                    <div class="history-cell"><button class="restore-btn" data-idx="${idx}">Restore</button></div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    container.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.onclick = function() {
+            const idx = parseInt(btn.getAttribute('data-idx'));
+            const selected = history[idx];
+            if (!selected) return;
+            showView();
+            Object.entries(selected).forEach(([k,v]) => {
+                const input = Array.from(document.querySelectorAll('[id^="input-value-"]')).find(el => el.previousElementSibling && el.previousElementSibling.textContent.replace(':','') === k);
+                if (input) input.value = v;
+            });
+            generateViewPrompt();
+        };
+    });
+}
+
+// Update Create Prompt button handler to save input history
+const copyBtn = document.getElementById('copy-view-output');
+if (copyBtn) {
+    copyBtn.onclick = function() {
+        const prompt = prompts.find(p => p.id === currentPromptId);
+        if (!prompt) {
+            return;
+        }
+        // Save input history
+        const inputs = {};
+        prompt.inputs.forEach((i, idx) => {
+            const inputField = document.getElementById(`input-value-${idx}`);
+            inputs[i.name] = inputField ? inputField.value : '';
+        });
+        savePromptInputHistory(prompt.id, inputs);
+        // Immediately update history tab if visible
+        if (document.getElementById('history-screen').classList.contains('active')) {
+            renderHistoryList(prompt.id);
+        }
+        // ...existing code for copying...
+        const pre = document.getElementById('view-output-json');
+        const modal = document.getElementById('copy-modal');
+        if (pre) {
+            navigator.clipboard.writeText(pre.value).then(function() {
+                if (modal) modal.style.display = 'flex';
+            });
+        }
+    };
+}
+
+// Render input history dropdown in viewPrompt
+function viewPrompt(id) {
+    const prompt = prompts.find(p => p.id === id);
+    if (!prompt) return;
+    currentPromptId = id;
+    // Show info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabsElem = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = '';
+    if (tabsElem) tabsElem.style.display = '';
+    if (tabContent) tabContent.style.display = '';
+    // Hide welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'none';
+        welcomeScreen.classList.remove('active');
+    }
+    // Switch tab to View Prompt
+    const tabButtons = document.querySelectorAll('#tabs button');
+    tabButtons.forEach(btn => {
+        if (btn.textContent.includes('View')) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    const viewName = document.getElementById('view-name');
+    const viewDesc = document.getElementById('view-desc');
+    if (viewName) viewName.textContent = prompt.name;
+    if (viewDesc) viewDesc.textContent = prompt.description;
+    // Add meta info (objective, actor, context)
+    const meta = [];
+    if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
+    if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
+    if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
+    const viewMeta = document.getElementById('view-meta');
+    if (viewMeta) viewMeta.innerHTML = meta.join('');
+    const inputsContainer = document.getElementById('view-inputs');
+    if (inputsContainer) {
+        if (prompt.inputs.length === 0) {
+            inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
+        } else {
+            inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
+                <div style="margin-bottom: 1rem;">
+                    <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                      <textarea
+                        id="input-value-${idx}"
+                        class="view-textarea"
+                        rows="6"
+                        placeholder="${window.escapeHtml(i.description)}"
+                        oninput="generateViewPrompt()"
+                    ></textarea>
+                </div>
+            `).join('');
+        }
+    }
+    generateViewPrompt();
+    renderPromptsList();
+    if (infoDisplay) infoDisplay.style.display = '';
+}
+
+// In showWelcome(), ensure info-display is hidden
+function showWelcome() {
+    // Hide info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabs = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = 'none';
+    if (tabs) tabs.style.display = 'none';
+    if (tabContent) tabContent.style.display = 'none';
+    // Show welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'block';
+        welcomeScreen.classList.add('active');
+    }
+}
+
+// Template Group Persistence
+function saveTemplateGroupsToStorage() {
+    localStorage.setItem('templateGroups', JSON.stringify(environment.templateGroups));
+    localStorage.setItem('templateGroupHistory', JSON.stringify(environment.history));
+    localStorage.setItem('currentTemplateGroup', currentTemplateGroup);
+}
+function loadTemplateGroupsFromStorage() {
+    const rawGroups = localStorage.getItem('templateGroups');
+    const rawHistory = localStorage.getItem('templateGroupHistory');
+    const rawCurrent = localStorage.getItem('currentTemplateGroup');
+    if (rawGroups && rawHistory) {
+        try {
+            environment.templateGroups = JSON.parse(rawGroups);
+            environment.history = JSON.parse(rawHistory);
+            currentTemplateGroup = rawCurrent || Object.keys(environment.templateGroups)[0] || 'Default';
+        } catch {
+            // fallback to preloadedWorkspaces
+            environment.templateGroups = {
+                "Default": window.preloadedWorkspaces["Default"].templates,
+                "Jira": window.preloadedWorkspaces["Jira"].templates
+            };
+            environment.history = {};
+            currentTemplateGroup = 'Default';
+        }
+    } else {
+        // fallback to preloadedWorkspaces
+        environment.templateGroups = {
+            "Default": window.preloadedWorkspaces["Default"].templates,
+            "Jira": window.preloadedWorkspaces["Jira"].templates
+        };
+        environment.history = {};
+        currentTemplateGroup = 'Default';
+    }
+}
+// On app load, initialize template groups
+loadTemplateGroupsFromStorage();
+updateTemplateGroupDropdown();
+renderPromptsList();
+// Update savePromptsToLocalStorage to persist template groups
+window.savePromptsToLocalStorage = function() {
+    saveTemplateGroupsToStorage();
+};
+
+// =========================
+// Global Functions
+// =========================
+/**
+ * Cancels the current edit and switches to view mode for the current prompt, or shows the welcome screen if no prompt is selected.
+ */
+function cancelEdit() {
+    if (typeof currentPromptId !== 'undefined' && currentPromptId !== null) {
+        viewPrompt(currentPromptId);
+    } else {
+        showWelcome();
+    }
+}
+window.cancelEdit = cancelEdit;
+
+/**
+ * Normalizes a prompt object to ensure consistent structure.
+ * @param {Object} prompt - The prompt object to normalize.
+ * @returns {Object} The normalized prompt object.
+ */
+function normalizePrompt(prompt) {
+    // Ensure constraints and success are always arrays of strings
+    if (Array.isArray(prompt.constraints)) {
+        prompt.constraints = prompt.constraints.map(c => typeof c === 'string' ? c : (c.rule || ''));
+    } else {
+        prompt.constraints = [];
+    }
+    if (Array.isArray(prompt.success)) {
+        prompt.success = prompt.success.map(s => typeof s === 'string' ? s : (s.criterion || ''));
+    } else {
+        prompt.success = [];
+    }
+    return prompt;
+}
+
+/**
+ * Opens the New Prompt modal (Import JSON).
+ */
+function openNewPromptModal() {
+    const modal = document.getElementById('new-prompt-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        // Focus textarea for accessibility
+        const textarea = document.getElementById('json-import-textarea');
+        if (textarea) setTimeout(() => textarea.focus(), 50);
+    }
+}
+window.openNewPromptModal = openNewPromptModal;
+
+/**
+ * Imports prompt(s) from JSON pasted in the modal.
+ * Accepts a single prompt object or an array of prompt objects.
+ * Adds only prompts with unique IDs (does not overwrite existing ones).
+ * Normalizes imported prompts for structure.
+ */
+function importPromptFromJson(json) {
+    let importedPrompts = [];
+    if (Array.isArray(json)) {
+        importedPrompts = json;
+    } else if (typeof json === 'object' && json !== null) {
+        importedPrompts = [json];
+    } else {
+        alert('Invalid JSON: Must be a prompt object or array of prompt objects');
+        return;
+    }
+    // Filter out prompts with duplicate IDs
+    const existingIds = new Set(prompts.map(p => p.id));
+    const newPrompts = importedPrompts
+        .map(normalizePrompt)
+        .filter(p => p.id && !existingIds.has(p.id));
+    if (newPrompts.length === 0) {
+        alert('No new prompts to import (all IDs already exist)');
+        return;
+    }
+    // Add to current workspace
+    if (workspaces[currentWorkspace]) {
+        workspaces[currentWorkspace].templates = workspaces[currentWorkspace].templates.concat(newPrompts);
+        prompts = workspaces[currentWorkspace].templates.map(normalizePrompt);
+        window.savePromptsToLocalStorage();
+        renderPromptsList();
+        closeNewPromptModal();
+        showWelcome();
+        alert(`Imported ${newPrompts.length} prompt(s) successfully!`);
+    }
+}
+window.importPromptFromJson = importPromptFromJson;
+
+// =========================
+// Workspace Save/Load
+// =========================
+
+// Save Workspace button handler
+const saveWorkspaceBtn = document.getElementById('save-workspace-btn');
+if (saveWorkspaceBtn) {
+    saveWorkspaceBtn.onclick = function() {
+        const modal = document.getElementById('save-workspace-modal');
+        const filenameInput = document.getElementById('save-workspace-filename');
+        if (modal && filenameInput) {
+            filenameInput.value = `workspace-${new Date().toISOString().slice(0,10)}.json`;
+            modal.style.display = 'flex';
+        }
+    };
+}
+
+// Save Workspace modal confirm/cancel
+const saveWorkspaceConfirm = document.getElementById('save-workspace-confirm');
+const saveWorkspaceCancel = document.getElementById('save-workspace-cancel');
+if (saveWorkspaceConfirm) {
+    saveWorkspaceConfirm.onclick = function() {
+        const filenameInput = document.getElementById('save-workspace-filename');
+        let fileName = filenameInput.value.trim();
+        if (!fileName) fileName = `workspace-${new Date().toISOString().slice(0,10)}.json`;
+        if (!fileName.endsWith('.json')) fileName += '.json';
+        // Collect all template groups, history, and current group
+        const workspaceData = {
+            templateGroups: environment.templateGroups,
+            history: environment.history,
+            currentTemplateGroup: currentTemplateGroup
+        };
+        try {
+            const blob = new Blob([JSON.stringify(workspaceData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('save-workspace-modal').style.display = 'none';
+        } catch (err) {
+            alert('Save failed: ' + err.message);
+        }
+    };
+}
+if (saveWorkspaceCancel) {
+    saveWorkspaceCancel.onclick = function() {
+        document.getElementById('save-workspace-modal').style.display = 'none';
+    };
+}
+
+// Load Workspace button handler
+const loadWorkspaceBtn = document.getElementById('load-workspace-btn');
+if (loadWorkspaceBtn) {
+    loadWorkspaceBtn.onclick = function() {
+        const modal = document.getElementById('load-workspace-warning-modal');
+        if (modal) modal.style.display = 'flex';
+    };
+}
+// Wire up warning modal buttons
+const loadWorkspaceContinue = document.getElementById('load-workspace-continue');
+const loadWorkspaceCancel = document.getElementById('load-workspace-cancel');
+if (loadWorkspaceContinue) {
+    loadWorkspaceContinue.onclick = function() {
+        document.getElementById('load-workspace-warning-modal').style.display = 'none';
+        document.getElementById('load-workspace-file').click();
+    };
+}
+if (loadWorkspaceCancel) {
+    loadWorkspaceCancel.onclick = function() {
+        document.getElementById('load-workspace-warning-modal').style.display = 'none';
+    };
+}
+// Optional: close modal when clicking outside
+const loadWorkspaceWarningModal = document.getElementById('load-workspace-warning-modal');
+if (loadWorkspaceWarningModal) {
+    loadWorkspaceWarningModal.onclick = function(e) {
+        if (e.target === loadWorkspaceWarningModal) loadWorkspaceWarningModal.style.display = 'none';
+    };
+}
+
+// Enhanced Load Workspace file input handler
+const loadWorkspaceFile = document.getElementById('load-workspace-file');
+if (loadWorkspaceFile) {
+    loadWorkspaceFile.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const loaded = JSON.parse(e.target.result);
+                // Validate structure
+                if (!loaded || typeof loaded !== 'object') {
+                    alert('Invalid workspace file: not a valid JSON object');
+                    return;
+                }
+                if (!loaded.templateGroups || typeof loaded.templateGroups !== 'object') {
+                    alert('Invalid workspace file: missing templateGroups');
+                    return;
+                }
+                environment.templateGroups = loaded.templateGroups;
+                environment.history = loaded.history || {};
+                currentTemplateGroup = loaded.currentTemplateGroup || Object.keys(environment.templateGroups)[0] || 'Default';
+                updateTemplateGroupDropdown();
+                renderPromptsList();
+                // Show first prompt or welcome
+                const templates = environment.templateGroups[currentTemplateGroup] || [];
+                if (templates.length > 0) {
+                    currentPromptId = templates[0].id;
+                    viewPrompt(currentPromptId);
+                } else {
+                    currentPromptId = null;
+                    showWelcome();
+                }
+                alert('Workspace loaded successfully!');
+            } catch (err) {
+                alert('Error loading workspace: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+}
+
+// Project (all workspaces) save/load
+const saveProjectBtn = document.getElementById('save-project-btn');
+if (saveProjectBtn) {
+    saveProjectBtn.onclick = function() {
+        const modal = document.getElementById('save-project-modal');
+        const filenameInput = document.getElementById('save-project-filename');
+        if (modal && filenameInput) {
+            filenameInput.value = `project-${new Date().toISOString().slice(0,10)}.json`;
+            modal.style.display = 'flex';
+        }
+    };
+}
+const saveProjectConfirm = document.getElementById('save-project-confirm');
+const saveProjectCancel = document.getElementById('save-project-cancel');
+if (saveProjectConfirm) {
+    saveProjectConfirm.onclick = function() {
+        const filenameInput = document.getElementById('save-project-filename');
+        let fileName = filenameInput.value.trim();
+        if (!fileName) fileName = `project-${new Date().toISOString().slice(0,10)}.json`;
+        if (!fileName.endsWith('.json')) fileName += '.json';
+        // Save all workspaces and their histories
+        const projectData = {
+            workspaces,
+            globalInputHistory: localStorage.getItem('promptInputHistory') || []
+        };
+        try {
+            const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('save-project-modal').style.display = 'none';
+        } catch (err) {
+            alert('Save failed: ' + err.message);
+        }
+    };
+}
+if (saveProjectCancel) {
+    saveProjectCancel.onclick = function() {
+        document.getElementById('save-project-modal').style.display = 'none';
+    };
+}
+// Load Project
+const loadProjectBtn = document.getElementById('load-project-btn');
+if (loadProjectBtn) {
+    loadProjectBtn.onclick = function() {
+        const modal = document.getElementById('load-project-warning-modal');
+        if (modal) modal.style.display = 'flex';
+    };
+}
+const loadProjectContinue = document.getElementById('load-project-continue');
+const loadProjectCancel = document.getElementById('load-project-cancel');
+if (loadProjectContinue) {
+    loadProjectContinue.onclick = function() {
+        document.getElementById('load-project-warning-modal').style.display = 'none';
+        document.getElementById('load-project-file').click();
+    };
+}
+if (loadProjectCancel) {
+    loadProjectCancel.onclick = function() {
+        document.getElementById('load-project-warning-modal').style.display = 'none';
+    };
+}
+const loadProjectFile = document.getElementById('load-project-file');
+if (loadProjectFile) {
+    loadProjectFile.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const loaded = JSON.parse(e.target.result);
+                if (!loaded || typeof loaded !== 'object' || !loaded.workspaces) {
+                    alert('Invalid project file: missing workspaces');
+                    return;
+                }
+                workspaces = loaded.workspaces;
+                saveWorkspacesToStorage();
+                // Restore global input history
+                if (loaded.globalInputHistory) {
+                    localStorage.setItem('promptInputHistory', loaded.globalInputHistory);
+                } else {
+                    localStorage.removeItem('promptInputHistory');
+                }
+                // Switch to default workspace
+                currentWorkspace = Object.keys(workspaces)[0] || 'Default';
+                switchWorkspace(currentWorkspace);
+                alert('Project loaded successfully!');
+            } catch (err) {
+                alert('Error loading project: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+}
+
+// App Bar Overflow Menu Logic
+const kebabBtn = document.getElementById('app-bar-kebab');
+const menu = document.getElementById('app-bar-menu');
+if (kebabBtn && menu) {
+    kebabBtn.onclick = function(e) {
+        e.stopPropagation();
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    };
+    // Close menu on outside click
+    document.addEventListener('click', function(e) {
+        if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== kebabBtn) {
+            menu.style.display = 'none';
+        }
+    });
+    // Keyboard accessibility
+    kebabBtn.onkeydown = function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+    };
+}
+// Menu actions
+const menuSaveWorkspace = document.getElementById('menu-save-workspace');
+const menuLoadWorkspace = document.getElementById('menu-load-workspace');
+const menuSaveTemplateGroup = document.getElementById('menu-save-template-group');
+const menuLoadTemplateGroup = document.getElementById('menu-load-template-group');
+const menuDeleteTemplateGroup = document.getElementById('menu-delete-template-group');
+const menuExportTemplates = document.getElementById('menu-export-templates');
+const menuImportTemplates = document.getElementById('menu-import-templates');
+const menuResetTemplates = document.getElementById('menu-reset-templates');
+const menuCreateTemplateGroup = document.getElementById('menu-create-template-group');
+if (menuSaveWorkspace) menuSaveWorkspace.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('save-workspace-btn').click();
+};
+if (menuLoadWorkspace) menuLoadWorkspace.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('load-workspace-btn').click();
+};
+if (menuSaveTemplateGroup) menuSaveTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('save-template-group-btn').click();
+};
+if (menuLoadTemplateGroup) menuLoadTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('load-template-group-btn').click();
+};
+// Delete Template Group Modal logic
+if (menuDeleteTemplateGroup) menuDeleteTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    const modal = document.getElementById('delete-template-group-modal');
+    const select = document.getElementById('delete-template-group-select');
+    const errorDiv = document.getElementById('delete-template-group-error');
+    if (modal && select && errorDiv) {
+        // Populate dropdown with all template groups except current
+        const groups = Object.keys(environment.templateGroups);
+        select.innerHTML = groups.map(name => `<option value="${name}">${name}</option>`).join('');
+        errorDiv.style.display = 'none';
+        modal.style.display = 'flex';
+    }
+};
+// Ensure Create Template Group menu opens modal directly
+if (menuCreateTemplateGroup) menuCreateTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    // Open modal directly
+    const modal = document.getElementById('create-template-group-modal');
+    const nameInput = document.getElementById('create-template-group-name');
+    const errorDiv = document.getElementById('create-template-group-error');
+    if (modal && nameInput && errorDiv) {
+        nameInput.value = '';
+        errorDiv.style.display = 'none';
+        modal.style.display = 'flex';
+    }
+};
+const deleteTemplateGroupConfirm = document.getElementById('delete-template-group-confirm');
+const deleteTemplateGroupCancel = document.getElementById('delete-template-group-cancel');
+if (deleteTemplateGroupConfirm) {
+    deleteTemplateGroupConfirm.onclick = function() {
+        const select = document.getElementById('delete-template-group-select');
+        const errorDiv = document.getElementById('delete-template-group-error');
+        const groupName = select.value;
+        // Prevent deleting if only one group left
+        if (Object.keys(environment.templateGroups).length <= 1) {
+            errorDiv.textContent = 'At least one template group must remain.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        // Prevent deleting current group
+        if (groupName === currentTemplateGroup) {
+            errorDiv.textContent = 'Cannot delete the currently selected template group.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        delete environment.templateGroups[groupName];
+        delete environment.history[groupName];
+        document.getElementById('delete-template-group-modal').style.display = 'none';
+        updateTemplateGroupDropdown();
+        alert(`Template group '${groupName}' deleted successfully!`);
+    };
+}
+if (deleteTemplateGroupCancel) {
+    deleteTemplateGroupCancel.onclick = function() {
+        document.getElementById('delete-template-group-modal').style.display = 'none';
+        document.getElementById('delete-template-group-error').style.display = 'none';
+    };
+}
+if (menuExportTemplates) menuExportTemplates.onclick = function() {
+    menu.style.display = 'none';
+    window.exportPrompts();
+};
+if (menuImportTemplates) menuImportTemplates.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('import-file').click();
+};
+if (menuResetTemplates) menuResetTemplates.style.display = 'none';
+
+// Sidebar actions: Import JSON and Blank Prompt
+window.addEventListener('DOMContentLoaded', function() {
+    var importJsonBtn = document.getElementById('import-json-btn');
+    if (importJsonBtn) {
+        importJsonBtn.onclick = function() {
+            openNewPromptModal();
+        };
+    }
+    var blankPromptBtn = document.getElementById('blank-prompt-btn');
+    if (blankPromptBtn) {
+        blankPromptBtn.onclick = function() {
+            startBlankPrompt();
+        };
+    }
+});
+
+// Rename workspace to environment, project to template group
+let environments = {};
+let currentEnvironment = 'Default';
+
+function getInitialEnvironments() {
+    if (window.preloadedEnvironments) {
+        return JSON.parse(JSON.stringify(window.preloadedEnvironments));
+    }
+    return {};
+}
+function loadEnvironmentsFromStorage() {
+    const raw = localStorage.getItem('environments');
+    if (raw) {
+        try {
+            environments = JSON.parse(raw);
+        } catch {
+            environments = getInitialEnvironments();
+        }
+    } else {
+        environments = getInitialEnvironments();
+    }
+    if (!environments['Default']) {
+        environments['Default'] = { templateGroups: [], inputHistory: [] };
+    }
+}
+function saveEnvironmentsToStorage() {
+    localStorage.setItem('environments', JSON.stringify(environments));
+}
+function switchEnvironment(name) {
+    if (!environments[name]) return;
+    currentEnvironment = name;
+    prompts = environments[name].templateGroups.map(normalizePrompt);
+    renderPromptsList();
+    if (Array.isArray(environments[name].inputHistory)) {
+        localStorage.setItem('promptInputHistory', JSON.stringify(environments[name].inputHistory));
+    } else {
+        localStorage.removeItem('promptInputHistory');
+    }
+    if (prompts.length > 0) {
+        currentPromptId = prompts[0].id;
+        viewPrompt(currentPromptId);
+    } else {
+        currentPromptId = null;
+        showWelcome();
+    }
+    updateEnvironmentDropdown();
+}
+function updateEnvironmentDropdown() {
+    const dropdown = document.getElementById('environment-dropdown');
+    if (!dropdown) return;
+    dropdown.innerHTML = Object.keys(environments).map(name =>
+        `<option value="${name}"${name === currentEnvironment ? ' selected' : ''}>${name}</option>`
+    ).join('');
+    dropdown.disabled = false;
+}
+const environmentDropdown = document.getElementById('environment-dropdown');
+if (environmentDropdown) {
+    environmentDropdown.onchange = function() {
+        switchEnvironment(environmentDropdown.value);
+    };
+}
+loadEnvironmentsFromStorage();
+switchEnvironment(currentEnvironment);
+window.savePromptsToLocalStorage = function() {
+    if (!environments[currentEnvironment]) return;
+    environments[currentEnvironment].templateGroups = prompts;
+    environments[currentEnvironment].inputHistory = getPromptInputHistoryAll();
+    saveEnvironmentsToStorage();
+};
+
+/**
+ * Shows the welcome screen and hides other screens.
+ */
+function showWelcome() {
+    // Hide info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabs = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = 'none';
+    if (tabs) tabs.style.display = 'none';
+    if (tabContent) tabContent.style.display = 'none';
+    // Show welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'block';
+        welcomeScreen.classList.add('active');
+    }
+}
+
+// Save Template Group modal logic
+const saveTemplateGroupBtn = document.getElementById('save-template-group-btn');
+if (saveTemplateGroupBtn) {
+    saveTemplateGroupBtn.onclick = function() {
+        const modal = document.getElementById('save-template-group-modal');
+        const select = document.getElementById('save-template-group-select');
+        const filenameInput = document.getElementById('save-template-group-filename');
+        if (modal && select && filenameInput) {
+            // Populate dropdown with all template groups
+            select.innerHTML = Object.keys(environment.templateGroups).map(name =>
+                `<option value="${name}">${name}</option>`
+            ).join('');
+            // Set default selection to current group
+            select.value = currentTemplateGroup;
+            // Set filename based on selected group
+            filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0,10)}.json`;
+            modal.style.display = 'flex';
+            // Update filename when dropdown changes
+            select.onchange = function() {
+                filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0,10)}.json`;
+            };
+        }
+    };
+}
+const saveTemplateGroupConfirm = document.getElementById('save-template-group-confirm');
+const saveTemplateGroupCancel = document.getElementById('save-template-group-cancel');
+if (saveTemplateGroupConfirm) {
+    saveTemplateGroupConfirm.onclick = function() {
+        const select = document.getElementById('save-template-group-select');
+        const filenameInput = document.getElementById('save-template-group-filename');
+        let groupName = select.value;
+        let fileName = filenameInput.value.trim();
+        if (!fileName) fileName = `${groupName}-template-group-${new Date().toISOString().slice(0,10)}.json`;
+        if (!fileName.endsWith('.json')) fileName += '.json';
+        // Export only the selected template group and its history
+        const groupData = {
+            name: groupName,
+            templates: environment.templateGroups[groupName],
+            history: environment.history[groupName] || []
+        };
+        try {
+            const blob = new Blob([JSON.stringify(groupData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('save-template-group-modal').style.display = 'none';
+        } catch (err) {
+            alert('Save failed: ' + err.message);
+        }
+    };
+}
+if (saveTemplateGroupCancel) {
+    saveTemplateGroupCancel.onclick = function() {
+        document.getElementById('save-template-group-modal').style.display = 'none';
+    };
+}
+// Load Template Group logic
+const loadTemplateGroupBtn = document.getElementById('load-template-group-btn');
+if (loadTemplateGroupBtn) {
+    loadTemplateGroupBtn.onclick = function() {
+        document.getElementById('load-template-group-file').click();
+    };
+}
+const loadTemplateGroupFile = document.getElementById('load-template-group-file');
+if (loadTemplateGroupFile) {
+    loadTemplateGroupFile.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const loaded = JSON.parse(e.target.result);
+                if (!loaded || typeof loaded !== 'object' || !loaded.name || !Array.isArray(loaded.templates)) {
+                    alert('Invalid template group file: missing name or templates');
+                    return;
+                }
+                // Prevent duplicate group name
+                if (environment.templateGroups[loaded.name]) {
+                    alert('Template group with this name already exists. Please rename before importing.');
+                    return;
+                }
+                environment.templateGroups[loaded.name] = loaded.templates;
+                environment.history[loaded.name] = loaded.history || [];
+                updateTemplateGroupDropdown();
+                alert(`Template group '${loaded.name}' imported successfully!`);
+            } catch (err) {
+                alert('Error loading template group: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+}
+
+// Create Template Group modal logic
+const createTemplateGroupBtn = document.getElementById('create-template-group-btn');
+if (createTemplateGroupBtn) {
+    createTemplateGroupBtn.onclick = function() {
+        const modal = document.getElementById('create-template-group-modal');
+        const nameInput = document.getElementById('create-template-group-name');
+        const errorDiv = document.getElementById('create-template-group-error');
+        if (modal && nameInput && errorDiv) {
+            nameInput.value = '';
+            errorDiv.style.display = 'none';
+            modal.style.display = 'flex';
+        }
+    };
+}
+const createTemplateGroupConfirm = document.getElementById('create-template-group-confirm');
+const createTemplateGroupCancel = document.getElementById('create-template-group-cancel');
+if (createTemplateGroupConfirm) {
+    createTemplateGroupConfirm.onclick = function() {
+        const nameInput = document.getElementById('create-template-group-name');
+        const errorDiv = document.getElementById('create-template-group-error');
+        let groupName = nameInput.value.trim();
+        if (!groupName) {
+            errorDiv.textContent = 'Please enter a name for the new template group.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        if (environment.templateGroups[groupName]) {
+            errorDiv.textContent = 'A template group with this name already exists.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        environment.templateGroups[groupName] = [];
+        environment.history[groupName] = [];
+        currentTemplateGroup = groupName;
+        updateTemplateGroupDropdown();
+        renderPromptsList();
+        document.getElementById('create-template-group-modal').style.display = 'none';
+        errorDiv.style.display = 'none';
+        alert(`Template group '${groupName}' created successfully!`);
+    };
+}
+if (createTemplateGroupCancel) {
+    createTemplateGroupCancel.onclick = function() {
+        document.getElementById('create-template-group-modal').style.display = 'none';
+        document.getElementById('create-template-group-error').style.display = 'none';
+    };
+}
+
+// =========================
+// State and UI Management Functions
+// =========================
+/**
+ * Updates the template group dropdown in the UI.
+ */
+function updateTemplateGroupDropdown() {
+    const dropdown = document.getElementById('template-group-dropdown');
+    if (!dropdown) return;
+    const groups = Object.keys(environment.templateGroups);
+    dropdown.innerHTML = groups.map(name =>
+        `<option value="${name}"${name === currentTemplateGroup ? ' selected' : ''}>${name}</option>`
+    ).join('');
+    dropdown.value = currentTemplateGroup;
+    dropdown.disabled = false;
+    // Optionally, update other UI elements if needed
+}
+
+// Call updateTemplateGroupDropdown on DOMContentLoaded to ensure it's set up initially
+window.addEventListener('DOMContentLoaded', function() {
+    updateTemplateGroupDropdown();
+});
+
+const templateGroupDropdown = document.getElementById('template-group-dropdown');
+if (templateGroupDropdown) {
+    templateGroupDropdown.onchange = function() {
+        currentTemplateGroup = templateGroupDropdown.value;
+        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+        renderPromptsList();
+        const templates = prompts;
+        const infoDisplay = document.getElementById('info-display');
+        if (templates.length > 0) {
+            currentPromptId = templates[0].id;
+            viewPrompt(currentPromptId);
+            if (infoDisplay) infoDisplay.style.display = '';
+        } else {
+            currentPromptId = null;
+            showWelcome();
+            if (infoDisplay) infoDisplay.style.display = 'none';
+        }
+    };
+}
+
 </script>
 
 <script>
@@ -2414,15 +4273,6 @@ startApp();
         var modal = document.getElementById('copy-modal');
         var closeModal = document.getElementById('close-copy-modal');
         var eyeLabel = document.getElementById('toggle-eye-label');
-        if (copyBtn) {
-            copyBtn.onclick = function() {
-                if (pre) {
-                    navigator.clipboard.writeText(pre.value).then(function() {
-                        if (modal) modal.style.display = 'flex';
-                    });
-                }
-            };
-        }
         if (toggleBtn) {
             toggleBtn.onclick = function() {
                 if (pre) {
@@ -2469,6 +4319,146 @@ startApp();
                 if (window.addSuccess) window.addSuccess();
             });
         }
+        var jsonImportFileBtn = document.getElementById('json-import-file-btn');
+        if (jsonImportFileBtn) {
+            jsonImportFileBtn.onclick = function() {
+                document.getElementById('import-file').click();
+            };
+        }
+        // Direct-action button logic
+        var startBlankPromptBtn = document.getElementById('start-blank-prompt');
+        if (startBlankPromptBtn) {
+            startBlankPromptBtn.onclick = function() {
+                startBlankPrompt();
+            };
+        }
+        var startFilePromptBtn = document.getElementById('start-file-prompt');
+        if (startFilePromptBtn) {
+            startFilePromptBtn.onclick = function() {
+                document.getElementById('import-file').click();
+            };
+        }
+        var jsonImportConfirmBtn = document.getElementById('json-import-confirm');
+        if (jsonImportConfirmBtn) {
+            jsonImportConfirmBtn.onclick = function() {
+                var textarea = document.getElementById('json-import-textarea');
+                var errorDiv = document.getElementById('json-import-error');
+                errorDiv.style.display = 'none';
+                try {
+                    var json = JSON.parse(textarea.value);
+                    importPromptFromJson(json);
+                } catch (e) {
+                    errorDiv.textContent = 'Invalid JSON: ' + e.message;
+                    errorDiv.style.display = 'block';
+                }
+            };
+        }
+        var newPromptCancelBtn = document.getElementById('new-prompt-cancel');
+        if (newPromptCancelBtn) {
+            newPromptCancelBtn.onclick = function() {
+                closeNewPromptModal();
+            };
+        }
+        // Split button logic for New Prompt
+        var newPromptMainBtn = document.getElementById('new-prompt-main');
+        var newPromptDropdown = document.getElementById('new-prompt-dropdown');
+        var dropdownItems = [
+            { id: 'dropdown-json', label: 'Import JSON', action: function() { openNewPromptModal(); } },
+            { id: 'dropdown-blank', label: 'Blank prompt', action: function() { startBlankPrompt(); } },
+            { id: 'dropdown-file', label: 'Import file', action: function() { document.getElementById('import-file').click(); } }
+        ];
+        function renderDropdownMenu() {
+            console.log('[DROPDOWN] renderDropdownMenu called');
+            if (!newPromptDropdown) {
+                console.error('[DROPDOWN] Dropdown element not found');
+                return;
+            }
+            newPromptDropdown.innerHTML = dropdownItems.map(function(item) {
+                return '<button class="dropdown-item" role="menuitem" id="' + item.id + '" tabindex="-1">' + item.label + '</button>';
+            }).join('');
+        }
+        renderDropdownMenu();
+        if (newPromptMainBtn) {
+            newPromptMainBtn.onclick = function(e) {
+                console.log('[DROPDOWN] New Prompt button clicked');
+                e.stopPropagation();
+                // Position dropdown below button as fixed overlay
+                var rect = newPromptMainBtn.getBoundingClientRect();
+                var dropdown = newPromptDropdown;
+                dropdown.style.display = 'block';
+                dropdown.style.top = (rect.bottom + 8) + 'px'; // 8px margin below button
+                dropdown.style.left = (rect.left) + 'px';
+                dropdown.style.maxHeight = '240px';
+                dropdown.style.overflowY = 'auto';
+                dropdown.style.boxShadow = '0 8px 32px rgba(30,41,59,0.18)';
+                dropdown.style.background = '#334155';
+                dropdown.style.color = '#fff';
+                dropdown.style.border = '1px solid #222e3a';
+                dropdown.style.borderRadius = '8px';
+                dropdown.style.padding = '4px 0';
+                dropdown.style.right = '';
+                dropdown.style.position = 'fixed';
+                dropdown.style.zIndex = '9999';
+                // Focus first item
+                setTimeout(function() {
+                    var firstItem = dropdown.querySelector('.dropdown-item');
+                    if (firstItem) firstItem.focus();
+                }, 50);
+            };
+        }
+        document.addEventListener('click', function() {
+            newPromptDropdown.style.display = 'none';
+        });
+        newPromptDropdown.onclick = function(e) {
+            console.log('[DROPDOWN] Dropdown item clicked:', e.target.id);
+            var target = e.target;
+            if (target.classList.contains('dropdown-item')) {
+                var item = dropdownItems.find(function(i) { return i.id === target.id; });
+                if (item && item.action) item.action();
+                newPromptDropdown.style.display = 'none';
+            }
+        };
+        // Keyboard navigation for dropdown
+        newPromptDropdown.onkeydown = function(e) {
+            var items = Array.from(newPromptDropdown.querySelectorAll('.dropdown-item'));
+            var idx = items.indexOf(document.activeElement);
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (idx < items.length - 1) items[idx + 1].focus();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (idx > 0) items[idx - 1].focus();
+            } else if (e.key === 'Escape') {
+                newPromptDropdown.style.display = 'none';
+                newPromptMainBtn.focus();
+            } else if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (idx >= 0) items[idx].click();
+            }
+        };
+        // Accessibility: Esc closes modal
+        var newPromptModal = document.getElementById('new-prompt-modal');
+        if (newPromptModal) {
+            newPromptModal.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeNewPromptModal();
+                }
+            });
+        }
+        // Remove New Template dropdown logic
+        // Add sidebar footer button logic
+        var importJsonBtn = document.getElementById('import-json-btn');
+        if (importJsonBtn) {
+            importJsonBtn.onclick = function() {
+                openNewPromptModal();
+            };
+        }
+        var blankPromptBtn = document.getElementById('blank-prompt-btn');
+        if (blankPromptBtn) {
+            blankPromptBtn.onclick = function() {
+                startBlankPrompt();
+            };
+        }
     });
 })();
 </script>
@@ -2477,13 +4467,28 @@ startApp();
 
 <div id="export-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
     <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
-        <h2 style="margin-bottom: 1rem; color: #2563eb;">Export Data</h2>
-        <p style="margin-bottom: 1rem; color: #666;">Copy this JSON data and save it to a .json file:</p>
-        <label for="export-modal-textarea" class="visually-hidden">Exported JSON Data</label>
-        <textarea id="export-modal-textarea" readonly style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 1rem; background: #fff; border: 1px solid #ccc; border-radius: 6px; color: #222; resize: none;"></textarea>
+        <h2 style="margin-bottom: 1rem; color: #2563eb;">Export Templates</h2>
+        <p style="margin-bottom: 1rem; color: #666;">Select templates to export and name your file:</p>
+        <div id="export-template-grid" style="margin-bottom: 1rem; max-height: 300px; overflow-y: auto;"></div>
+        <label for="export-file-name">Export File Name:</label>
+        <input type="text" id="export-file-name" placeholder="e.g., prompts.json" style="margin-bottom: 1rem;" />
         <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button class="btn btn-primary" id="export-modal-copy">Copy to Clipboard</button>
+            <button class="btn btn-success" id="export-modal-download">Download</button>
             <button class="btn btn-secondary" id="export-modal-close">Close</button>
+        </div>
+    </div>
+</div>
+
+<div id="import-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+    <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+        <h2 style="margin-bottom: 1rem; color: #2563eb;">Import Templates</h2>
+        <p style="margin-bottom: 1rem; color: #666;">Select templates to import:</p>
+        <div id="import-already-grid" style="margin-bottom: 1rem; color: #888; font-size: 0.97em;"></div>
+        <div id="import-template-grid" style="margin-bottom: 1rem; max-height: 300px; overflow-y: auto;"></div>
+        <div id="import-modal-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+            <button class="btn btn-success" id="import-modal-confirm">Import</button>
+            <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
         </div>
     </div>
 </div>

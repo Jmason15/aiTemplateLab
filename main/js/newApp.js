@@ -134,10 +134,10 @@ function startBlankPrompt() {
         outputs: [],
         success: []
     };
-    // Add to current workspace
-    if (workspaces[currentWorkspace]) {
-        workspaces[currentWorkspace].templates.push(newPrompt);
-        prompts = workspaces[currentWorkspace].templates.map(normalizePrompt);
+    // Add to current template group
+    if (environment.templateGroups[currentTemplateGroup]) {
+        environment.templateGroups[currentTemplateGroup].push(newPrompt);
+        prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
         window.savePromptsToLocalStorage();
         currentPromptId = newId;
         isCreatingNewPrompt = false;
@@ -844,10 +844,10 @@ function showImportModal(templates, allTemplates) {
                 errorDiv.style.display = 'block';
                 return;
             }
-            // Add to current workspace
-            if (workspaces[currentWorkspace]) {
-                workspaces[currentWorkspace].templates = workspaces[currentWorkspace].templates.concat(newTemplates);
-                prompts = workspaces[currentWorkspace].templates.map(normalizePrompt);
+            // Add to current template group
+            if (environment.templateGroups[currentTemplateGroup]) {
+                environment.templateGroups[currentTemplateGroup] = environment.templateGroups[currentTemplateGroup].concat(newTemplates);
+                prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
                 window.savePromptsToLocalStorage();
                 renderPromptsList();
                 modal.style.display = 'none';
