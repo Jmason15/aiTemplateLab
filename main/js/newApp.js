@@ -749,16 +749,16 @@ function handleImport(event) {
     reader.onload = function(e) {
         try {
             const loaded = JSON.parse(e.target.result);
-            let templates = Array.isArray(loaded) ? loaded : [loaded];
+            let allTemplates = Array.isArray(loaded) ? loaded : [loaded];
             // Filter out templates with duplicate ids
             const existingIds = new Set(prompts.map(p => p.id));
-            const uniqueTemplates = templates.filter(t => t.id && !existingIds.has(t.id));
+            const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
             if (uniqueTemplates.length === 0) {
                 alert('No new templates to import (all IDs already exist or invalid).');
                 event.target.value = '';
                 return;
             }
-            showImportModal(uniqueTemplates);
+            showImportModal(uniqueTemplates, allTemplates);
         } catch (err) {
             alert('Error parsing JSON file: ' + err.message);
         }
@@ -767,13 +767,25 @@ function handleImport(event) {
     event.target.value = '';
 }
 
-function showImportModal(templates) {
+function showImportModal(templates, allTemplates) {
     const modal = document.getElementById('import-modal');
     const grid = document.getElementById('import-template-grid');
+    const alreadyGrid = document.getElementById('import-already-grid');
     const errorDiv = document.getElementById('import-modal-error');
-    if (!modal || !grid || !errorDiv) return;
+    if (!modal || !grid || !alreadyGrid || !errorDiv) return;
     errorDiv.style.display = 'none';
-    // Render grid of checkboxes
+
+    // Show already imported templates
+    const existingIds = new Set(prompts.map(p => p.id));
+    const duplicates = (allTemplates || []).filter(t => t.id && existingIds.has(t.id));
+    if (duplicates.length > 0) {
+        alreadyGrid.innerHTML = `<strong>Already imported templates:</strong><ul style='margin:0.3em 0 0.7em 1.2em;'>` +
+            duplicates.map(t => `<li>${window.escapeHtml(t.name)}</li>`).join('') + '</ul>';
+    } else {
+        alreadyGrid.innerHTML = '';
+    }
+
+    // Render grid of checkboxes for unique templates
     grid.innerHTML = templates.map(t =>
         `<div style='display:flex;align-items:center;margin-bottom:6px;'>
             <input type='checkbox' id='import-tpl-${t.id}' value='${t.id}' style='margin-right:8px;' checked>
