@@ -414,6 +414,12 @@ hr {
     </div>
     <div id="main-content" style="margin-left:260px;">
         <div class="main-panel">
+            <section id="welcome-screen" class="screen active">
+                <div class="empty-state">
+                    <h3>Welcome to Prompt Builder Pro</h3>
+                    <p>Select a prompt from the sidebar or create a new one</p>
+                </div>
+            </section>
             <div class="info-display card card-body" style="margin-bottom: 1.5rem;">
                 <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
                 <p id="view-desc" style="font-size: 1.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Description</p>
@@ -429,12 +435,6 @@ hr {
                 <button onclick="showPromptOutput()" id="tab-output">Output</button>
             </div>
             <div class="tab-content">
-                <section id="welcome-screen" class="screen active">
-                    <div class="empty-state">
-                        <h3>Welcome to Prompt Builder Pro</h3>
-                        <p>Select a prompt from the sidebar or create a new one</p>
-                    </div>
-                </section>
                 <section id="view-screen" class="screen" aria-labelledby="view-name">
                     <div class="view-screen">
                         <div class="view-left">

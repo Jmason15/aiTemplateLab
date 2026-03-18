@@ -326,50 +326,62 @@ function clearForm() {
 function viewPrompt(id) {
     const prompt = prompts.find(p => p.id === id);
     if (!prompt) return;
-
     currentPromptId = id;
-    showView();
-    setTabActive('Use Template');
-
+    // Show info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabsElem = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = '';
+    if (tabsElem) tabsElem.style.display = '';
+    if (tabContent) tabContent.style.display = '';
+    // Hide welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'none';
+        welcomeScreen.classList.remove('active');
+    }
     // Switch tab to View Prompt
-    const tabs = document.querySelectorAll('#tabs button');
-    tabs.forEach(btn => {
+    const tabButtons = document.querySelectorAll('#tabs button');
+    tabButtons.forEach(btn => {
         if (btn.textContent.includes('View')) {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
         }
     });
-
-    document.getElementById('view-name').textContent = prompt.name;
-    document.getElementById('view-desc').textContent = prompt.description;
+    const viewName = document.getElementById('view-name');
+    const viewDesc = document.getElementById('view-desc');
+    if (viewName) viewName.textContent = prompt.name;
+    if (viewDesc) viewDesc.textContent = prompt.description;
     // Add meta info (objective, actor, context)
     const meta = [];
     if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
     if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
     if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
-    document.getElementById('view-meta').innerHTML = meta.join('');
-
+    const viewMeta = document.getElementById('view-meta');
+    if (viewMeta) viewMeta.innerHTML = meta.join('');
     const inputsContainer = document.getElementById('view-inputs');
-    if (prompt.inputs.length === 0) {
-        inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
-    } else {
-        inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
-            <div style="margin-bottom: 1rem;">
-                <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
-                  <textarea
-                    id="input-value-${idx}"
-                    class="view-textarea"
-                    rows="6"
-                    placeholder="${window.escapeHtml(i.description)}"
-                    oninput="generateViewPrompt()"
-                ></textarea>
-            </div>
-        `).join('');
+    if (inputsContainer) {
+        if (prompt.inputs.length === 0) {
+            inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
+        } else {
+            inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
+                <div style="margin-bottom: 1rem;">
+                    <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                      <textarea
+                        id="input-value-${idx}"
+                        class="view-textarea"
+                        rows="6"
+                        placeholder="${window.escapeHtml(i.description)}"
+                        oninput="generateViewPrompt()"
+                    ></textarea>
+                </div>
+            `).join('');
+        }
     }
-
     generateViewPrompt();
     renderPromptsList();
+    if (infoDisplay) infoDisplay.style.display = '';
 }
 
 
@@ -1160,50 +1172,79 @@ if (copyBtn) {
 function viewPrompt(id) {
     const prompt = prompts.find(p => p.id === id);
     if (!prompt) return;
-
     currentPromptId = id;
-    showView();
-    setTabActive('Use Template');
-
+    // Show info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabsElem = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = '';
+    if (tabsElem) tabsElem.style.display = '';
+    if (tabContent) tabContent.style.display = '';
+    // Hide welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'none';
+        welcomeScreen.classList.remove('active');
+    }
     // Switch tab to View Prompt
-    const tabs = document.querySelectorAll('#tabs button');
-    tabs.forEach(btn => {
+    const tabButtons = document.querySelectorAll('#tabs button');
+    tabButtons.forEach(btn => {
         if (btn.textContent.includes('View')) {
             btn.classList.add('active');
         } else {
             btn.classList.remove('active');
         }
     });
-
-    document.getElementById('view-name').textContent = prompt.name;
-    document.getElementById('view-desc').textContent = prompt.description;
+    const viewName = document.getElementById('view-name');
+    const viewDesc = document.getElementById('view-desc');
+    if (viewName) viewName.textContent = prompt.name;
+    if (viewDesc) viewDesc.textContent = prompt.description;
     // Add meta info (objective, actor, context)
     const meta = [];
     if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
     if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
     if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
-    document.getElementById('view-meta').innerHTML = meta.join('');
-
+    const viewMeta = document.getElementById('view-meta');
+    if (viewMeta) viewMeta.innerHTML = meta.join('');
     const inputsContainer = document.getElementById('view-inputs');
-    if (prompt.inputs.length === 0) {
-        inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
-    } else {
-        inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
-            <div style="margin-bottom: 1rem;">
-                <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
-                  <textarea
-                    id="input-value-${idx}"
-                    class="view-textarea"
-                    rows="6"
-                    placeholder="${window.escapeHtml(i.description)}"
-                    oninput="generateViewPrompt()"
-                ></textarea>
-            </div>
-        `).join('');
+    if (inputsContainer) {
+        if (prompt.inputs.length === 0) {
+            inputsContainer.innerHTML = '<p class="section-desc">No input fields defined</p>';
+        } else {
+            inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
+                <div style="margin-bottom: 1rem;">
+                    <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                      <textarea
+                        id="input-value-${idx}"
+                        class="view-textarea"
+                        rows="6"
+                        placeholder="${window.escapeHtml(i.description)}"
+                        oninput="generateViewPrompt()"
+                    ></textarea>
+                </div>
+            `).join('');
+        }
     }
-
     generateViewPrompt();
     renderPromptsList();
+    if (infoDisplay) infoDisplay.style.display = '';
+}
+
+// In showWelcome(), ensure info-display is hidden
+function showWelcome() {
+    // Hide info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabs = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = 'none';
+    if (tabs) tabs.style.display = 'none';
+    if (tabContent) tabContent.style.display = 'none';
+    // Show welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'block';
+        welcomeScreen.classList.add('active');
+    }
 }
 
 // Template Group Persistence
@@ -1770,20 +1811,20 @@ window.savePromptsToLocalStorage = function() {
  * Shows the welcome screen and hides other screens.
  */
 function showWelcome() {
-    // Hide all screens except welcome
-    document.getElementById('view-screen').style.display = 'none';
-    document.getElementById('edit-screen').style.display = 'none';
-    document.getElementById('history-screen').style.display = 'none';
-    document.getElementById('output-screen').style.display = 'none';
-    document.getElementById('welcome-screen').style.display = 'block';
-    // Set active class
-    document.getElementById('view-screen').classList.remove('active');
-    document.getElementById('edit-screen').classList.remove('active');
-    document.getElementById('history-screen').classList.remove('active');
-    document.getElementById('output-screen').classList.remove('active');
-    document.getElementById('welcome-screen').classList.add('active');
+    // Hide info-display, tabs, and tab-content
+    const infoDisplay = document.getElementById('info-display');
+    const tabs = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = 'none';
+    if (tabs) tabs.style.display = 'none';
+    if (tabContent) tabContent.style.display = 'none';
+    // Show welcome-screen
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'block';
+        welcomeScreen.classList.add('active');
+    }
 }
-window.showWelcome = showWelcome;
 
 // Save Template Group modal logic
 const saveTemplateGroupBtn = document.getElementById('save-template-group-btn');
@@ -1959,15 +2000,18 @@ const templateGroupDropdown = document.getElementById('template-group-dropdown')
 if (templateGroupDropdown) {
     templateGroupDropdown.onchange = function() {
         currentTemplateGroup = templateGroupDropdown.value;
+        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
         renderPromptsList();
-        // Optionally show first prompt or welcome
-        const templates = environment.templateGroups[currentTemplateGroup] || [];
+        const templates = prompts;
+        const infoDisplay = document.getElementById('info-display');
         if (templates.length > 0) {
             currentPromptId = templates[0].id;
             viewPrompt(currentPromptId);
+            if (infoDisplay) infoDisplay.style.display = '';
         } else {
             currentPromptId = null;
             showWelcome();
+            if (infoDisplay) infoDisplay.style.display = 'none';
         }
     };
 }
