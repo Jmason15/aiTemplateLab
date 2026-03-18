@@ -171,6 +171,8 @@ hr {
             <!-- Fixed bottom actions -->
             <div class="sidebar-actions sidebar-actions-bottom" style="padding:1em 1em 1.2em 1em;">
                 <button class="btn btn-outline btn-block" onclick="exportPrompts()" style="border-radius:8px; font-weight:500;">Export Templates</button>
+                <button class="btn btn-success btn-block" id="save-workspace-btn" style="margin-top:0.5rem; border-radius:8px; font-weight:500;">Save Workspace</button>
+                <button class="btn btn-outline btn-block" id="load-workspace-btn" style="margin-top:0.5rem; border-radius:8px; font-weight:500;">Load Workspace</button>
                 <button class="btn btn-danger btn-block" onclick="resetPrompts()" style="margin-top: 0.5rem; border-radius:8px; font-weight:500; background:#7b2c2c; color:#fff; border:1.5px solid #7b2c2c;">Reset Templates</button>
             </div>
 
@@ -185,6 +187,31 @@ hr {
                     <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
                         <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
                         <button class="btn btn-primary" id="json-import-confirm">Import</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Workspace Modal -->
+            <div id="save-workspace-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #2563eb;">Save Workspace</h2>
+                    <label for="save-workspace-filename">Workspace File Name:</label>
+                    <input type="text" id="save-workspace-filename" placeholder="e.g., workspace.json" style="margin-bottom: 1rem;" />
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-success" id="save-workspace-confirm">Save</button>
+                        <button class="btn btn-secondary" id="save-workspace-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Load Workspace Warning Modal -->
+            <div id="load-workspace-warning-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #ef4444;">Warning: Replace Workspace</h2>
+                    <p style="margin-bottom: 1rem; color: #333;">Loading a workspace will <strong>replace all templates and history</strong>.<br>If you want to add templates, use <strong>Import File</strong> instead.</p>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-danger" id="load-workspace-continue">Continue</button>
+                        <button class="btn btn-secondary" id="load-workspace-cancel">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -401,6 +428,7 @@ hr {
         </div>
         <!-- Add hidden file input for importing prompts -->
         <input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)" />
+        <input type="file" id="load-workspace-file" accept=".json" style="display:none;" />
     </div>
 </div>
 <script>

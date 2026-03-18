@@ -1271,4 +1271,126 @@ function importPromptFromJson(json) {
 }
 window.importPromptFromJson = importPromptFromJson;
 
-// Remove dropdown logic for New Prompt split button (handled in index.html)
+// =========================
+// Workspace Save/Load
+// =========================
+
+// Save Workspace button handler
+const saveWorkspaceBtn = document.getElementById('save-workspace-btn');
+if (saveWorkspaceBtn) {
+    saveWorkspaceBtn.onclick = function() {
+        const modal = document.getElementById('save-workspace-modal');
+        const filenameInput = document.getElementById('save-workspace-filename');
+        if (modal && filenameInput) {
+            filenameInput.value = `workspace-${new Date().toISOString().slice(0,10)}.json`;
+            modal.style.display = 'flex';
+        }
+    };
+}
+
+// Save Workspace modal confirm/cancel
+const saveWorkspaceConfirm = document.getElementById('save-workspace-confirm');
+const saveWorkspaceCancel = document.getElementById('save-workspace-cancel');
+if (saveWorkspaceConfirm) {
+    saveWorkspaceConfirm.onclick = function() {
+        const filenameInput = document.getElementById('save-workspace-filename');
+        let fileName = filenameInput.value.trim();
+        if (!fileName) fileName = `workspace-${new Date().toISOString().slice(0,10)}.json`;
+        if (!fileName.endsWith('.json')) fileName += '.json';
+        // Collect templates and input history
+        const workspaceData = {
+            templates: prompts,
+            inputHistory: getPromptInputHistoryAll()
+        };
+        try {
+            const blob = new Blob([JSON.stringify(workspaceData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('save-workspace-modal').style.display = 'none';
+        } catch (err) {
+            alert('Save failed: ' + err.message);
+        }
+    };
+}
+if (saveWorkspaceCancel) {
+    saveWorkspaceCancel.onclick = function() {
+        document.getElementById('save-workspace-modal').style.display = 'none';
+    };
+}
+
+// Load Workspace button handler
+const loadWorkspaceBtn = document.getElementById('load-workspace-btn');
+if (loadWorkspaceBtn) {
+    loadWorkspaceBtn.onclick = function() {
+        const modal = document.getElementById('load-workspace-warning-modal');
+        if (modal) modal.style.display = 'flex';
+    };
+}
+// Wire up warning modal buttons
+const loadWorkspaceContinue = document.getElementById('load-workspace-continue');
+const loadWorkspaceCancel = document.getElementById('load-workspace-cancel');
+if (loadWorkspaceContinue) {
+    loadWorkspaceContinue.onclick = function() {
+        document.getElementById('load-workspace-warning-modal').style.display = 'none';
+        document.getElementById('load-workspace-file').click();
+    };
+}
+if (loadWorkspaceCancel) {
+    loadWorkspaceCancel.onclick = function() {
+        document.getElementById('load-workspace-warning-modal').style.display = 'none';
+    };
+}
+// Optional: close modal when clicking outside
+const loadWorkspaceWarningModal = document.getElementById('load-workspace-warning-modal');
+if (loadWorkspaceWarningModal) {
+    loadWorkspaceWarningModal.onclick = function(e) {
+        if (e.target === loadWorkspaceWarningModal) loadWorkspaceWarningModal.style.display = 'none';
+    };
+}
+
+// Load Workspace file input handler
+const loadWorkspaceFile = document.getElementById('load-workspace-file');
+if (loadWorkspaceFile) {
+    loadWorkspaceFile.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const loaded = JSON.parse(e.target.result);
+                if (!loaded.templates || !Array.isArray(loaded.templates)) {
+                    alert('Invalid workspace file: missing templates array');
+                    return;
+                }
+                prompts = loaded.templates.map(normalizePrompt);
+                window.savePromptsToLocalStorage();
+                renderPromptsList();
+                // Replace input history
+                if (loaded.inputHistory && Array.isArray(loaded.inputHistory)) {
+                    localStorage.setItem('promptInputHistory', JSON.stringify(loaded.inputHistory));
+                } else {
+                    localStorage.removeItem('promptInputHistory');
+                }
+                // Show first prompt or welcome
+                if (prompts.length > 0) {
+                    currentPromptId = prompts[0].id;
+                    viewPrompt(currentPromptId);
+                } else {
+                    currentPromptId = null;
+                    showWelcome();
+                }
+                alert('Workspace loaded successfully!');
+            } catch (err) {
+                alert('Error loading workspace: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+}
