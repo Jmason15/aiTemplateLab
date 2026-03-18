@@ -10,11 +10,6 @@
     </style>
 </head>
 <body>
-<!-- Toast notification container -->
-<div id="toast-warning" class="toast-warning" role="alert" aria-live="assertive" style="display:none;">
-    <strong>⚠️ Session Storage Only</strong>
-    Prompts are stored temporarily. Use Export/Import buttons below to save permanently.
-</div>
 <!-- Move dropdown menu to body for fixed overlay -->
 <div id="new-prompt-dropdown" class="dropdown-menu" role="menu" style="display:none; position:fixed; min-width:180px; z-index:9999;"></div>
 <div id="container">
@@ -64,9 +59,8 @@
             <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
                 <div id="new-prompt-modal-content">
                     <h2 class="modal-title">Import Prompt from JSON</h2>
-                    <label for="json-import-textarea" style="font-weight:500; color:#222; margin-bottom:0.2em; display:block;">Prompt JSON</label>
-                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="margin-bottom:0.3em; width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:8px; border:1.5px solid #e5e7eb; resize:vertical; background:#f9f9f9;"></textarea>
-                    <div style="font-size:0.97em; color:#64748b; margin-bottom:0.2em;">Paste an existing prompt JSON to load it.</div>
+                    <label for="json-import-textarea">Prompt JSON</label>
+                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..."></textarea>
                     <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
                     <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
                         <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
@@ -133,13 +127,13 @@
             <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
                 <div id="new-prompt-modal-content">
                     <h2 class="modal-title">Import Prompt from JSON</h2>
-                    <label for="json-import-textarea" style="font-weight:500; color:#222; margin-bottom:0.2em; display:block;">Prompt JSON</label>
-                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="margin-bottom:0.3em; width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:8px; border:1.5px solid #e5e7eb; resize:vertical; background:#f9f9f9;"></textarea>
+                    <label for="json-import-textarea-2" style="font-weight:500; color:#222; margin-bottom:0.2em; display:block;">Prompt JSON</label>
+                    <textarea id="json-import-textarea-2" placeholder="Paste prompt JSON here..." style="margin-bottom:0.3em; width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:8px; border:1.5px solid #e5e7eb; resize:vertical; background:#f9f9f9;"></textarea>
                     <div style="font-size:0.97em; color:#64748b; margin-bottom:0.2em;">Paste an existing prompt JSON to load it.</div>
-                    <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
+                    <div id="json-import-error-2" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
                     <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
-                        <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
-                        <button class="btn btn-primary" id="json-import-confirm">Import</button>
+                        <button type="button" class="btn btn-text" id="new-prompt-cancel-2" aria-label="Cancel">Cancel</button>
+                        <button class="btn btn-primary" id="json-import-confirm-2">Import</button>
                     </div>
                 </div>
             </div>
@@ -390,19 +384,44 @@
                 </div>
             </div>
         </div>
-        <!-- Add hidden file input for importing prompts -->
-        <input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)" />
-        <input type="file" id="load-workspace-file" accept=".json" style="display:none" />
-        <input type="file" id="load-template-group-file" accept=".json" style="display:none" />
 
-        <!-- Hidden buttons for workspace actions -->
-        <button id="save-workspace-btn" style="display:none"></button>
-        <button id="load-workspace-btn" style="display:none"></button>
-        <button id="save-template-group-btn" style="display:none"></button>
-        <button id="load-template-group-btn" style="display:none"></button>
-        <button id="create-template-group-btn" style="display:none"></button>
+        <!-- Export Modal -->
+        <div id="export-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+            <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+                <h2 style="margin-bottom: 1rem; color: #2563eb;">Export Templates</h2>
+                <p style="margin-bottom: 1rem; color: #666;">Select templates to export and name your file:</p>
+                <div id="export-template-grid" style="margin-bottom: 1rem; max-height: 300px; overflow-y: auto;"></div>
+                <label for="export-file-name">Export File Name:</label>
+                <input type="text" id="export-file-name" placeholder="e.g., prompts.json" style="margin-bottom: 1rem;" />
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn btn-success" id="export-modal-download">Download</button>
+                    <button class="btn btn-secondary" id="export-modal-close">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Modal -->
+        <div id="import-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+            <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
+                <h2 style="margin-bottom: 1rem; color: #2563eb;">Import Templates</h2>
+                <p style="margin-bottom: 1rem; color: #666;">Select templates to import:</p>
+                <div id="import-already-grid" style="margin-bottom: 1rem; color: #888; font-size: 0.97em;"></div>
+                <div id="import-template-grid" style="margin-bottom: 1rem; max-height: 300px; overflow-y: auto;"></div>
+                <div id="import-modal-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn btn-success" id="import-modal-confirm">Import</button>
+                    <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
+<footer id="app-footer">
+  <div id="toast-warning" class="toast-warning">
+    <span>Warning: Your data is stored in your browser and may be lost if you clear your cache or use a different device.</span>
+  </div>
+</footer>
 <script>
     window.addEventListener('beforeunload', function (e) {
         if (window.promptUnsavedChanges) {
@@ -618,30 +637,3 @@
 </body>
 </html>
 
-<div id="export-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
-    <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
-        <h2 style="margin-bottom: 1rem; color: #2563eb;">Export Templates</h2>
-        <p style="margin-bottom: 1rem; color: #666;">Select templates to export and name your file:</p>
-        <div id="export-template-grid" style="margin-bottom: 1rem; max-height: 300px; overflow-y: auto;"></div>
-        <label for="export-file-name">Export File Name:</label>
-        <input type="text" id="export-file-name" placeholder="e.g., prompts.json" style="margin-bottom: 1rem;" />
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button class="btn btn-success" id="export-modal-download">Download</button>
-            <button class="btn btn-secondary" id="export-modal-close">Close</button>
-        </div>
-    </div>
-</div>
-
-<div id="import-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
-    <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 800px; max-height: 80vh; display: flex; flex-direction: column;">
-        <h2 style="margin-bottom: 1rem; color: #2563eb;">Import Templates</h2>
-        <p style="margin-bottom: 1rem; color: #666;">Select templates to import:</p>
-        <div id="import-already-grid" style="margin-bottom: 1rem; color: #888; font-size: 0.97em;"></div>
-        <div id="import-template-grid" style="margin-bottom: 1rem; max-height: 300px; overflow-y: auto;"></div>
-        <div id="import-modal-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
-        <div style="display: flex; gap: 1rem; margin-top: 1rem;">
-            <button class="btn btn-success" id="import-modal-confirm">Import</button>
-            <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
-        </div>
-    </div>
-</div>

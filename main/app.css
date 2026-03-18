@@ -994,11 +994,17 @@ textarea, input[type="text"] {
   z-index: 1;
 }
 .sidebar-footer {
-  padding: 12px 16px 16px;
+  padding: 12px 16px 48px; /* Increased bottom padding for footer bar clearance */
   border-top: 1px solid rgba(255,255,255,0.12);
   flex-shrink: 0;
   background: #232a36;
   z-index: 2;
+}
+.sidebar-actions {
+  margin-bottom:1.2em;
+}
+.sidebar-actions-bottom {
+  padding-bottom: 2.5em !important; /* Extra space for footer bar */
 }
 .dropdown-menu {
   background:#232a36;
@@ -1066,10 +1072,6 @@ hr {
   border-top:1px solid #475569;
   margin:0.5em 0 1em 0;
 }
-.sidebar-actions {
-  margin-bottom:1.2em;
-}
-
 /* Top App Bar */
 #app-bar {
   position:fixed;
@@ -1158,6 +1160,30 @@ hr {
 }
 #container {
   margin-top:56px;
+}
+#app-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  z-index: 10001;
+  background: #232a36;
+  box-shadow: 0 -2px 8px rgba(30,41,59,0.08);
+  padding: 0;
+}
+.toast-warning {
+  width: 100%;
+  text-align: center;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 1em;
+  font-weight: 500;
+  padding: 0.7em 0;
+  border-top: 1.5px solid #fde68a;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
 }
 @media (max-width:600px) {
   #app-bar {
