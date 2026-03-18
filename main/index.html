@@ -158,12 +158,13 @@ hr {
     box-shadow:0 2px 8px rgba(30,41,59,0.08);
     padding:0 2rem;
 }
-#app-bar-actions {
+#app-bar-center {
+    flex:1;
     display:flex;
-    gap:1.2em;
+    justify-content:center;
     align-items:center;
 }
-#workspace-pill {
+#workspace-dropdown {
     background:#334155;
     color:#fff;
     border-radius:16px;
@@ -171,8 +172,16 @@ hr {
     font-size:1em;
     font-weight:500;
     opacity:0.95;
-    margin-right:0.5em;
-    cursor:default;
+    border:none;
+    outline:none;
+    cursor:not-allowed;
+    min-width:180px;
+    text-align:center;
+}
+#app-bar-actions {
+    display:flex;
+    gap:1.2em;
+    align-items:center;
 }
 #app-bar-kebab {
     background:none;
@@ -245,8 +254,12 @@ hr {
     <!-- Top App Bar -->
     <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:56px; background:#232a36; color:#fff; display:flex; align-items:center; justify-content:space-between; z-index:10000; box-shadow:0 2px 8px rgba(30,41,59,0.08); padding:0 2rem;">
         <div style="font-size:1.35em; font-weight:700; letter-spacing:0.02em;">aiTemplateLab</div>
+        <div id="app-bar-center" style="flex:1; display:flex; justify-content:center; align-items:center;">
+            <select id="workspace-dropdown" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; border:none; outline:none; cursor:not-allowed; min-width:180px; text-align:center;" disabled>
+                <option>Current workspace</option>
+            </select>
+        </div>
         <div id="app-bar-actions" style="display:flex; gap:1.2em; align-items:center;">
-            <span id="workspace-pill" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; margin-right:0.5em; cursor:default;">Current workspace</span>
             <button id="app-bar-kebab" aria-label="More actions" style="background:none; border:none; color:#fff; font-size:1.5em; padding:0.2em 0.6em; border-radius:50%; cursor:pointer;">
                 <span style="font-size:1.5em;">&#x22EE;</span>
             </button>
@@ -529,7 +542,7 @@ hr {
         </div>
         <!-- Add hidden file input for importing prompts -->
         <input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)" />
-        <input type="file" id="load-workspace-file" accept=".json" style="display:none;" />
+        <input type="file" id="load-workspace-file" accept=".json" style="display:none" />
 
         <!-- Hidden buttons for workspace actions -->
         <button id="save-workspace-btn" style="display:none"></button>
@@ -664,32 +677,34 @@ hr {
             }).join('');
         }
         renderDropdownMenu();
-        newPromptMainBtn.onclick = function(e) {
-            console.log('[DROPDOWN] New Prompt button clicked');
-            e.stopPropagation();
-            // Position dropdown below button as fixed overlay
-            var rect = newPromptMainBtn.getBoundingClientRect();
-            var dropdown = newPromptDropdown;
-            dropdown.style.display = 'block';
-            dropdown.style.top = (rect.bottom + 8) + 'px'; // 8px margin below button
-            dropdown.style.left = (rect.left) + 'px';
-            dropdown.style.maxHeight = '240px';
-            dropdown.style.overflowY = 'auto';
-            dropdown.style.boxShadow = '0 8px 32px rgba(30,41,59,0.18)';
-            dropdown.style.background = '#334155';
-            dropdown.style.color = '#fff';
-            dropdown.style.border = '1px solid #222e3a';
-            dropdown.style.borderRadius = '8px';
-            dropdown.style.padding = '4px 0';
-            dropdown.style.right = '';
-            dropdown.style.position = 'fixed';
-            dropdown.style.zIndex = '9999';
-            // Focus first item
-            setTimeout(function() {
-                var firstItem = dropdown.querySelector('.dropdown-item');
-                if (firstItem) firstItem.focus();
-            }, 50);
-        };
+        if (newPromptMainBtn) {
+            newPromptMainBtn.onclick = function(e) {
+                console.log('[DROPDOWN] New Prompt button clicked');
+                e.stopPropagation();
+                // Position dropdown below button as fixed overlay
+                var rect = newPromptMainBtn.getBoundingClientRect();
+                var dropdown = newPromptDropdown;
+                dropdown.style.display = 'block';
+                dropdown.style.top = (rect.bottom + 8) + 'px'; // 8px margin below button
+                dropdown.style.left = (rect.left) + 'px';
+                dropdown.style.maxHeight = '240px';
+                dropdown.style.overflowY = 'auto';
+                dropdown.style.boxShadow = '0 8px 32px rgba(30,41,59,0.18)';
+                dropdown.style.background = '#334155';
+                dropdown.style.color = '#fff';
+                dropdown.style.border = '1px solid #222e3a';
+                dropdown.style.borderRadius = '8px';
+                dropdown.style.padding = '4px 0';
+                dropdown.style.right = '';
+                dropdown.style.position = 'fixed';
+                dropdown.style.zIndex = '9999';
+                // Focus first item
+                setTimeout(function() {
+                    var firstItem = dropdown.querySelector('.dropdown-item');
+                    if (firstItem) firstItem.focus();
+                }, 50);
+            };
+        }
         document.addEventListener('click', function() {
             newPromptDropdown.style.display = 'none';
         });

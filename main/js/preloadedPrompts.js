@@ -84,3 +84,14 @@ window.preloadedPrompts = [
         ]
     }
 ];
+
+window.preloadedWorkspaces = {
+    "Default": {
+        templates: window.preloadedPrompts.filter(p => p.name === "Template Builder"),
+        inputHistory: []
+    },
+    "Jira": {
+        templates: window.preloadedPrompts.filter(p => p.name === "Jira Story and Acceptance Criteria Generator"),
+        inputHistory: []
+    }
+};

@@ -112,13 +112,17 @@ function startBlankPrompt() {
         outputs: [],
         success: []
     };
-    prompts.push(newPrompt);
-    window.savePromptsToLocalStorage();
-    currentPromptId = newId;
-    isCreatingNewPrompt = false;
-    editPrompt(newId);
-    setTabActive('Edit');
-    renderPromptsList();
+    // Add to current workspace
+    if (workspaces[currentWorkspace]) {
+        workspaces[currentWorkspace].templates.push(newPrompt);
+        prompts = workspaces[currentWorkspace].templates.map(normalizePrompt);
+        window.savePromptsToLocalStorage();
+        currentPromptId = newId;
+        isCreatingNewPrompt = false;
+        editPrompt(newId);
+        setTabActive('Edit');
+        renderPromptsList();
+    }
 }
 window.startBlankPrompt = startBlankPrompt;
 
@@ -812,12 +816,16 @@ function showImportModal(templates, allTemplates) {
                 errorDiv.style.display = 'block';
                 return;
             }
-            prompts = prompts.concat(newTemplates);
-            window.savePromptsToLocalStorage();
-            renderPromptsList();
-            modal.style.display = 'none';
-            errorDiv.style.display = 'none';
-            alert(`Imported ${newTemplates.length} template(s) successfully!`);
+            // Add to current workspace
+            if (workspaces[currentWorkspace]) {
+                workspaces[currentWorkspace].templates = workspaces[currentWorkspace].templates.concat(newTemplates);
+                prompts = workspaces[currentWorkspace].templates.map(normalizePrompt);
+                window.savePromptsToLocalStorage();
+                renderPromptsList();
+                modal.style.display = 'none';
+                errorDiv.style.display = 'none';
+                alert(`Imported ${newTemplates.length} template(s) successfully!`);
+            }
         };
     }
     // Cancel button
@@ -1188,6 +1196,91 @@ function viewPrompt(id) {
     renderPromptsList();
 }
 
+// Workspace management
+let workspaces = {};
+let currentWorkspace = 'Default';
+
+function getInitialWorkspaces() {
+    // Use preloadedWorkspaces if available
+    if (window.preloadedWorkspaces) {
+        return JSON.parse(JSON.stringify(window.preloadedWorkspaces));
+    }
+    return {};
+}
+
+function loadWorkspacesFromStorage() {
+    const raw = localStorage.getItem('workspaces');
+    if (raw) {
+        try {
+            workspaces = JSON.parse(raw);
+        } catch {
+            workspaces = getInitialWorkspaces();
+        }
+    } else {
+        workspaces = getInitialWorkspaces();
+    }
+    // Ensure at least Default workspace
+    if (!workspaces['Default']) {
+        workspaces['Default'] = { templates: [], inputHistory: [] };
+    }
+}
+
+function saveWorkspacesToStorage() {
+    localStorage.setItem('workspaces', JSON.stringify(workspaces));
+}
+
+function switchWorkspace(name) {
+    if (!workspaces[name]) return;
+    currentWorkspace = name;
+    prompts = workspaces[name].templates.map(normalizePrompt);
+    renderPromptsList();
+    // Replace input history
+    if (Array.isArray(workspaces[name].inputHistory)) {
+        localStorage.setItem('promptInputHistory', JSON.stringify(workspaces[name].inputHistory));
+    } else {
+        localStorage.removeItem('promptInputHistory');
+    }
+    // Show first prompt or welcome
+    if (prompts.length > 0) {
+        currentPromptId = prompts[0].id;
+        viewPrompt(currentPromptId);
+    } else {
+        currentPromptId = null;
+        showWelcome();
+    }
+    updateWorkspaceDropdown();
+}
+
+function updateWorkspaceDropdown() {
+    const dropdown = document.getElementById('workspace-dropdown');
+    if (!dropdown) return;
+    dropdown.innerHTML = Object.keys(workspaces).map(name =>
+        `<option value="${name}"${name === currentWorkspace ? ' selected' : ''}>${name}</option>`
+    ).join('');
+    dropdown.disabled = false;
+}
+
+// On workspace dropdown change
+const dropdown = document.getElementById('workspace-dropdown');
+if (dropdown) {
+    dropdown.onchange = function() {
+        switchWorkspace(dropdown.value);
+    };
+}
+
+// On app load, initialize workspaces
+loadWorkspacesFromStorage();
+switchWorkspace(currentWorkspace);
+
+// When saving or loading workspace, update workspaces object
+window.savePromptsToLocalStorage = function() {
+    if (!workspaces[currentWorkspace]) return;
+    workspaces[currentWorkspace].templates = prompts;
+    // Save input history
+    workspaces[currentWorkspace].inputHistory = getPromptInputHistoryAll();
+    saveWorkspacesToStorage();
+};
+
 // =========================
 // Global Functions
 // =========================
@@ -1262,12 +1355,16 @@ function importPromptFromJson(json) {
         alert('No new prompts to import (all IDs already exist)');
         return;
     }
-    prompts = prompts.concat(newPrompts);
-    window.savePromptsToLocalStorage();
-    renderPromptsList();
-    closeNewPromptModal();
-    showWelcome();
-    alert(`Imported ${newPrompts.length} prompt(s) successfully!`);
+    // Add to current workspace
+    if (workspaces[currentWorkspace]) {
+        workspaces[currentWorkspace].templates = workspaces[currentWorkspace].templates.concat(newPrompts);
+        prompts = workspaces[currentWorkspace].templates.map(normalizePrompt);
+        window.savePromptsToLocalStorage();
+        renderPromptsList();
+        closeNewPromptModal();
+        showWelcome();
+        alert(`Imported ${newPrompts.length} prompt(s) successfully!`);
+    }
 }
 window.importPromptFromJson = importPromptFromJson;
 
@@ -1458,3 +1555,18 @@ if (menuResetTemplates) menuResetTemplates.onclick = function() {
     window.resetPrompts();
 };
 
+// Sidebar actions: Import JSON and Blank Prompt
+window.addEventListener('DOMContentLoaded', function() {
+    var importJsonBtn = document.getElementById('import-json-btn');
+    if (importJsonBtn) {
+        importJsonBtn.onclick = function() {
+            openNewPromptModal();
+        };
+    }
+    var blankPromptBtn = document.getElementById('blank-prompt-btn');
+    if (blankPromptBtn) {
+        blankPromptBtn.onclick = function() {
+            startBlankPrompt();
+        };
+    }
+});
