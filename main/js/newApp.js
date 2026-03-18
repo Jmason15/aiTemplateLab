@@ -745,23 +745,20 @@ window.importPrompts = function() {
 function handleImport(event) {
     const file = event.target.files[0];
     if (!file) return;
-    if (prompts.length > 0 && !confirm('This will replace all current prompts. Continue?')) {
-        event.target.value = '';
-        return;
-    }
     const reader = new FileReader();
     reader.onload = function(e) {
         try {
             const loaded = JSON.parse(e.target.result);
-            if (!Array.isArray(loaded)) {
-                alert('Invalid format: Expected array of prompts');
+            let templates = Array.isArray(loaded) ? loaded : [loaded];
+            // Filter out templates with duplicate ids
+            const existingIds = new Set(prompts.map(p => p.id));
+            const uniqueTemplates = templates.filter(t => t.id && !existingIds.has(t.id));
+            if (uniqueTemplates.length === 0) {
+                alert('No new templates to import (all IDs already exist or invalid).');
+                event.target.value = '';
                 return;
             }
-            prompts = loaded;
-            window.savePromptsToLocalStorage();
-            renderPromptsList();
-            showWelcome();
-            alert(`Imported ${loaded.length} prompt(s) successfully!`);
+            showImportModal(uniqueTemplates);
         } catch (err) {
             alert('Error parsing JSON file: ' + err.message);
         }
@@ -770,9 +767,61 @@ function handleImport(event) {
     event.target.value = '';
 }
 
-// =========================
-// Modal Logic
-// =========================
+function showImportModal(templates) {
+    const modal = document.getElementById('import-modal');
+    const grid = document.getElementById('import-template-grid');
+    const errorDiv = document.getElementById('import-modal-error');
+    if (!modal || !grid || !errorDiv) return;
+    errorDiv.style.display = 'none';
+    // Render grid of checkboxes
+    grid.innerHTML = templates.map(t =>
+        `<div style='display:flex;align-items:center;margin-bottom:6px;'>
+            <input type='checkbox' id='import-tpl-${t.id}' value='${t.id}' style='margin-right:8px;' checked>
+            <label for='import-tpl-${t.id}' style='cursor:pointer;'>${window.escapeHtml(t.name)}</label>
+        </div>`
+    ).join('');
+    modal.style.display = 'flex';
+    // Confirm button
+    const confirmBtn = document.getElementById('import-modal-confirm');
+    if (confirmBtn) {
+        confirmBtn.onclick = function() {
+            const checkedIds = Array.from(grid.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+            const selectedTemplates = templates.filter(t => checkedIds.includes(String(t.id)));
+            if (selectedTemplates.length === 0) {
+                errorDiv.textContent = 'Please select at least one template to import.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            // Add only unique templates
+            const existingIds = new Set(prompts.map(p => p.id));
+            const newTemplates = selectedTemplates.filter(t => t.id && !existingIds.has(t.id));
+            if (newTemplates.length === 0) {
+                errorDiv.textContent = 'No new templates to import (all IDs already exist).';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            prompts = prompts.concat(newTemplates);
+            window.savePromptsToLocalStorage();
+            renderPromptsList();
+            modal.style.display = 'none';
+            errorDiv.style.display = 'none';
+            alert(`Imported ${newTemplates.length} template(s) successfully!`);
+        };
+    }
+    // Cancel button
+    const cancelBtn = document.getElementById('import-modal-cancel');
+    if (cancelBtn) {
+        cancelBtn.onclick = function() {
+            modal.style.display = 'none';
+            errorDiv.style.display = 'none';
+        };
+    }
+    // Optional: close modal when clicking outside
+    modal.onclick = function(e) {
+        if (e.target === modal) modal.style.display = 'none';
+    };
+}
+
 /**
  * Sets up the new prompt modal and its event handlers.
  */
