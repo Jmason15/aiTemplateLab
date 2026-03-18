@@ -268,6 +268,7 @@ hr {
                 <button class="menu-item" id="menu-load-workspace">Load Workspace…</button>
                 <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
                 <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Template Groups</div>
+                <button class="menu-item" id="menu-create-template-group">Create Template Group…</button>
                 <button class="menu-item" id="menu-save-template-group">Save Template Group…</button>
                 <button class="menu-item" id="menu-load-template-group">Load Template Group…</button>
                 <button class="menu-item" id="menu-delete-template-group" title="Delete Template Group">Delete Template Group</button>
@@ -394,6 +395,21 @@ hr {
                     </div>
                 </div>
             </div>
+
+            <!-- Create Template Group Modal -->
+            <div id="create-template-group-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #2563eb;">Create Template Group</h2>
+                    <label for="create-template-group-name">Template Group Name:</label>
+                    <input type="text" id="create-template-group-name" placeholder="e.g., New Group" style="margin-bottom: 1rem;" />
+                    <div id="create-template-group-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-success" id="create-template-group-confirm">Create</button>
+                        <button class="btn btn-secondary" id="create-template-group-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
     <div id="main-content" style="margin-left:260px;">
@@ -616,6 +632,7 @@ hr {
         <button id="load-workspace-btn" style="display:none"></button>
         <button id="save-template-group-btn" style="display:none"></button>
         <button id="load-template-group-btn" style="display:none"></button>
+        <button id="create-template-group-btn" style="display:none"></button>
     </div>
 </div>
 <script>

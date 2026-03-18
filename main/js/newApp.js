@@ -1594,6 +1594,7 @@ const menuDeleteTemplateGroup = document.getElementById('menu-delete-template-gr
 const menuExportTemplates = document.getElementById('menu-export-templates');
 const menuImportTemplates = document.getElementById('menu-import-templates');
 const menuResetTemplates = document.getElementById('menu-reset-templates');
+const menuCreateTemplateGroup = document.getElementById('menu-create-template-group');
 if (menuSaveWorkspace) menuSaveWorkspace.onclick = function() {
     menu.style.display = 'none';
     document.getElementById('save-workspace-btn').click();
@@ -1620,6 +1621,19 @@ if (menuDeleteTemplateGroup) menuDeleteTemplateGroup.onclick = function() {
         // Populate dropdown with all template groups except current
         const groups = Object.keys(environment.templateGroups);
         select.innerHTML = groups.map(name => `<option value="${name}">${name}</option>`).join('');
+        errorDiv.style.display = 'none';
+        modal.style.display = 'flex';
+    }
+};
+// Ensure Create Template Group menu opens modal directly
+if (menuCreateTemplateGroup) menuCreateTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    // Open modal directly
+    const modal = document.getElementById('create-template-group-modal');
+    const nameInput = document.getElementById('create-template-group-name');
+    const errorDiv = document.getElementById('create-template-group-error');
+    if (modal && nameInput && errorDiv) {
+        nameInput.value = '';
         errorDiv.style.display = 'none';
         modal.style.display = 'flex';
     }
@@ -1870,8 +1884,59 @@ if (loadTemplateGroupFile) {
     };
 }
 
+// Create Template Group modal logic
+const createTemplateGroupBtn = document.getElementById('create-template-group-btn');
+if (createTemplateGroupBtn) {
+    createTemplateGroupBtn.onclick = function() {
+        const modal = document.getElementById('create-template-group-modal');
+        const nameInput = document.getElementById('create-template-group-name');
+        const errorDiv = document.getElementById('create-template-group-error');
+        if (modal && nameInput && errorDiv) {
+            nameInput.value = '';
+            errorDiv.style.display = 'none';
+            modal.style.display = 'flex';
+        }
+    };
+}
+const createTemplateGroupConfirm = document.getElementById('create-template-group-confirm');
+const createTemplateGroupCancel = document.getElementById('create-template-group-cancel');
+if (createTemplateGroupConfirm) {
+    createTemplateGroupConfirm.onclick = function() {
+        const nameInput = document.getElementById('create-template-group-name');
+        const errorDiv = document.getElementById('create-template-group-error');
+        let groupName = nameInput.value.trim();
+        if (!groupName) {
+            errorDiv.textContent = 'Please enter a name for the new template group.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        if (environment.templateGroups[groupName]) {
+            errorDiv.textContent = 'A template group with this name already exists.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        environment.templateGroups[groupName] = [];
+        environment.history[groupName] = [];
+        currentTemplateGroup = groupName;
+        updateTemplateGroupDropdown();
+        renderPromptsList();
+        document.getElementById('create-template-group-modal').style.display = 'none';
+        errorDiv.style.display = 'none';
+        alert(`Template group '${groupName}' created successfully!`);
+    };
+}
+if (createTemplateGroupCancel) {
+    createTemplateGroupCancel.onclick = function() {
+        document.getElementById('create-template-group-modal').style.display = 'none';
+        document.getElementById('create-template-group-error').style.display = 'none';
+    };
+}
+
+// =========================
+// State and UI Management Functions
+// =========================
 /**
- * Updates the template group dropdown UI and ensures the current group is selected.
+ * Updates the template group dropdown in the UI.
  */
 function updateTemplateGroupDropdown() {
     const dropdown = document.getElementById('template-group-dropdown');
@@ -1883,4 +1948,26 @@ function updateTemplateGroupDropdown() {
     dropdown.value = currentTemplateGroup;
     dropdown.disabled = false;
     // Optionally, update other UI elements if needed
+}
+
+// Call updateTemplateGroupDropdown on DOMContentLoaded to ensure it's set up initially
+window.addEventListener('DOMContentLoaded', function() {
+    updateTemplateGroupDropdown();
+});
+
+const templateGroupDropdown = document.getElementById('template-group-dropdown');
+if (templateGroupDropdown) {
+    templateGroupDropdown.onchange = function() {
+        currentTemplateGroup = templateGroupDropdown.value;
+        renderPromptsList();
+        // Optionally show first prompt or welcome
+        const templates = environment.templateGroups[currentTemplateGroup] || [];
+        if (templates.length > 0) {
+            currentPromptId = templates[0].id;
+            viewPrompt(currentPromptId);
+        } else {
+            currentPromptId = null;
+            showWelcome();
+        }
+    };
 }
