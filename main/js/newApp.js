@@ -17,6 +17,13 @@ let constraintCounter = 0;
 let outputCounter = 0;
 let successCounter = 0;
 
+// Environment state
+let environment = {
+    templateGroups: {}, // { groupName: [templates] }
+    history: {} // { groupName: [history] }
+};
+let currentTemplateGroup = 'Default';
+
 // Ensure these are initialized on window for global access
 window.prompts = prompts;
 window.currentPromptId = currentPromptId;
@@ -64,6 +71,21 @@ function init() {
         showWelcome();
     }
 }
+
+// Initialize template groups from preloadedWorkspaces
+if (window.preloadedWorkspaces) {
+    environment.templateGroups = {
+        "Default": window.preloadedWorkspaces["Default"].templates,
+        "Jira": window.preloadedWorkspaces["Jira"].templates
+    };
+    currentTemplateGroup = "Default";
+    // Removed early updateTemplateGroupDropdown() call
+}
+
+// Ensure dropdown is populated after DOM is ready
+window.addEventListener('DOMContentLoaded', function() {
+    updateTemplateGroupDropdown();
+});
 
 // =========================
 // Prompt CRUD
@@ -224,20 +246,14 @@ window.savePrompt = savePrompt;
 function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
-    if (prompts.length === 0) {
-        container.innerHTML = `
-            <div class="empty-state">
-                <h3>No Prompts Yet</h3>
-                <p>Create your first prompt to get started</p>
-            </div>
-        `;
+    const templates = environment.templateGroups[currentTemplateGroup] || [];
+    if (templates.length === 0) {
+        container.innerHTML = `<div class="empty-state"><h3>No Templates Yet</h3><p>Create your first template to get started</p></div>`;
         return;
     }
-    container.innerHTML = prompts.map((p, idx) => `
-        <div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
-            ${window.escapeHtml(p.name)}
-        </div>
-    `).join('');
+    container.innerHTML = templates.map((p, idx) =>
+        `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">${window.escapeHtml(p.name)}</div>`
+    ).join('');
     // Add event listeners for tile selection
     container.querySelectorAll('.prompt-tile').forEach(item => {
         const id = parseInt(item.getAttribute('data-id'));
@@ -903,12 +919,6 @@ function closeNewPromptModal() {
 window.closeNewPromptModal = closeNewPromptModal;
 
 // Update modal event bindings
-const newPromptCancelBtn = document.getElementById('new-prompt-cancel');
-if (newPromptCancelBtn) {
-    newPromptCancelBtn.onclick = function() {
-        closeNewPromptModal();
-    };
-}
 const jsonImportConfirmBtn = document.getElementById('json-import-confirm');
 if (jsonImportConfirmBtn) {
     jsonImportConfirmBtn.onclick = function() {
@@ -1196,89 +1206,47 @@ function viewPrompt(id) {
     renderPromptsList();
 }
 
-// Workspace management
-let workspaces = {};
-let currentWorkspace = 'Default';
-
-function getInitialWorkspaces() {
-    // Use preloadedWorkspaces if available
-    if (window.preloadedWorkspaces) {
-        return JSON.parse(JSON.stringify(window.preloadedWorkspaces));
-    }
-    return {};
+// Template Group Persistence
+function saveTemplateGroupsToStorage() {
+    localStorage.setItem('templateGroups', JSON.stringify(environment.templateGroups));
+    localStorage.setItem('templateGroupHistory', JSON.stringify(environment.history));
+    localStorage.setItem('currentTemplateGroup', currentTemplateGroup);
 }
-
-function loadWorkspacesFromStorage() {
-    const raw = localStorage.getItem('workspaces');
-    if (raw) {
+function loadTemplateGroupsFromStorage() {
+    const rawGroups = localStorage.getItem('templateGroups');
+    const rawHistory = localStorage.getItem('templateGroupHistory');
+    const rawCurrent = localStorage.getItem('currentTemplateGroup');
+    if (rawGroups && rawHistory) {
         try {
-            workspaces = JSON.parse(raw);
+            environment.templateGroups = JSON.parse(rawGroups);
+            environment.history = JSON.parse(rawHistory);
+            currentTemplateGroup = rawCurrent || Object.keys(environment.templateGroups)[0] || 'Default';
         } catch {
-            workspaces = getInitialWorkspaces();
+            // fallback to preloadedWorkspaces
+            environment.templateGroups = {
+                "Default": window.preloadedWorkspaces["Default"].templates,
+                "Jira": window.preloadedWorkspaces["Jira"].templates
+            };
+            environment.history = {};
+            currentTemplateGroup = 'Default';
         }
     } else {
-        workspaces = getInitialWorkspaces();
+        // fallback to preloadedWorkspaces
+        environment.templateGroups = {
+            "Default": window.preloadedWorkspaces["Default"].templates,
+            "Jira": window.preloadedWorkspaces["Jira"].templates
+        };
+        environment.history = {};
+        currentTemplateGroup = 'Default';
     }
-    // Ensure at least Default workspace
-    if (!workspaces['Default']) {
-        workspaces['Default'] = { templates: [], inputHistory: [] };
-    }
 }
-
-function saveWorkspacesToStorage() {
-    localStorage.setItem('workspaces', JSON.stringify(workspaces));
-}
-
-function switchWorkspace(name) {
-    if (!workspaces[name]) return;
-    currentWorkspace = name;
-    prompts = workspaces[name].templates.map(normalizePrompt);
-    renderPromptsList();
-    // Replace input history
-    if (Array.isArray(workspaces[name].inputHistory)) {
-        localStorage.setItem('promptInputHistory', JSON.stringify(workspaces[name].inputHistory));
-    } else {
-        localStorage.removeItem('promptInputHistory');
-    }
-    // Show first prompt or welcome
-    if (prompts.length > 0) {
-        currentPromptId = prompts[0].id;
-        viewPrompt(currentPromptId);
-    } else {
-        currentPromptId = null;
-        showWelcome();
-    }
-    updateWorkspaceDropdown();
-}
-
-function updateWorkspaceDropdown() {
-    const dropdown = document.getElementById('workspace-dropdown');
-    if (!dropdown) return;
-    dropdown.innerHTML = Object.keys(workspaces).map(name =>
-        `<option value="${name}"${name === currentWorkspace ? ' selected' : ''}>${name}</option>`
-    ).join('');
-    dropdown.disabled = false;
-}
-
-// On workspace dropdown change
-const dropdown = document.getElementById('workspace-dropdown');
-if (dropdown) {
-    dropdown.onchange = function() {
-        switchWorkspace(dropdown.value);
-    };
-}
-
-// On app load, initialize workspaces
-loadWorkspacesFromStorage();
-switchWorkspace(currentWorkspace);
-
-// When saving or loading workspace, update workspaces object
+// On app load, initialize template groups
+loadTemplateGroupsFromStorage();
+updateTemplateGroupDropdown();
+renderPromptsList();
+// Update savePromptsToLocalStorage to persist template groups
 window.savePromptsToLocalStorage = function() {
-    if (!workspaces[currentWorkspace]) return;
-    workspaces[currentWorkspace].templates = prompts;
-    // Save input history
-    workspaces[currentWorkspace].inputHistory = getPromptInputHistoryAll();
-    saveWorkspacesToStorage();
+    saveTemplateGroupsToStorage();
 };
 
 // =========================
@@ -1394,10 +1362,11 @@ if (saveWorkspaceConfirm) {
         let fileName = filenameInput.value.trim();
         if (!fileName) fileName = `workspace-${new Date().toISOString().slice(0,10)}.json`;
         if (!fileName.endsWith('.json')) fileName += '.json';
-        // Collect templates and input history
+        // Collect all template groups, history, and current group
         const workspaceData = {
-            templates: prompts,
-            inputHistory: getPromptInputHistoryAll()
+            templateGroups: environment.templateGroups,
+            history: environment.history,
+            currentTemplateGroup: currentTemplateGroup
         };
         try {
             const blob = new Blob([JSON.stringify(workspaceData, null, 2)], { type: 'application/json' });
@@ -1466,28 +1435,19 @@ if (loadWorkspaceFile) {
                     alert('Invalid workspace file: not a valid JSON object');
                     return;
                 }
-                if (!Array.isArray(loaded.templates)) {
-                    alert('Invalid workspace file: missing or malformed templates array');
+                if (!loaded.templateGroups || typeof loaded.templateGroups !== 'object') {
+                    alert('Invalid workspace file: missing templateGroups');
                     return;
                 }
-                // Validate templates
-                const validTemplates = loaded.templates.filter(t => t && typeof t === 'object' && t.id);
-                if (validTemplates.length === 0) {
-                    alert('Workspace file contains no valid templates');
-                    return;
-                }
-                prompts = validTemplates.map(normalizePrompt);
-                window.savePromptsToLocalStorage();
+                environment.templateGroups = loaded.templateGroups;
+                environment.history = loaded.history || {};
+                currentTemplateGroup = loaded.currentTemplateGroup || Object.keys(environment.templateGroups)[0] || 'Default';
+                updateTemplateGroupDropdown();
                 renderPromptsList();
-                // Replace input history
-                if (Array.isArray(loaded.inputHistory)) {
-                    localStorage.setItem('promptInputHistory', JSON.stringify(loaded.inputHistory));
-                } else {
-                    localStorage.removeItem('promptInputHistory');
-                }
                 // Show first prompt or welcome
-                if (prompts.length > 0) {
-                    currentPromptId = prompts[0].id;
+                const templates = environment.templateGroups[currentTemplateGroup] || [];
+                if (templates.length > 0) {
+                    currentPromptId = templates[0].id;
                     viewPrompt(currentPromptId);
                 } else {
                     currentPromptId = null;
@@ -1496,6 +1456,107 @@ if (loadWorkspaceFile) {
                 alert('Workspace loaded successfully!');
             } catch (err) {
                 alert('Error loading workspace: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+}
+
+// Project (all workspaces) save/load
+const saveProjectBtn = document.getElementById('save-project-btn');
+if (saveProjectBtn) {
+    saveProjectBtn.onclick = function() {
+        const modal = document.getElementById('save-project-modal');
+        const filenameInput = document.getElementById('save-project-filename');
+        if (modal && filenameInput) {
+            filenameInput.value = `project-${new Date().toISOString().slice(0,10)}.json`;
+            modal.style.display = 'flex';
+        }
+    };
+}
+const saveProjectConfirm = document.getElementById('save-project-confirm');
+const saveProjectCancel = document.getElementById('save-project-cancel');
+if (saveProjectConfirm) {
+    saveProjectConfirm.onclick = function() {
+        const filenameInput = document.getElementById('save-project-filename');
+        let fileName = filenameInput.value.trim();
+        if (!fileName) fileName = `project-${new Date().toISOString().slice(0,10)}.json`;
+        if (!fileName.endsWith('.json')) fileName += '.json';
+        // Save all workspaces and their histories
+        const projectData = {
+            workspaces,
+            globalInputHistory: localStorage.getItem('promptInputHistory') || []
+        };
+        try {
+            const blob = new Blob([JSON.stringify(projectData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('save-project-modal').style.display = 'none';
+        } catch (err) {
+            alert('Save failed: ' + err.message);
+        }
+    };
+}
+if (saveProjectCancel) {
+    saveProjectCancel.onclick = function() {
+        document.getElementById('save-project-modal').style.display = 'none';
+    };
+}
+// Load Project
+const loadProjectBtn = document.getElementById('load-project-btn');
+if (loadProjectBtn) {
+    loadProjectBtn.onclick = function() {
+        const modal = document.getElementById('load-project-warning-modal');
+        if (modal) modal.style.display = 'flex';
+    };
+}
+const loadProjectContinue = document.getElementById('load-project-continue');
+const loadProjectCancel = document.getElementById('load-project-cancel');
+if (loadProjectContinue) {
+    loadProjectContinue.onclick = function() {
+        document.getElementById('load-project-warning-modal').style.display = 'none';
+        document.getElementById('load-project-file').click();
+    };
+}
+if (loadProjectCancel) {
+    loadProjectCancel.onclick = function() {
+        document.getElementById('load-project-warning-modal').style.display = 'none';
+    };
+}
+const loadProjectFile = document.getElementById('load-project-file');
+if (loadProjectFile) {
+    loadProjectFile.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const loaded = JSON.parse(e.target.result);
+                if (!loaded || typeof loaded !== 'object' || !loaded.workspaces) {
+                    alert('Invalid project file: missing workspaces');
+                    return;
+                }
+                workspaces = loaded.workspaces;
+                saveWorkspacesToStorage();
+                // Restore global input history
+                if (loaded.globalInputHistory) {
+                    localStorage.setItem('promptInputHistory', loaded.globalInputHistory);
+                } else {
+                    localStorage.removeItem('promptInputHistory');
+                }
+                // Switch to default workspace
+                currentWorkspace = Object.keys(workspaces)[0] || 'Default';
+                switchWorkspace(currentWorkspace);
+                alert('Project loaded successfully!');
+            } catch (err) {
+                alert('Error loading project: ' + err.message);
             }
         };
         reader.readAsText(file);
@@ -1527,9 +1588,11 @@ if (kebabBtn && menu) {
 // Menu actions
 const menuSaveWorkspace = document.getElementById('menu-save-workspace');
 const menuLoadWorkspace = document.getElementById('menu-load-workspace');
-const menuDeleteWorkspace = document.getElementById('menu-delete-workspace');
+const menuSaveTemplateGroup = document.getElementById('menu-save-template-group');
+const menuLoadTemplateGroup = document.getElementById('menu-load-template-group');
+const menuDeleteTemplateGroup = document.getElementById('menu-delete-template-group');
 const menuExportTemplates = document.getElementById('menu-export-templates');
-const menuImportFile = document.getElementById('menu-import-file');
+const menuImportTemplates = document.getElementById('menu-import-templates');
 const menuResetTemplates = document.getElementById('menu-reset-templates');
 if (menuSaveWorkspace) menuSaveWorkspace.onclick = function() {
     menu.style.display = 'none';
@@ -1539,21 +1602,69 @@ if (menuLoadWorkspace) menuLoadWorkspace.onclick = function() {
     menu.style.display = 'none';
     document.getElementById('load-workspace-btn').click();
 };
-if (menuDeleteWorkspace) menuDeleteWorkspace.onclick = function() {
-    // Disabled, show tooltip or do nothing
+if (menuSaveTemplateGroup) menuSaveTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('save-template-group-btn').click();
 };
+if (menuLoadTemplateGroup) menuLoadTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    document.getElementById('load-template-group-btn').click();
+};
+// Delete Template Group Modal logic
+if (menuDeleteTemplateGroup) menuDeleteTemplateGroup.onclick = function() {
+    menu.style.display = 'none';
+    const modal = document.getElementById('delete-template-group-modal');
+    const select = document.getElementById('delete-template-group-select');
+    const errorDiv = document.getElementById('delete-template-group-error');
+    if (modal && select && errorDiv) {
+        // Populate dropdown with all template groups except current
+        const groups = Object.keys(environment.templateGroups);
+        select.innerHTML = groups.map(name => `<option value="${name}">${name}</option>`).join('');
+        errorDiv.style.display = 'none';
+        modal.style.display = 'flex';
+    }
+};
+const deleteTemplateGroupConfirm = document.getElementById('delete-template-group-confirm');
+const deleteTemplateGroupCancel = document.getElementById('delete-template-group-cancel');
+if (deleteTemplateGroupConfirm) {
+    deleteTemplateGroupConfirm.onclick = function() {
+        const select = document.getElementById('delete-template-group-select');
+        const errorDiv = document.getElementById('delete-template-group-error');
+        const groupName = select.value;
+        // Prevent deleting if only one group left
+        if (Object.keys(environment.templateGroups).length <= 1) {
+            errorDiv.textContent = 'At least one template group must remain.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        // Prevent deleting current group
+        if (groupName === currentTemplateGroup) {
+            errorDiv.textContent = 'Cannot delete the currently selected template group.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        delete environment.templateGroups[groupName];
+        delete environment.history[groupName];
+        document.getElementById('delete-template-group-modal').style.display = 'none';
+        updateTemplateGroupDropdown();
+        alert(`Template group '${groupName}' deleted successfully!`);
+    };
+}
+if (deleteTemplateGroupCancel) {
+    deleteTemplateGroupCancel.onclick = function() {
+        document.getElementById('delete-template-group-modal').style.display = 'none';
+        document.getElementById('delete-template-group-error').style.display = 'none';
+    };
+}
 if (menuExportTemplates) menuExportTemplates.onclick = function() {
     menu.style.display = 'none';
     window.exportPrompts();
 };
-if (menuImportFile) menuImportFile.onclick = function() {
+if (menuImportTemplates) menuImportTemplates.onclick = function() {
     menu.style.display = 'none';
     document.getElementById('import-file').click();
 };
-if (menuResetTemplates) menuResetTemplates.onclick = function() {
-    menu.style.display = 'none';
-    window.resetPrompts();
-};
+if (menuResetTemplates) menuResetTemplates.style.display = 'none';
 
 // Sidebar actions: Import JSON and Blank Prompt
 window.addEventListener('DOMContentLoaded', function() {
@@ -1570,3 +1681,206 @@ window.addEventListener('DOMContentLoaded', function() {
         };
     }
 });
+
+// Rename workspace to environment, project to template group
+let environments = {};
+let currentEnvironment = 'Default';
+
+function getInitialEnvironments() {
+    if (window.preloadedEnvironments) {
+        return JSON.parse(JSON.stringify(window.preloadedEnvironments));
+    }
+    return {};
+}
+function loadEnvironmentsFromStorage() {
+    const raw = localStorage.getItem('environments');
+    if (raw) {
+        try {
+            environments = JSON.parse(raw);
+        } catch {
+            environments = getInitialEnvironments();
+        }
+    } else {
+        environments = getInitialEnvironments();
+    }
+    if (!environments['Default']) {
+        environments['Default'] = { templateGroups: [], inputHistory: [] };
+    }
+}
+function saveEnvironmentsToStorage() {
+    localStorage.setItem('environments', JSON.stringify(environments));
+}
+function switchEnvironment(name) {
+    if (!environments[name]) return;
+    currentEnvironment = name;
+    prompts = environments[name].templateGroups.map(normalizePrompt);
+    renderPromptsList();
+    if (Array.isArray(environments[name].inputHistory)) {
+        localStorage.setItem('promptInputHistory', JSON.stringify(environments[name].inputHistory));
+    } else {
+        localStorage.removeItem('promptInputHistory');
+    }
+    if (prompts.length > 0) {
+        currentPromptId = prompts[0].id;
+        viewPrompt(currentPromptId);
+    } else {
+        currentPromptId = null;
+        showWelcome();
+    }
+    updateEnvironmentDropdown();
+}
+function updateEnvironmentDropdown() {
+    const dropdown = document.getElementById('environment-dropdown');
+    if (!dropdown) return;
+    dropdown.innerHTML = Object.keys(environments).map(name =>
+        `<option value="${name}"${name === currentEnvironment ? ' selected' : ''}>${name}</option>`
+    ).join('');
+    dropdown.disabled = false;
+}
+const environmentDropdown = document.getElementById('environment-dropdown');
+if (environmentDropdown) {
+    environmentDropdown.onchange = function() {
+        switchEnvironment(environmentDropdown.value);
+    };
+}
+loadEnvironmentsFromStorage();
+switchEnvironment(currentEnvironment);
+window.savePromptsToLocalStorage = function() {
+    if (!environments[currentEnvironment]) return;
+    environments[currentEnvironment].templateGroups = prompts;
+    environments[currentEnvironment].inputHistory = getPromptInputHistoryAll();
+    saveEnvironmentsToStorage();
+};
+
+/**
+ * Shows the welcome screen and hides other screens.
+ */
+function showWelcome() {
+    // Hide all screens except welcome
+    document.getElementById('view-screen').style.display = 'none';
+    document.getElementById('edit-screen').style.display = 'none';
+    document.getElementById('history-screen').style.display = 'none';
+    document.getElementById('output-screen').style.display = 'none';
+    document.getElementById('welcome-screen').style.display = 'block';
+    // Set active class
+    document.getElementById('view-screen').classList.remove('active');
+    document.getElementById('edit-screen').classList.remove('active');
+    document.getElementById('history-screen').classList.remove('active');
+    document.getElementById('output-screen').classList.remove('active');
+    document.getElementById('welcome-screen').classList.add('active');
+}
+window.showWelcome = showWelcome;
+
+// Save Template Group modal logic
+const saveTemplateGroupBtn = document.getElementById('save-template-group-btn');
+if (saveTemplateGroupBtn) {
+    saveTemplateGroupBtn.onclick = function() {
+        const modal = document.getElementById('save-template-group-modal');
+        const select = document.getElementById('save-template-group-select');
+        const filenameInput = document.getElementById('save-template-group-filename');
+        if (modal && select && filenameInput) {
+            // Populate dropdown with all template groups
+            select.innerHTML = Object.keys(environment.templateGroups).map(name =>
+                `<option value="${name}">${name}</option>`
+            ).join('');
+            // Set default selection to current group
+            select.value = currentTemplateGroup;
+            // Set filename based on selected group
+            filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0,10)}.json`;
+            modal.style.display = 'flex';
+            // Update filename when dropdown changes
+            select.onchange = function() {
+                filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0,10)}.json`;
+            };
+        }
+    };
+}
+const saveTemplateGroupConfirm = document.getElementById('save-template-group-confirm');
+const saveTemplateGroupCancel = document.getElementById('save-template-group-cancel');
+if (saveTemplateGroupConfirm) {
+    saveTemplateGroupConfirm.onclick = function() {
+        const select = document.getElementById('save-template-group-select');
+        const filenameInput = document.getElementById('save-template-group-filename');
+        let groupName = select.value;
+        let fileName = filenameInput.value.trim();
+        if (!fileName) fileName = `${groupName}-template-group-${new Date().toISOString().slice(0,10)}.json`;
+        if (!fileName.endsWith('.json')) fileName += '.json';
+        // Export only the selected template group and its history
+        const groupData = {
+            name: groupName,
+            templates: environment.templateGroups[groupName],
+            history: environment.history[groupName] || []
+        };
+        try {
+            const blob = new Blob([JSON.stringify(groupData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            document.getElementById('save-template-group-modal').style.display = 'none';
+        } catch (err) {
+            alert('Save failed: ' + err.message);
+        }
+    };
+}
+if (saveTemplateGroupCancel) {
+    saveTemplateGroupCancel.onclick = function() {
+        document.getElementById('save-template-group-modal').style.display = 'none';
+    };
+}
+// Load Template Group logic
+const loadTemplateGroupBtn = document.getElementById('load-template-group-btn');
+if (loadTemplateGroupBtn) {
+    loadTemplateGroupBtn.onclick = function() {
+        document.getElementById('load-template-group-file').click();
+    };
+}
+const loadTemplateGroupFile = document.getElementById('load-template-group-file');
+if (loadTemplateGroupFile) {
+    loadTemplateGroupFile.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const loaded = JSON.parse(e.target.result);
+                if (!loaded || typeof loaded !== 'object' || !loaded.name || !Array.isArray(loaded.templates)) {
+                    alert('Invalid template group file: missing name or templates');
+                    return;
+                }
+                // Prevent duplicate group name
+                if (environment.templateGroups[loaded.name]) {
+                    alert('Template group with this name already exists. Please rename before importing.');
+                    return;
+                }
+                environment.templateGroups[loaded.name] = loaded.templates;
+                environment.history[loaded.name] = loaded.history || [];
+                updateTemplateGroupDropdown();
+                alert(`Template group '${loaded.name}' imported successfully!`);
+            } catch (err) {
+                alert('Error loading template group: ' + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = '';
+    };
+}
+
+/**
+ * Updates the template group dropdown UI and ensures the current group is selected.
+ */
+function updateTemplateGroupDropdown() {
+    const dropdown = document.getElementById('template-group-dropdown');
+    if (!dropdown) return;
+    const groups = Object.keys(environment.templateGroups);
+    dropdown.innerHTML = groups.map(name =>
+        `<option value="${name}"${name === currentTemplateGroup ? ' selected' : ''}>${name}</option>`
+    ).join('');
+    dropdown.value = currentTemplateGroup;
+    dropdown.disabled = false;
+    // Optionally, update other UI elements if needed
+}

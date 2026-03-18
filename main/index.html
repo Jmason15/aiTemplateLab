@@ -164,7 +164,7 @@ hr {
     justify-content:center;
     align-items:center;
 }
-#workspace-dropdown {
+#template-group-dropdown {
     background:#334155;
     color:#fff;
     border-radius:16px;
@@ -174,7 +174,6 @@ hr {
     opacity:0.95;
     border:none;
     outline:none;
-    cursor:not-allowed;
     min-width:180px;
     text-align:center;
 }
@@ -255,8 +254,8 @@ hr {
     <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:56px; background:#232a36; color:#fff; display:flex; align-items:center; justify-content:space-between; z-index:10000; box-shadow:0 2px 8px rgba(30,41,59,0.08); padding:0 2rem;">
         <div style="font-size:1.35em; font-weight:700; letter-spacing:0.02em;">aiTemplateLab</div>
         <div id="app-bar-center" style="flex:1; display:flex; justify-content:center; align-items:center;">
-            <select id="workspace-dropdown" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; border:none; outline:none; cursor:not-allowed; min-width:180px; text-align:center;" disabled>
-                <option>Current workspace</option>
+            <select id="template-group-dropdown" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; border:none; outline:none; min-width:180px; text-align:center;">
+                <!-- Template group options will be rendered dynamically by JS -->
             </select>
         </div>
         <div id="app-bar-actions" style="display:flex; gap:1.2em; align-items:center;">
@@ -265,14 +264,17 @@ hr {
             </button>
             <div id="app-bar-menu" style="display:none; position:absolute; top:56px; right:2rem; min-width:220px; background:#232a36; color:#fff; border-radius:8px; box-shadow:0 8px 32px rgba(30,41,59,0.18); z-index:10001; padding:0.5em 0;">
                 <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Workspace</div>
-                <button class="menu-item" id="menu-save-workspace">Save workspace</button>
-                <button class="menu-item" id="menu-load-workspace">Load workspace…</button>
-                <button class="menu-item disabled" id="menu-delete-workspace" title="Coming soon" disabled style="opacity:0.5; cursor:not-allowed;">Delete workspace</button>
+                <button class="menu-item" id="menu-save-workspace">Save Workspace</button>
+                <button class="menu-item" id="menu-load-workspace">Load Workspace…</button>
                 <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
-                <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Templates</div>
-                <button class="menu-item" id="menu-export-templates">Export templates…</button>
-                <button class="menu-item" id="menu-import-file">Import file…</button>
-                <button class="menu-item" id="menu-reset-templates">Reset default templates</button>
+                <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Template Groups</div>
+                <button class="menu-item" id="menu-save-template-group">Save Template Group…</button>
+                <button class="menu-item" id="menu-load-template-group">Load Template Group…</button>
+                <button class="menu-item" id="menu-delete-template-group" title="Delete Template Group">Delete Template Group</button>
+                <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
+                <button class="menu-item" id="menu-export-templates">Export Templates…</button>
+                <button class="menu-item" id="menu-import-templates">Import Templates…</button>
+                <button class="menu-item" id="menu-reset-templates" style="display:none;">Reset Default Templates</button>
             </div>
         </div>
     </header>
@@ -325,6 +327,70 @@ hr {
                     <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                         <button class="btn btn-danger" id="load-workspace-continue">Continue</button>
                         <button class="btn btn-secondary" id="load-workspace-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Save Template Group Modal -->
+            <div id="save-template-group-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #2563eb;">Save Template Group</h2>
+                    <label for="save-template-group-select">Template Group:</label>
+                    <select id="save-template-group-select" style="margin-bottom: 1rem;"></select>
+                    <label for="save-template-group-filename">Template Group File Name:</label>
+                    <input type="text" id="save-template-group-filename" placeholder="e.g., template-group.json" style="margin-bottom: 1rem;" />
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-success" id="save-template-group-confirm">Save</button>
+                        <button class="btn btn-secondary" id="save-template-group-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Delete Template Group Modal -->
+            <div id="delete-template-group-modal" style="display:none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center; padding: 2rem;">
+                <div style="background: #fff; border-radius: 8px; padding: 2rem; max-width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+                    <h2 style="margin-bottom: 1rem; color: #ef4444;">Delete Template Group</h2>
+                    <label for="delete-template-group-select">Select Template Group to Delete:</label>
+                    <select id="delete-template-group-select" style="margin-bottom: 1rem;"></select>
+                    <div id="delete-template-group-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-danger" id="delete-template-group-confirm">Delete</button>
+                        <button class="btn btn-secondary" id="delete-template-group-cancel">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for pure JSON import -->
+            <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
+                <div id="new-prompt-modal-content">
+                    <h2 class="modal-title">Import Prompt from JSON</h2>
+                    <label for="json-import-textarea" style="font-weight:500; color:#222; margin-bottom:0.2em; display:block;">Prompt JSON</label>
+                    <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..." style="margin-bottom:0.3em; width:100%; min-height:120px; font-family:monospace; font-size:1em; padding:1em; border-radius:8px; border:1.5px solid #e5e7eb; resize:vertical; background:#f9f9f9;"></textarea>
+                    <div style="font-size:0.97em; color:#64748b; margin-bottom:0.2em;">Paste an existing prompt JSON to load it.</div>
+                    <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
+                    <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
+                        <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
+                        <button class="btn btn-primary" id="json-import-confirm">Import</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for copy confirmation -->
+            <div id="copy-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
+                    <h2>Prompt Copied!</h2>
+                    <p>The generated prompt has been copied to your clipboard.<br>Go to your AI tool and paste the prompt to use it.</p>
+                    <button id="close-copy-modal" class="btn btn-primary" style="margin-top:1rem;">OK</button>
+                </div>
+            </div>
+            <!-- Modal for delete confirmation -->
+            <div id="delete-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                <div style="background:#fff; padding:2rem; border-radius:8px; max-width:90vw; max-height:90vh; box-shadow:0 4px 16px rgba(0,0,0,0.2); text-align:center;">
+                    <h2>Delete Prompt?</h2>
+                    <p>This action cannot be undone. Are you sure you want to delete this prompt?</p>
+                    <div style="margin-top:1.5rem; display:flex; gap:1rem; justify-content:center;">
+                        <button id="confirm-delete-prompt" class="btn btn-primary" style="background:#ef4444; color:#fff;">Delete</button>
+                        <button id="cancel-delete-prompt" class="btn btn-secondary">Cancel</button>
                     </div>
                 </div>
             </div>
@@ -543,10 +609,13 @@ hr {
         <!-- Add hidden file input for importing prompts -->
         <input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleImport(event)" />
         <input type="file" id="load-workspace-file" accept=".json" style="display:none" />
+        <input type="file" id="load-template-group-file" accept=".json" style="display:none" />
 
         <!-- Hidden buttons for workspace actions -->
         <button id="save-workspace-btn" style="display:none"></button>
         <button id="load-workspace-btn" style="display:none"></button>
+        <button id="save-template-group-btn" style="display:none"></button>
+        <button id="load-template-group-btn" style="display:none"></button>
     </div>
 </div>
 <script>
