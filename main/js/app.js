@@ -101,7 +101,10 @@ function startApp() {
         cancelDeleteBtn.addEventListener('click', () => { deleteModal.style.display = 'none'; });
         confirmDeleteBtn.addEventListener('click', () => {
             deleteModal.style.display = 'none';
-            if (currentPromptId != null) deletePrompt(currentPromptId);
+            // tileMenuTargetId is set when delete is triggered from the sidebar ⋮ menu;
+            // fall back to currentPromptId when triggered from the action bar button.
+            const idToDelete = window.tileMenuTargetId || currentPromptId;
+            if (idToDelete != null) deletePrompt(idToDelete);
         });
         deleteModal.addEventListener('click', e => { if (e.target === deleteModal) deleteModal.style.display = 'none'; });
     }
@@ -156,6 +159,7 @@ function startApp() {
     if (importFile) importFile.addEventListener('change', handleImport);
 
     setupNewPromptModal();
+    setupTileContextMenu();
     setupWorkspaceHandlers();
     setupTemplateGroupHandlers();
     setupAppBarMenu();

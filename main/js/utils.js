@@ -37,6 +37,22 @@ function downloadJson(data, fileName) {
 }
 
 /**
+ * Converts a display name into a URL-friendly slug for use as a template ID.
+ * e.g. "My Cool Template!" → "my-cool-template"
+ * Falls back to "untitled" if the result would be empty.
+ * @param {string} text - The name to slugify.
+ * @returns {string} Lowercase hyphen-separated slug.
+ */
+export function slugify(text) {
+    return String(text)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        || 'untitled';
+}
+
+/**
  * Renders a list of items as labelled checkboxes (all checked by default)
  * into a container element. Used by the import and export modals.
  * @param {HTMLElement} container - The element to render into.

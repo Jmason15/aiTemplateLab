@@ -1,5 +1,5 @@
 {
-  "id": 1770133620570,
+  "id": "jira-story-generator",
   "name": "Jira Story and Acceptance Criteria Generator",
   "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
   "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",

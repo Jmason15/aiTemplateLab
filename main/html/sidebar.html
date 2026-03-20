@@ -1,3 +1,10 @@
+<!-- Tile context menu — shared, positioned by JS, lives outside sidebar so it can overflow -->
+<div id="tile-context-menu" style="display:none; position:fixed; z-index:10000;">
+    <button id="tile-menu-move">Move to Group</button>
+    <button id="tile-menu-rename">Rename</button>
+    <button id="tile-menu-delete" class="tile-menu-delete">Delete</button>
+</div>
+
 <div id="sidebar" class="sidebar">
     <div class="templates-container template-list-card">
         <div id="prompts-list">

@@ -1,5 +1,5 @@
 {
-  "id": 1769809000002,
+  "id": "template-builder",
     "name": "Template Builder",
     "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
     "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
@@ -22,7 +22,7 @@
       {
         "name": "Field Suggestions",
         "type": "JSON",
-        "example": "{\n  \"id\": 0,\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
+        "example": "{\n  \"id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
       }
     ],
     "success": [

@@ -1,3 +1,32 @@
+<!-- Rename Template Modal -->
+<div id="rename-template-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:480px; width:100%; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:1.2rem; color:#2563eb;">Rename Template</h2>
+        <label for="rename-template-input">New Name:</label>
+        <input type="text" id="rename-template-input" placeholder="Template name" style="margin-bottom:1rem;">
+        <div id="rename-template-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button class="btn btn-primary" id="rename-template-confirm">Rename</button>
+            <button class="btn btn-secondary" id="rename-template-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Move Template to Group Modal -->
+<div id="move-template-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:480px; width:100%; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:0.5rem; color:#2563eb;">Move to Group</h2>
+        <p id="move-template-name" style="margin-bottom:1.2rem; color:#64748b; font-size:1em;"></p>
+        <label for="move-template-group-select">Destination Group:</label>
+        <select id="move-template-group-select" style="margin-bottom:1rem;"></select>
+        <div id="move-template-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button class="btn btn-primary" id="move-template-confirm">Move</button>
+            <button class="btn btn-secondary" id="move-template-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- Create Template Group Modal -->
 <div id="create-template-group-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
     <div style="background:#fff; border-radius:8px; padding:2rem; max-width:600px; max-height:80vh; display:flex; flex-direction:column;">

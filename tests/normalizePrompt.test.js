@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { normalizePrompt } from '../main/js/state.js';
+import { slugify } from '../main/js/utils.js';
 
 describe('normalizePrompt', () => {
     it('leaves string constraints and success arrays unchanged', () => {
@@ -56,5 +57,33 @@ describe('normalizePrompt', () => {
         normalizePrompt(prompt);
         expect(prompt.constraints).toEqual(['']);
         expect(prompt.success).toEqual(['']);
+    });
+});
+
+describe('slugify', () => {
+    it('lowercases and hyphenates a normal name', () => {
+        expect(slugify('My Cool Template')).toBe('my-cool-template');
+    });
+
+    it('strips special characters', () => {
+        expect(slugify('Jira Story & Acceptance Criteria!')).toBe('jira-story-acceptance-criteria');
+    });
+
+    it('collapses multiple spaces and punctuation into one hyphen', () => {
+        expect(slugify('Hello   ---   World')).toBe('hello-world');
+    });
+
+    it('strips leading and trailing hyphens', () => {
+        expect(slugify('  !!hello!! ')).toBe('hello');
+    });
+
+    it('falls back to "untitled" for a blank or symbol-only string', () => {
+        expect(slugify('')).toBe('untitled');
+        expect(slugify('!!!')).toBe('untitled');
+    });
+
+    it('matches the expected IDs used in prompt JSON files', () => {
+        expect(slugify('Jira Story and Acceptance Criteria Generator')).toBe('jira-story-and-acceptance-criteria-generator');
+        expect(slugify('Template Builder')).toBe('template-builder');
     });
 });

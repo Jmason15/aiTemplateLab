@@ -17,7 +17,13 @@
  * in the edit form.
  */
 function startBlankPrompt() {
-    const newId = Date.now();
+    // Generate a collision-free slug for the initial "New Prompt" name.
+    const base = slugify('New Prompt');
+    const existingIds = new Set(prompts.map(p => p.id));
+    let newId = base;
+    let i = 2;
+    while (existingIds.has(newId)) newId = `${base}-${i++}`;
+
     const newPromptObj = {
         id: newId, name: 'New Prompt', description: '', objective: '',
         actor: '', context: '', inputs: [], constraints: [], outputs: [], success: []
@@ -105,9 +111,18 @@ function savePrompt() {
         if (el.value.trim()) success.push(el.value.trim());
     });
 
+    // Derive a slug ID from the current name. If another prompt already
+    // uses that slug (excluding the current one), append -2, -3, etc.
+    const name = nameEl.value.trim();
+    const slugBase = slugify(name);
+    const otherIds = new Set(prompts.filter(p => p.id !== currentPromptId).map(p => p.id));
+    let newId = slugBase;
+    let suffix = 2;
+    while (otherIds.has(newId)) newId = `${slugBase}-${suffix++}`;
+
     const promptData = {
-        id: currentPromptId || Date.now(),
-        name: nameEl.value.trim(),
+        id: newId,
+        name,
         description: descEl.value.trim(),
         objective: document.getElementById('objective')?.value || '',
         actor: document.getElementById('actor')?.value || '',
@@ -116,6 +131,7 @@ function savePrompt() {
     };
 
     // Update both the flat prompts array and the authoritative templateGroups entry.
+    // Also update currentPromptId in case the slug changed (name was edited).
     const idx = prompts.findIndex(p => p.id === currentPromptId);
     if (idx !== -1) {
         prompts[idx] = promptData;
@@ -124,6 +140,7 @@ function savePrompt() {
             const gIdx = group.findIndex(p => p.id === currentPromptId);
             if (gIdx !== -1) group[gIdx] = promptData;
         }
+        currentPromptId = newId;
     } else {
         // New prompt not yet in the array (edge case).
         prompts.push(promptData);
@@ -172,11 +189,24 @@ function renderPromptsList() {
         return;
     }
     container.innerHTML = templates.map((p, idx) =>
-        `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">${window.escapeHtml(p.name)}</div>`
+        `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
+            <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
+            <button class="prompt-tile-move-btn" draggable="false" aria-label="Move to group" title="Move to group" data-id="${p.id}">⋮</button>
+        </div>`
     ).join('');
 
     container.querySelectorAll('.prompt-tile').forEach(item => {
-        item.addEventListener('click', () => viewPrompt(parseInt(item.getAttribute('data-id'))));
+        item.addEventListener('click', e => {
+            if (e.target.closest('.prompt-tile-move-btn')) return;
+            viewPrompt(item.getAttribute('data-id'));
+        });
+    });
+
+    container.querySelectorAll('.prompt-tile-move-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation(); // prevent tile click from firing
+            openTileMenu(btn.getAttribute('data-id'), btn);
+        });
     });
 
     // Drag-to-reorder: track the source index in draggedIdx, then splice
@@ -309,3 +339,191 @@ function makeFieldsSortable(containerId, itemClass) {
 }
 window.makeInputsSortable = () => makeFieldsSortable('inputs-container', '.input-item');
 window.makeOutputsSortable = () => makeFieldsSortable('outputs-container', '.output-item');
+
+// =========================
+// Tile Context Menu (⋮)
+// =========================
+
+// ID of the template the context menu was opened for.
+let tileMenuTargetId = null;
+// Expose so app.js delete handler can read it.
+Object.defineProperty(window, 'tileMenuTargetId', { get: () => tileMenuTargetId });
+
+/** Positions and shows the context menu next to the given button element. */
+function openTileMenu(templateId, btn) {
+    const menu = document.getElementById('tile-context-menu');
+    if (!menu) return;
+    tileMenuTargetId = templateId;
+    const rect = btn.getBoundingClientRect();
+    // Align left edge of menu with button; appear below it.
+    menu.style.left = `${rect.left}px`;
+    menu.style.top = `${rect.bottom + 4}px`;
+    menu.style.display = 'block';
+}
+
+/** Hides the context menu and clears the target ID. */
+function closeTileMenu() {
+    const menu = document.getElementById('tile-context-menu');
+    if (menu) menu.style.display = 'none';
+    tileMenuTargetId = null;
+}
+
+/**
+ * Moves a template from the current group into the target group.
+ * If the moved template was selected, opens the next available template.
+ * @param {string} templateId - ID of the template to move.
+ * @param {string} targetGroup - Name of the destination group.
+ */
+function moveTemplateToGroup(templateId, targetGroup) {
+    const sourceGroup = environment.templateGroups[currentTemplateGroup];
+    const templateIdx = sourceGroup.findIndex(p => p.id === templateId);
+    if (templateIdx === -1 || !environment.templateGroups[targetGroup]) return;
+
+    const [template] = sourceGroup.splice(templateIdx, 1);
+    environment.templateGroups[targetGroup].push(template);
+    prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
+
+    if (currentPromptId === templateId) {
+        if (prompts.length > 0) {
+            currentPromptId = prompts[0].id;
+            viewPrompt(currentPromptId);
+        } else {
+            currentPromptId = null;
+            showWelcome();
+        }
+    }
+
+    window.savePromptsToLocalStorage();
+    renderPromptsList();
+    syncWindowState();
+}
+
+/**
+ * Renames a template and updates its slug ID to match the new name.
+ * @param {string} templateId - Current ID of the template.
+ * @param {string} newName - The new display name.
+ */
+function renameTemplate(templateId, newName) {
+    const slugBase = slugify(newName);
+    const otherIds = new Set(prompts.filter(p => p.id !== templateId).map(p => p.id));
+    let newId = slugBase;
+    let suffix = 2;
+    while (otherIds.has(newId)) newId = `${slugBase}-${suffix++}`;
+
+    const group = environment.templateGroups[currentTemplateGroup];
+    const gIdx = group ? group.findIndex(p => p.id === templateId) : -1;
+    if (gIdx === -1) return;
+
+    group[gIdx] = { ...group[gIdx], id: newId, name: newName };
+    prompts = group.map(normalizePrompt);
+
+    if (currentPromptId === templateId) {
+        currentPromptId = newId;
+        // Update the visible name in the view header without a full viewPrompt reload.
+        const viewName = document.getElementById('view-name');
+        if (viewName) viewName.textContent = newName;
+    }
+
+    window.savePromptsToLocalStorage();
+    renderPromptsList();
+    syncWindowState();
+}
+
+/**
+ * Wires the tile context menu and all three action modals (move, rename, delete).
+ * Called once during app startup.
+ */
+function setupTileContextMenu() {
+    // Close menu on any outside click.
+    document.addEventListener('click', e => {
+        const menu = document.getElementById('tile-context-menu');
+        if (menu && menu.style.display === 'block' && !menu.contains(e.target)) {
+            closeTileMenu();
+        }
+    });
+
+    // Move to Group — open modal populated with other groups.
+    const moveBtn = document.getElementById('tile-menu-move');
+    if (moveBtn) {
+        moveBtn.addEventListener('click', () => {
+            const templateId = tileMenuTargetId;
+            closeTileMenu();
+            const modal = document.getElementById('move-template-modal');
+            const select = document.getElementById('move-template-group-select');
+            const nameEl = document.getElementById('move-template-name');
+            if (!modal || !select) return;
+            const template = prompts.find(p => p.id === templateId);
+            if (!template) return;
+            const otherGroups = Object.keys(environment.templateGroups).filter(g => g !== currentTemplateGroup);
+            if (otherGroups.length === 0) { alert('Create another template group first.'); return; }
+            if (nameEl) nameEl.textContent = template.name;
+            select.innerHTML = otherGroups.map(g => `<option value="${g}">${window.escapeHtml(g)}</option>`).join('');
+            modal.dataset.templateId = templateId;
+            document.getElementById('move-template-error').style.display = 'none';
+            modal.style.display = 'flex';
+        });
+    }
+
+    // Move modal confirm/cancel.
+    const moveModal = document.getElementById('move-template-modal');
+    const moveConfirm = document.getElementById('move-template-confirm');
+    const moveCancel = document.getElementById('move-template-cancel');
+    if (moveConfirm) {
+        moveConfirm.addEventListener('click', () => {
+            const select = document.getElementById('move-template-group-select');
+            const templateId = moveModal.dataset.templateId;
+            if (templateId && select.value) moveTemplateToGroup(templateId, select.value);
+            moveModal.style.display = 'none';
+        });
+    }
+    if (moveCancel) moveCancel.addEventListener('click', () => { moveModal.style.display = 'none'; });
+    if (moveModal) moveModal.addEventListener('click', e => { if (e.target === moveModal) moveModal.style.display = 'none'; });
+
+    // Rename — open modal pre-filled with current name.
+    const renameBtn = document.getElementById('tile-menu-rename');
+    if (renameBtn) {
+        renameBtn.addEventListener('click', () => {
+            const templateId = tileMenuTargetId;
+            closeTileMenu();
+            const modal = document.getElementById('rename-template-modal');
+            const input = document.getElementById('rename-template-input');
+            const errorDiv = document.getElementById('rename-template-error');
+            if (!modal || !input) return;
+            const template = prompts.find(p => p.id === templateId);
+            if (!template) return;
+            input.value = template.name;
+            errorDiv.style.display = 'none';
+            modal.dataset.templateId = templateId;
+            modal.style.display = 'flex';
+            setTimeout(() => input.select(), 50);
+        });
+    }
+
+    // Rename modal confirm/cancel.
+    const renameModal = document.getElementById('rename-template-modal');
+    const renameConfirm = document.getElementById('rename-template-confirm');
+    const renameCancel = document.getElementById('rename-template-cancel');
+    if (renameConfirm) {
+        renameConfirm.addEventListener('click', () => {
+            const input = document.getElementById('rename-template-input');
+            const errorDiv = document.getElementById('rename-template-error');
+            const newName = input.value.trim();
+            if (!newName) { errorDiv.textContent = 'Please enter a name.'; errorDiv.style.display = 'block'; return; }
+            renameTemplate(renameModal.dataset.templateId, newName);
+            renameModal.style.display = 'none';
+        });
+    }
+    if (renameCancel) renameCancel.addEventListener('click', () => { renameModal.style.display = 'none'; });
+    if (renameModal) renameModal.addEventListener('click', e => { if (e.target === renameModal) renameModal.style.display = 'none'; });
+
+    // Delete — show existing delete confirmation modal.
+    const deleteBtn = document.getElementById('tile-menu-delete');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+            closeTileMenu();
+            const modal = document.getElementById('delete-modal');
+            if (modal) modal.style.display = 'flex';
+        });
+    }
+}
+window.setupTileContextMenu = setupTileContextMenu;

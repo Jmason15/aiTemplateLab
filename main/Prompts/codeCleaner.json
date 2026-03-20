@@ -1,6 +1,6 @@
 
   {
-    "id": 1770408110308,
+    "id": "improve-function-implementation",
     "name": "Improve Function Implementation with Risk Analysis",
     "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
     "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
