@@ -455,9 +455,13 @@ function setupTileContextMenu() {
             const template = prompts.find(p => p.id === templateId);
             if (!template) return;
             const otherGroups = Object.keys(environment.templateGroups).filter(g => g !== currentTemplateGroup);
-            if (otherGroups.length === 0) { alert('Create another template group first.'); return; }
             if (nameEl) nameEl.textContent = template.name;
             select.innerHTML = otherGroups.map(g => `<option value="${g}">${window.escapeHtml(g)}</option>`).join('');
+            select.innerHTML += `<option value="__new__">New Group...</option>`;
+            const newGroupRow = document.getElementById('move-template-new-group-row');
+            const newGroupInput = document.getElementById('move-template-new-group-name');
+            if (newGroupRow) newGroupRow.style.display = 'none';
+            if (newGroupInput) newGroupInput.value = '';
             modal.dataset.templateId = templateId;
             document.getElementById('move-template-error').style.display = 'none';
             modal.style.display = 'flex';
@@ -468,11 +472,47 @@ function setupTileContextMenu() {
     const moveModal = document.getElementById('move-template-modal');
     const moveConfirm = document.getElementById('move-template-confirm');
     const moveCancel = document.getElementById('move-template-cancel');
+    // Toggle the new group name input when "New Group..." is selected.
+    const moveSelect = document.getElementById('move-template-group-select');
+    if (moveSelect) {
+        moveSelect.addEventListener('change', () => {
+            const newGroupRow = document.getElementById('move-template-new-group-row');
+            const newGroupInput = document.getElementById('move-template-new-group-name');
+            const isNew = moveSelect.value === '__new__';
+            if (newGroupRow) newGroupRow.style.display = isNew ? 'flex' : 'none';
+            if (isNew && newGroupInput) setTimeout(() => newGroupInput.focus(), 0);
+        });
+    }
+
     if (moveConfirm) {
         moveConfirm.addEventListener('click', () => {
             const select = document.getElementById('move-template-group-select');
+            const errorDiv = document.getElementById('move-template-error');
             const templateId = moveModal.dataset.templateId;
-            if (templateId && select.value) moveTemplateToGroup(templateId, select.value);
+            if (!templateId) return;
+
+            let targetGroup = select.value;
+
+            if (targetGroup === '__new__') {
+                const newName = document.getElementById('move-template-new-group-name').value.trim();
+                if (!newName) {
+                    errorDiv.textContent = 'Please enter a group name.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                if (environment.templateGroups[newName]) {
+                    errorDiv.textContent = 'A group with that name already exists.';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+                // Create the new group then move into it.
+                environment.templateGroups[newName] = [];
+                environment.history[newName] = [];
+                if (typeof updateTemplateGroupDropdown === 'function') updateTemplateGroupDropdown();
+                targetGroup = newName;
+            }
+
+            moveTemplateToGroup(templateId, targetGroup);
             moveModal.style.display = 'none';
         });
     }
