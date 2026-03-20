@@ -1,8 +1,8 @@
 /**
- * @fileoverview Prompts Editor — dynamic field management and auto-save
+ * @fileoverview Edit form — dynamic field management and auto-save
  */
 
-// Shared SVG for delete buttons (avoids repeating the same markup 4 times)
+// Shared SVG for all delete buttons
 const DELETE_BTN_SVG = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>`;
 
 // =========================
@@ -35,7 +35,8 @@ function editPrompt(id) {
 
     prompt.inputs.forEach(i => addInput(i.name, i.description));
     prompt.constraints.forEach(c => addConstraint(c));
-    prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description));
+    // Preloaded prompts use `example`, saved prompts use `description` — accept both
+    prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description || o.example || ''));
     prompt.success.forEach(s => addSuccess(s));
 
     window.showEdit();
@@ -59,8 +60,6 @@ window.addInput = function (name = '', description = '') {
 
     const content = document.createElement('div');
     content.className = 'edit-card-content';
-    content.style.flexDirection = 'column';
-    content.style.gap = '6px';
 
     const nameLabel = document.createElement('label');
     nameLabel.setAttribute('for', `input-name-${id}`);
@@ -104,33 +103,57 @@ window.addInput = function (name = '', description = '') {
     attachFieldListeners();
 };
 
-window.addConstraint = function (text = '') {
-    window.constraintCounter++;
-    const container = document.getElementById('constraints-container');
-    const id = window.constraintCounter;
+// Shared helper for single-textarea fields (constraint and success are identical in structure)
+function addTextareaField({ counterKey, containerId, itemClass, itemPrefix, placeholder, deleteLabel, value }) {
+    window[counterKey]++;
+    const id = window[counterKey];
+    const container = document.getElementById(containerId);
     const div = document.createElement('div');
-    div.className = 'edit-card constraint-item';
-    div.id = `constraint-item-${id}`;
-    div.style.alignItems = 'center';
+    div.className = `edit-card ${itemClass}`;
+    div.id = `${itemPrefix}-item-${id}`;
 
     const textarea = document.createElement('textarea');
-    textarea.id = `constraint-text-${id}`;
-    textarea.placeholder = 'Constraint';
-    textarea.value = text;
-    textarea.setAttribute('aria-label', 'Constraint');
+    textarea.id = `${itemPrefix}-text-${id}`;
+    textarea.placeholder = placeholder;
+    textarea.value = value;
+    textarea.setAttribute('aria-label', placeholder);
     textarea.className = 'constraint-textarea';
     textarea.addEventListener('input', regenerateOutput);
     div.appendChild(textarea);
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'delete-btn';
-    removeBtn.setAttribute('aria-label', 'Delete constraint');
+    removeBtn.setAttribute('aria-label', deleteLabel);
     removeBtn.innerHTML = DELETE_BTN_SVG;
     removeBtn.onclick = () => removeElement(div.id);
     div.appendChild(removeBtn);
 
     container.appendChild(div);
     attachFieldListeners();
+}
+
+window.addConstraint = function (text = '') {
+    addTextareaField({
+        counterKey: 'constraintCounter',
+        containerId: 'constraints-container',
+        itemClass: 'constraint-item',
+        itemPrefix: 'constraint',
+        placeholder: 'Constraint',
+        deleteLabel: 'Delete constraint',
+        value: text,
+    });
+};
+
+window.addSuccess = function (text = '') {
+    addTextareaField({
+        counterKey: 'successCounter',
+        containerId: 'success-container',
+        itemClass: 'success-item',
+        itemPrefix: 'success',
+        placeholder: 'Success criterion',
+        deleteLabel: 'Delete success criterion',
+        value: text,
+    });
 };
 
 window.addOutput = function (name = '', type = 'string', description = '') {
@@ -144,8 +167,6 @@ window.addOutput = function (name = '', type = 'string', description = '') {
 
     const content = document.createElement('div');
     content.className = 'edit-card-content';
-    content.style.flexDirection = 'column';
-    content.style.gap = '6px';
 
     const nameLabel = document.createElement('label');
     nameLabel.setAttribute('for', `output-name-${id}`);
@@ -203,35 +224,6 @@ window.addOutput = function (name = '', type = 'string', description = '') {
     attachFieldListeners();
 };
 
-window.addSuccess = function (text = '') {
-    window.successCounter++;
-    const container = document.getElementById('success-container');
-    const id = window.successCounter;
-    const div = document.createElement('div');
-    div.className = 'edit-card success-item';
-    div.id = `success-item-${id}`;
-    div.style.alignItems = 'center';
-
-    const textarea = document.createElement('textarea');
-    textarea.id = `success-text-${id}`;
-    textarea.placeholder = 'Success criterion';
-    textarea.value = text;
-    textarea.setAttribute('aria-label', 'Success criterion');
-    textarea.className = 'constraint-textarea';
-    textarea.addEventListener('input', regenerateOutput);
-    div.appendChild(textarea);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'delete-btn';
-    removeBtn.setAttribute('aria-label', 'Delete success criterion');
-    removeBtn.innerHTML = DELETE_BTN_SVG;
-    removeBtn.onclick = () => removeElement(div.id);
-    div.appendChild(removeBtn);
-
-    container.appendChild(div);
-    attachFieldListeners();
-};
-
 // =========================
 // Auto-save
 // =========================
@@ -266,11 +258,11 @@ function saveCurrentPrompt() {
     if (idx === -1) return;
 
     const prompt = window.prompts[idx];
-    prompt.name = document.getElementById('prompt-name')?.value || '';
+    prompt.name        = document.getElementById('prompt-name')?.value || '';
     prompt.description = document.getElementById('prompt-desc')?.value || '';
-    prompt.objective = document.getElementById('objective')?.value || '';
-    prompt.actor = document.getElementById('actor')?.value || '';
-    prompt.context = document.getElementById('context')?.value || '';
+    prompt.objective   = document.getElementById('objective')?.value || '';
+    prompt.actor       = document.getElementById('actor')?.value || '';
+    prompt.context     = document.getElementById('context')?.value || '';
 
     prompt.inputs = [];
     for (let i = 1; i <= window.inputCounter; i++) {

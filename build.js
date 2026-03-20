@@ -27,10 +27,16 @@ const CSS_FILES_ORDERED = [
 // Explicit load order — do not change without updating index.html <script> tags too.
 const JS_FILES_ORDERED = [
     'utils.js',
+    'state.js',
+    'storage.js',
+    'screens.js',
     'editPrompt.js',
-    'storageManager.js',
     'preloadedPrompts.js',
-    'newApp.js',
+    'promptOutput.js',
+    'promptCrud.js',
+    'importExport.js',
+    'workspaceManager.js',
+    'app.js',
 ];
 
 if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);

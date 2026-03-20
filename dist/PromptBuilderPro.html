@@ -1917,13 +1917,206 @@ function escapeHtml(text) {
 }
 window.escapeHtml = escapeHtml;
 
+function downloadJson(data, fileName) {
+    try {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        alert('Download failed: ' + err.message);
+    }
+}
+
+function renderCheckboxGrid(container, items, idPrefix) {
+    container.innerHTML = items.map(item =>
+        `<div class="checkbox-row">
+            <input type="checkbox" id="${idPrefix}-${item.id}" value="${item.id}" checked>
+            <label for="${idPrefix}-${item.id}">${window.escapeHtml(item.name)}</label>
+        </div>`
+    ).join('');
+}
+
+</script>
+<script>
+// Shared application state — must load before all other app scripts
+
+let prompts = [];
+let currentPromptId = null;
+let inputCounter = 0;
+let constraintCounter = 0;
+let outputCounter = 0;
+let successCounter = 0;
+
+let environment = { templateGroups: {}, history: {} };
+let currentTemplateGroup = 'Default';
+
+// editPrompt.js reads/writes these via window.*
+window.prompts = prompts;
+window.currentPromptId = currentPromptId;
+window.inputCounter = inputCounter;
+window.constraintCounter = constraintCounter;
+window.outputCounter = outputCounter;
+window.successCounter = successCounter;
+
+function syncWindowState() {
+    window.prompts = prompts;
+    window.currentPromptId = currentPromptId;
+    window.inputCounter = inputCounter;
+    window.constraintCounter = constraintCounter;
+    window.outputCounter = outputCounter;
+    window.successCounter = successCounter;
+}
+
+function normalizePrompt(prompt) {
+    if (Array.isArray(prompt.constraints)) {
+        prompt.constraints = prompt.constraints.map(c => typeof c === 'string' ? c : (c.rule || ''));
+    } else {
+        prompt.constraints = [];
+    }
+    if (Array.isArray(prompt.success)) {
+        prompt.success = prompt.success.map(s => typeof s === 'string' ? s : (s.criterion || ''));
+    } else {
+        prompt.success = [];
+    }
+    return prompt;
+}
+
+</script>
+<script>
+// Template group persistence — depends on state.js
+
+function loadTemplateGroupsFromStorage() {
+    const rawGroups = localStorage.getItem('templateGroups');
+    const rawHistory = localStorage.getItem('templateGroupHistory');
+    const rawCurrent = localStorage.getItem('currentTemplateGroup');
+    if (rawGroups) {
+        try {
+            environment.templateGroups = JSON.parse(rawGroups);
+            environment.history = rawHistory ? JSON.parse(rawHistory) : {};
+            currentTemplateGroup = rawCurrent || Object.keys(environment.templateGroups)[0] || 'Default';
+        } catch {
+            resetToPreloaded();
+        }
+    } else {
+        resetToPreloaded();
+    }
+}
+
+function saveTemplateGroupsToStorage() {
+    localStorage.setItem('templateGroups', JSON.stringify(environment.templateGroups));
+    localStorage.setItem('templateGroupHistory', JSON.stringify(environment.history));
+    localStorage.setItem('currentTemplateGroup', currentTemplateGroup);
+}
+
+function resetToPreloaded() {
+    environment.templateGroups = {
+        'Default': window.preloadedWorkspaces['Default'].templates,
+        'Jira': window.preloadedWorkspaces['Jira'].templates
+    };
+    environment.history = {};
+    currentTemplateGroup = 'Default';
+}
+
+window.savePromptsToLocalStorage = saveTemplateGroupsToStorage;
+window.loadPromptsFromLocalStorage = loadTemplateGroupsFromStorage;
+
+</script>
+<script>
+// Screen and tab switching — depends on state.js
+
+const SCREENS = ['view-screen', 'edit-screen', 'history-screen', 'output-screen', 'welcome-screen'];
+
+function switchToScreen(activeId) {
+    SCREENS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = id === activeId ? 'block' : 'none';
+        el.classList.toggle('active', id === activeId);
+    });
+}
+
+function showChrome(visible) {
+    const infoDisplay = document.getElementById('info-display');
+    const tabsElem = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    const val = visible ? '' : 'none';
+    if (infoDisplay) infoDisplay.style.display = val;
+    if (tabsElem) tabsElem.style.display = val;
+    if (tabContent) tabContent.style.display = val;
+}
+
+function setTabActive(tabName) {
+    document.querySelectorAll('#tabs button').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === tabName);
+    });
+}
+window.setTabActive = setTabActive;
+
+function showView() {
+    setTabActive('Use Template');
+    switchToScreen('view-screen');
+    showChrome(true);
+}
+window.showView = showView;
+
+function showEdit() {
+    setTabActive('Edit Template');
+    switchToScreen('edit-screen');
+    showChrome(true);
+}
+window.showEdit = showEdit;
+
+function showHistory() {
+    setTabActive('Template History');
+    switchToScreen('history-screen');
+    showChrome(true);
+    renderHistoryList(currentPromptId);
+}
+window.showHistory = showHistory;
+
+function showPromptOutput() {
+    setTabActive('Output');
+    switchToScreen('output-screen');
+    showChrome(true);
+}
+window.showPromptOutput = showPromptOutput;
+
+function showWelcome() {
+    showChrome(false);
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.style.display = 'block';
+        welcomeScreen.classList.add('active');
+    }
+}
+window.showWelcome = showWelcome;
+
+function clearForm() {
+    ['prompt-name', 'prompt-desc', 'objective', 'actor', 'context'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    ['inputs-container', 'constraints-container', 'outputs-container', 'success-container'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = '';
+    });
+    inputCounter = constraintCounter = outputCounter = successCounter = 0;
+    syncWindowState();
+}
+
 </script>
 <script>
 /**
- * @fileoverview Prompts Editor — dynamic field management and auto-save
+ * @fileoverview Edit form — dynamic field management and auto-save
  */
 
-// Shared SVG for delete buttons (avoids repeating the same markup 4 times)
+// Shared SVG for all delete buttons
 const DELETE_BTN_SVG = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>`;
 
 // =========================
@@ -1956,7 +2149,8 @@ function editPrompt(id) {
 
     prompt.inputs.forEach(i => addInput(i.name, i.description));
     prompt.constraints.forEach(c => addConstraint(c));
-    prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description));
+    // Preloaded prompts use `example`, saved prompts use `description` — accept both
+    prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description || o.example || ''));
     prompt.success.forEach(s => addSuccess(s));
 
     window.showEdit();
@@ -1980,8 +2174,6 @@ window.addInput = function (name = '', description = '') {
 
     const content = document.createElement('div');
     content.className = 'edit-card-content';
-    content.style.flexDirection = 'column';
-    content.style.gap = '6px';
 
     const nameLabel = document.createElement('label');
     nameLabel.setAttribute('for', `input-name-${id}`);
@@ -2025,33 +2217,57 @@ window.addInput = function (name = '', description = '') {
     attachFieldListeners();
 };
 
-window.addConstraint = function (text = '') {
-    window.constraintCounter++;
-    const container = document.getElementById('constraints-container');
-    const id = window.constraintCounter;
+// Shared helper for single-textarea fields (constraint and success are identical in structure)
+function addTextareaField({ counterKey, containerId, itemClass, itemPrefix, placeholder, deleteLabel, value }) {
+    window[counterKey]++;
+    const id = window[counterKey];
+    const container = document.getElementById(containerId);
     const div = document.createElement('div');
-    div.className = 'edit-card constraint-item';
-    div.id = `constraint-item-${id}`;
-    div.style.alignItems = 'center';
+    div.className = `edit-card ${itemClass}`;
+    div.id = `${itemPrefix}-item-${id}`;
 
     const textarea = document.createElement('textarea');
-    textarea.id = `constraint-text-${id}`;
-    textarea.placeholder = 'Constraint';
-    textarea.value = text;
-    textarea.setAttribute('aria-label', 'Constraint');
+    textarea.id = `${itemPrefix}-text-${id}`;
+    textarea.placeholder = placeholder;
+    textarea.value = value;
+    textarea.setAttribute('aria-label', placeholder);
     textarea.className = 'constraint-textarea';
     textarea.addEventListener('input', regenerateOutput);
     div.appendChild(textarea);
 
     const removeBtn = document.createElement('button');
     removeBtn.className = 'delete-btn';
-    removeBtn.setAttribute('aria-label', 'Delete constraint');
+    removeBtn.setAttribute('aria-label', deleteLabel);
     removeBtn.innerHTML = DELETE_BTN_SVG;
     removeBtn.onclick = () => removeElement(div.id);
     div.appendChild(removeBtn);
 
     container.appendChild(div);
     attachFieldListeners();
+}
+
+window.addConstraint = function (text = '') {
+    addTextareaField({
+        counterKey: 'constraintCounter',
+        containerId: 'constraints-container',
+        itemClass: 'constraint-item',
+        itemPrefix: 'constraint',
+        placeholder: 'Constraint',
+        deleteLabel: 'Delete constraint',
+        value: text,
+    });
+};
+
+window.addSuccess = function (text = '') {
+    addTextareaField({
+        counterKey: 'successCounter',
+        containerId: 'success-container',
+        itemClass: 'success-item',
+        itemPrefix: 'success',
+        placeholder: 'Success criterion',
+        deleteLabel: 'Delete success criterion',
+        value: text,
+    });
 };
 
 window.addOutput = function (name = '', type = 'string', description = '') {
@@ -2065,8 +2281,6 @@ window.addOutput = function (name = '', type = 'string', description = '') {
 
     const content = document.createElement('div');
     content.className = 'edit-card-content';
-    content.style.flexDirection = 'column';
-    content.style.gap = '6px';
 
     const nameLabel = document.createElement('label');
     nameLabel.setAttribute('for', `output-name-${id}`);
@@ -2124,35 +2338,6 @@ window.addOutput = function (name = '', type = 'string', description = '') {
     attachFieldListeners();
 };
 
-window.addSuccess = function (text = '') {
-    window.successCounter++;
-    const container = document.getElementById('success-container');
-    const id = window.successCounter;
-    const div = document.createElement('div');
-    div.className = 'edit-card success-item';
-    div.id = `success-item-${id}`;
-    div.style.alignItems = 'center';
-
-    const textarea = document.createElement('textarea');
-    textarea.id = `success-text-${id}`;
-    textarea.placeholder = 'Success criterion';
-    textarea.value = text;
-    textarea.setAttribute('aria-label', 'Success criterion');
-    textarea.className = 'constraint-textarea';
-    textarea.addEventListener('input', regenerateOutput);
-    div.appendChild(textarea);
-
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'delete-btn';
-    removeBtn.setAttribute('aria-label', 'Delete success criterion');
-    removeBtn.innerHTML = DELETE_BTN_SVG;
-    removeBtn.onclick = () => removeElement(div.id);
-    div.appendChild(removeBtn);
-
-    container.appendChild(div);
-    attachFieldListeners();
-};
-
 // =========================
 // Auto-save
 // =========================
@@ -2187,11 +2372,11 @@ function saveCurrentPrompt() {
     if (idx === -1) return;
 
     const prompt = window.prompts[idx];
-    prompt.name = document.getElementById('prompt-name')?.value || '';
+    prompt.name        = document.getElementById('prompt-name')?.value || '';
     prompt.description = document.getElementById('prompt-desc')?.value || '';
-    prompt.objective = document.getElementById('objective')?.value || '';
-    prompt.actor = document.getElementById('actor')?.value || '';
-    prompt.context = document.getElementById('context')?.value || '';
+    prompt.objective   = document.getElementById('objective')?.value || '';
+    prompt.actor       = document.getElementById('actor')?.value || '';
+    prompt.context     = document.getElementById('context')?.value || '';
 
     prompt.inputs = [];
     for (let i = 1; i <= window.inputCounter; i++) {
@@ -2237,39 +2422,6 @@ function attachFieldListeners() {
     });
 }
 
-</script>
-<script>
-function loadPromptsFromLocalStorage() {
-
-    try {
-        const data = localStorage.getItem('prompts');
-        if (data) {
-            const parsed = JSON.parse(data);
-            if (Array.isArray(parsed)) {
-                prompts = parsed;
-            }
-        }
-    } catch (e) {
-        console.warn('Failed to load prompts from localStorage:', e);
-    }
-}
-
-function savePromptsToLocalStorage() {
-    try {
-        localStorage.setItem('prompts', JSON.stringify(prompts));
-    } catch (e) {
-        console.warn('Failed to save prompts to localStorage:', e);
-    }
-}
-
-function resetPrompts() {
-    if (confirm('This will erase all your current prompts and restore the default set. Continue?')) {
-        localStorage.removeItem('prompts');
-        location.reload();
-    }
-}
-
-window.storageManager = { loadPromptsFromLocalStorage, savePromptsToLocalStorage, resetPrompts};
 </script>
 <script>
 window.preloadedPrompts = [
@@ -2377,199 +2529,110 @@ window.preloadedConfig = {
 
 </script>
 <script>
-// main/js/newApp.js
+// Prompt JSON generation and input history — depends on state.js, screens.js
+
+function generateViewPrompt() {
+    const prompt = prompts.find(p => p.id === currentPromptId);
+    if (!prompt) return;
+
+    const inputs = {};
+    prompt.inputs.forEach((i, idx) => {
+        const field = document.getElementById(`input-value-${idx}`);
+        inputs[i.name] = field ? field.value : '';
+    });
+
+    const outputProperties = {};
+    const requiredFields = [];
+    prompt.outputs.forEach(o => {
+        outputProperties[o.name] = { type: o.type, description: o.description || undefined };
+        requiredFields.push(o.name);
+    });
+
+    const promptJson = {};
+    if (prompt.objective) promptJson.objective = prompt.objective;
+    if (prompt.actor) promptJson.actor = prompt.actor;
+    if (prompt.context) promptJson.context = prompt.context;
+    if (Object.keys(inputs).length > 0) promptJson.input = inputs;
+    if (prompt.constraints.length > 0) promptJson.constraints = prompt.constraints;
+    promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };
+    if (prompt.success.length > 0) promptJson.success_criteria = prompt.success;
+
+    const outputExample = Object.keys(outputProperties).join(', ');
+    promptJson.output_instructions = outputExample
+        ? `Return only the output exactly as specified by the properties: ${outputExample}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`
+        : 'Return only the output exactly as specified by the defined properties. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array';
+
+    const outputEl = document.getElementById('view-output-json');
+    if (outputEl) outputEl.textContent = JSON.stringify(promptJson, null, 2);
+}
+window.generateViewPrompt = generateViewPrompt;
 
 // =========================
-// Storage (defined first so init() can call them)
+// Input History
 // =========================
-function loadTemplateGroupsFromStorage() {
-    const rawGroups = localStorage.getItem('templateGroups');
-    const rawHistory = localStorage.getItem('templateGroupHistory');
-    const rawCurrent = localStorage.getItem('currentTemplateGroup');
-    if (rawGroups) {
-        try {
-            environment.templateGroups = JSON.parse(rawGroups);
-            environment.history = rawHistory ? JSON.parse(rawHistory) : {};
-            currentTemplateGroup = rawCurrent || Object.keys(environment.templateGroups)[0] || 'Default';
-        } catch {
-            resetToPreloaded();
-        }
-    } else {
-        resetToPreloaded();
+function getPromptInputHistoryAll() {
+    const raw = localStorage.getItem('promptInputHistory');
+    if (!raw) return [];
+    try { return JSON.parse(raw); } catch { return []; }
+}
+
+function savePromptInputHistory(templateId, inputObj) {
+    if (!templateId || !inputObj) return;
+    if (Object.values(inputObj).every(v => !v)) return;
+    let history = getPromptInputHistoryAll();
+    history.unshift({ templateId, inputValues: inputObj });
+    localStorage.setItem('promptInputHistory', JSON.stringify(history.slice(0, 50)));
+}
+
+function getPromptInputHistory(templateId) {
+    return getPromptInputHistoryAll().filter(h => h.templateId === templateId).map(h => h.inputValues);
+}
+
+function renderHistoryList(promptId) {
+    const history = getPromptInputHistory(promptId);
+    const container = document.getElementById('history-list');
+    if (!container) return;
+    if (!history || history.length === 0) {
+        container.innerHTML = '<span style="color:#888;font-size:0.95em;">No input history for this prompt.</span>';
+        return;
     }
-}
-
-function saveTemplateGroupsToStorage() {
-    localStorage.setItem('templateGroups', JSON.stringify(environment.templateGroups));
-    localStorage.setItem('templateGroupHistory', JSON.stringify(environment.history));
-    localStorage.setItem('currentTemplateGroup', currentTemplateGroup);
-}
-
-function resetToPreloaded() {
-    environment.templateGroups = {
-        'Default': window.preloadedWorkspaces['Default'].templates,
-        'Jira': window.preloadedWorkspaces['Jira'].templates
-    };
-    environment.history = {};
-    currentTemplateGroup = 'Default';
-}
-
-window.savePromptsToLocalStorage = saveTemplateGroupsToStorage;
-window.loadPromptsFromLocalStorage = loadTemplateGroupsFromStorage;
-
-// =========================
-// State
-// =========================
-let prompts = [];
-let currentPromptId = null;
-let isCreatingNewPrompt = false;
-let inputCounter = 0;
-let constraintCounter = 0;
-let outputCounter = 0;
-let successCounter = 0;
-
-let environment = { templateGroups: {}, history: {} };
-let currentTemplateGroup = 'Default';
-
-// editPrompt.js reads/writes these via window.*
-window.prompts = prompts;
-window.currentPromptId = currentPromptId;
-window.inputCounter = inputCounter;
-window.constraintCounter = constraintCounter;
-window.outputCounter = outputCounter;
-window.successCounter = successCounter;
-
-function syncWindowState() {
-    window.prompts = prompts;
-    window.currentPromptId = currentPromptId;
-    window.inputCounter = inputCounter;
-    window.constraintCounter = constraintCounter;
-    window.outputCounter = outputCounter;
-    window.successCounter = successCounter;
-}
-
-// =========================
-// Utilities
-// =========================
-function normalizePrompt(prompt) {
-    if (Array.isArray(prompt.constraints)) {
-        prompt.constraints = prompt.constraints.map(c => typeof c === 'string' ? c : (c.rule || ''));
-    } else {
-        prompt.constraints = [];
-    }
-    if (Array.isArray(prompt.success)) {
-        prompt.success = prompt.success.map(s => typeof s === 'string' ? s : (s.criterion || ''));
-    } else {
-        prompt.success = [];
-    }
-    return prompt;
-}
-
-const SCREENS = ['view-screen', 'edit-screen', 'history-screen', 'output-screen', 'welcome-screen'];
-
-function switchToScreen(activeId) {
-    SCREENS.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        el.style.display = id === activeId ? 'block' : 'none';
-        el.classList.toggle('active', id === activeId);
+    const allFields = Array.from(new Set(history.flatMap(h => Object.keys(h))));
+    const jiraIdx = allFields.findIndex(f => f.toLowerCase().includes('jira text'));
+    container.style.setProperty('--history-cols', allFields.length + 1);
+    container.innerHTML = `
+        <div class="history-grid">
+            <div class="history-row history-header">
+                ${allFields.map(f => `<div class="history-cell history-header-cell${f.toLowerCase().includes('jira text') ? ' jira-text-cell' : ''}">${window.escapeHtml(f)}</div>`).join('')}
+                <div class="history-cell history-header-cell">Action</div>
+            </div>
+            ${history.map((h, idx) => `
+                <div class="history-row">
+                    ${allFields.map((f, i) => `<div class="history-cell${i === jiraIdx ? ' jira-text-cell' : ''}">${h[f] ? window.escapeHtml(h[f]) : '<em>(empty)</em>'}</div>`).join('')}
+                    <div class="history-cell"><button class="restore-btn" data-idx="${idx}">Restore</button></div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    container.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const selected = history[parseInt(btn.getAttribute('data-idx'))];
+            if (!selected) return;
+            showView();
+            Object.entries(selected).forEach(([k, v]) => {
+                const input = Array.from(document.querySelectorAll('[id^="input-value-"]')).find(el => {
+                    const label = el.previousElementSibling;
+                    return label && label.textContent.replace(':', '') === k;
+                });
+                if (input) input.value = v;
+            });
+            generateViewPrompt();
+        });
     });
 }
 
-function showChrome(visible) {
-    const infoDisplay = document.getElementById('info-display');
-    const tabsElem = document.getElementById('tabs');
-    const tabContent = document.querySelector('.tab-content');
-    const val = visible ? '' : 'none';
-    if (infoDisplay) infoDisplay.style.display = val;
-    if (tabsElem) tabsElem.style.display = val;
-    if (tabContent) tabContent.style.display = val;
-}
-
-function downloadJson(data, fileName) {
-    try {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } catch (err) {
-        alert('Download failed: ' + err.message);
-    }
-}
-
-function renderCheckboxGrid(container, items, idPrefix) {
-    container.innerHTML = items.map(item =>
-        `<div class="checkbox-row" style="display:flex;align-items:center;margin-bottom:6px;">
-            <input type="checkbox" id="${idPrefix}-${item.id}" value="${item.id}" style="margin-right:8px;" checked>
-            <label for="${idPrefix}-${item.id}" style="cursor:pointer;">${window.escapeHtml(item.name)}</label>
-        </div>`
-    ).join('');
-}
-
-// =========================
-// Initialization
-// =========================
-function init() {
-    loadTemplateGroupsFromStorage();
-    updateTemplateGroupDropdown();
-
-    const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
-    const defaultTemplateName = window.preloadedConfig?.defaultTemplate || 'Template Builder';
-
-    if (environment.templateGroups[defaultGroup]) {
-        currentTemplateGroup = defaultGroup;
-        prompts = environment.templateGroups[defaultGroup].map(normalizePrompt);
-        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
-        const startId = (defaultPrompt || prompts[0])?.id;
-        if (startId) {
-            currentPromptId = startId;
-            viewPrompt(currentPromptId);
-            setTabActive('Use Template');
-            showView();
-        } else {
-            showWelcome();
-        }
-    } else if (prompts.length > 0) {
-        currentPromptId = prompts[0].id;
-        viewPrompt(currentPromptId);
-        setTabActive('Use Template');
-        showView();
-    } else {
-        showWelcome();
-    }
-
-    syncWindowState();
-    renderPromptsList();
-}
-
-function initApp() {
-    init();
-    setupTabListeners();
-}
-
-// =========================
-// Prompt CRUD
-// =========================
-window.newPrompt = function () {
-    const newId = Date.now();
-    const newPromptObj = {
-        id: newId, name: '', description: '', objective: '',
-        actor: '', context: '', inputs: [], constraints: [], outputs: [], success: []
-    };
-    prompts.push(newPromptObj);
-    window.savePromptsToLocalStorage();
-    currentPromptId = newId;
-    isCreatingNewPrompt = false;
-    editPrompt(newId);
-    setTabActive('Edit');
-    renderPromptsList();
-    syncWindowState();
-};
+</script>
+<script>
+// Prompt CRUD, list rendering, view, and edit-form drag-drop — depends on state.js, screens.js, promptOutput.js
 
 function startBlankPrompt() {
     const newId = Date.now();
@@ -2582,7 +2645,6 @@ function startBlankPrompt() {
     prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
     window.savePromptsToLocalStorage();
     currentPromptId = newId;
-    isCreatingNewPrompt = false;
     editPrompt(newId);
     setTabActive('Edit');
     renderPromptsList();
@@ -2671,12 +2733,17 @@ function savePrompt() {
             environment.templateGroups[currentTemplateGroup].push(promptData);
         }
     }
-    isCreatingNewPrompt = false;
     window.savePromptsToLocalStorage();
     renderPromptsList();
     syncWindowState();
 }
 window.savePrompt = savePrompt;
+
+window.regenerateOutput = function () {
+    const editScreen = document.getElementById('edit-screen');
+    if (!editScreen || !editScreen.classList.contains('active')) return;
+    savePrompt();
+};
 
 function cancelEdit() {
     if (currentPromptId != null) viewPrompt(currentPromptId);
@@ -2684,9 +2751,6 @@ function cancelEdit() {
 }
 window.cancelEdit = cancelEdit;
 
-// =========================
-// UI Rendering
-// =========================
 function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
@@ -2732,19 +2796,6 @@ function renderPromptsList() {
     });
 }
 window.renderPromptsList = renderPromptsList;
-
-function clearForm() {
-    ['prompt-name', 'prompt-desc', 'objective', 'actor', 'context'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-    });
-    ['inputs-container', 'constraints-container', 'outputs-container', 'success-container'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.innerHTML = '';
-    });
-    inputCounter = constraintCounter = outputCounter = successCounter = 0;
-    syncWindowState();
-}
 
 function viewPrompt(id) {
     const prompt = prompts.find(p => p.id === id);
@@ -2823,216 +2874,10 @@ function makeFieldsSortable(containerId, itemClass) {
 window.makeInputsSortable = () => makeFieldsSortable('inputs-container', '.input-item');
 window.makeOutputsSortable = () => makeFieldsSortable('outputs-container', '.output-item');
 
-// =========================
-// Prompt Output Generation
-// =========================
-function generateViewPrompt() {
-    const prompt = prompts.find(p => p.id === currentPromptId);
-    if (!prompt) return;
+</script>
+<script>
+// Import / export and new-prompt modal — depends on state.js, promptCrud.js, utils.js
 
-    const inputs = {};
-    prompt.inputs.forEach((i, idx) => {
-        const field = document.getElementById(`input-value-${idx}`);
-        inputs[i.name] = field ? field.value : '';
-    });
-
-    const outputProperties = {};
-    const requiredFields = [];
-    prompt.outputs.forEach(o => {
-        outputProperties[o.name] = { type: o.type, description: o.description || undefined };
-        requiredFields.push(o.name);
-    });
-
-    const promptJson = {};
-    if (prompt.objective) promptJson.objective = prompt.objective;
-    if (prompt.actor) promptJson.actor = prompt.actor;
-    if (prompt.context) promptJson.context = prompt.context;
-    if (Object.keys(inputs).length > 0) promptJson.input = inputs;
-    if (prompt.constraints.length > 0) promptJson.constraints = prompt.constraints;
-    promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };
-    if (prompt.success.length > 0) promptJson.success_criteria = prompt.success;
-
-    const outputExample = Object.keys(outputProperties).join(', ');
-    promptJson.output_instructions = outputExample
-        ? `Return only the output exactly as specified by the properties: ${outputExample}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`
-        : 'Return only the output exactly as specified by the defined properties. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array';
-
-    const outputEl = document.getElementById('view-output-json');
-    if (outputEl) outputEl.textContent = JSON.stringify(promptJson, null, 2);
-}
-window.generateViewPrompt = generateViewPrompt;
-
-window.regenerateOutput = function () {
-    const editScreen = document.getElementById('edit-screen');
-    if (!editScreen || !editScreen.classList.contains('active')) return;
-
-    const objective = document.getElementById('objective')?.value || '';
-    const actor = document.getElementById('actor')?.value || '';
-    const context = document.getElementById('context')?.value || '';
-
-    const inputs = {};
-    document.querySelectorAll('[id^="input-name-"]').forEach(el => {
-        const name = el.value.trim();
-        const descEl = document.getElementById(`input-desc-${el.id.split('-')[2]}`);
-        if (name) inputs[name] = descEl ? descEl.value.trim() : '';
-    });
-
-    const constraints = [];
-    document.querySelectorAll('[id^="constraint-text-"]').forEach(el => {
-        if (el.value.trim()) constraints.push(el.value.trim());
-    });
-
-    const success = [];
-    document.querySelectorAll('[id^="success-text-"]').forEach(el => {
-        if (el.value.trim()) success.push(el.value.trim());
-    });
-
-    const outputs = {};
-    const requiredFields = [];
-    document.querySelectorAll('[id^="output-name-"]').forEach(el => {
-        const name = el.value.trim();
-        const typeEl = document.getElementById(`output-type-${el.id.split('-')[2]}`);
-        const descEl = document.getElementById(`output-desc-${el.id.split('-')[2]}`);
-        if (name) {
-            outputs[name] = { type: typeEl ? typeEl.value.trim() || 'string' : 'string', description: descEl ? descEl.value.trim() || undefined : undefined };
-            requiredFields.push(name);
-        }
-    });
-
-    const prompt = {};
-    if (objective) prompt.objective = objective;
-    if (actor) prompt.actor = actor;
-    if (context) prompt.context = context;
-    if (Object.keys(inputs).length > 0) prompt.input = inputs;
-    if (constraints.length > 0) prompt.constraints = constraints;
-    prompt.output_schema = { type: 'object', properties: outputs, required: requiredFields };
-    if (success.length > 0) prompt.success_criteria = success;
-    prompt.output_instructions = `Return only the output exactly as specified by the properties: ${Object.keys(outputs).join(', ')}. Do not include any extra prose, comments, or code fences.`;
-
-    const outputEl = document.getElementById('generated-output');
-    if (outputEl) outputEl.textContent = JSON.stringify(prompt, null, 2);
-
-    const viewScreen = document.getElementById('view-screen');
-    if (viewScreen && viewScreen.classList.contains('active')) generateViewPrompt();
-
-    savePrompt();
-};
-
-// =========================
-// Tab and Screen Management
-// =========================
-function setTabActive(tabName) {
-    document.querySelectorAll('#tabs button').forEach(btn => {
-        btn.classList.toggle('active', btn.textContent.trim() === tabName);
-    });
-}
-window.setTabActive = setTabActive;
-
-function showView() {
-    setTabActive('Use Template');
-    switchToScreen('view-screen');
-    showChrome(true);
-}
-window.showView = showView;
-
-function showEdit() {
-    setTabActive('Edit Template');
-    switchToScreen('edit-screen');
-    showChrome(true);
-}
-window.showEdit = showEdit;
-
-function showHistory() {
-    setTabActive('Template History');
-    switchToScreen('history-screen');
-    showChrome(true);
-    renderHistoryList(currentPromptId);
-}
-window.showHistory = showHistory;
-
-function showPromptOutput() {
-    setTabActive('Show Prompt');
-    switchToScreen('output-screen');
-    showChrome(true);
-}
-window.showPromptOutput = showPromptOutput;
-
-function showWelcome() {
-    showChrome(false);
-    const welcomeScreen = document.getElementById('welcome-screen');
-    if (welcomeScreen) {
-        welcomeScreen.style.display = 'block';
-        welcomeScreen.classList.add('active');
-    }
-}
-window.showWelcome = showWelcome;
-
-// =========================
-// Input History
-// =========================
-function getPromptInputHistoryAll() {
-    const raw = localStorage.getItem('promptInputHistory');
-    if (!raw) return [];
-    try { return JSON.parse(raw); } catch { return []; }
-}
-
-function savePromptInputHistory(templateId, inputObj) {
-    if (!templateId || !inputObj) return;
-    if (Object.values(inputObj).every(v => !v)) return;
-    let history = getPromptInputHistoryAll();
-    history.unshift({ templateId, inputValues: inputObj });
-    localStorage.setItem('promptInputHistory', JSON.stringify(history.slice(0, 50)));
-}
-
-function getPromptInputHistory(templateId) {
-    return getPromptInputHistoryAll().filter(h => h.templateId === templateId).map(h => h.inputValues);
-}
-
-function renderHistoryList(promptId) {
-    const history = getPromptInputHistory(promptId);
-    const container = document.getElementById('history-list');
-    if (!container) return;
-    if (!history || history.length === 0) {
-        container.innerHTML = '<span style="color:#888;font-size:0.95em;">No input history for this prompt.</span>';
-        return;
-    }
-    const allFields = Array.from(new Set(history.flatMap(h => Object.keys(h))));
-    const jiraIdx = allFields.findIndex(f => f.toLowerCase().includes('jira text'));
-    container.style.setProperty('--history-cols', allFields.length + 1);
-    container.innerHTML = `
-        <div class="history-grid">
-            <div class="history-row history-header">
-                ${allFields.map(f => `<div class="history-cell history-header-cell${f.toLowerCase().includes('jira text') ? ' jira-text-cell' : ''}">${window.escapeHtml(f)}</div>`).join('')}
-                <div class="history-cell history-header-cell">Action</div>
-            </div>
-            ${history.map((h, idx) => `
-                <div class="history-row">
-                    ${allFields.map((f, i) => `<div class="history-cell${i === jiraIdx ? ' jira-text-cell' : ''}">${h[f] ? window.escapeHtml(h[f]) : '<em>(empty)</em>'}</div>`).join('')}
-                    <div class="history-cell"><button class="restore-btn" data-idx="${idx}">Restore</button></div>
-                </div>
-            `).join('')}
-        </div>
-    `;
-    container.querySelectorAll('.restore-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const selected = history[parseInt(btn.getAttribute('data-idx'))];
-            if (!selected) return;
-            showView();
-            Object.entries(selected).forEach(([k, v]) => {
-                const input = Array.from(document.querySelectorAll('[id^="input-value-"]')).find(el => {
-                    const label = el.previousElementSibling;
-                    return label && label.textContent.replace(':', '') === k;
-                });
-                if (input) input.value = v;
-            });
-            generateViewPrompt();
-        });
-    });
-}
-
-// =========================
-// Import / Export
-// =========================
 window.exportPrompts = function () {
     if (prompts.length === 0) { alert('No prompts to export'); return; }
     showExportModal();
@@ -3207,9 +3052,10 @@ function setupNewPromptModal() {
     }
 }
 
-// =========================
-// Template Group Management
-// =========================
+</script>
+<script>
+// Template group management, workspace save/load, app-bar menu — depends on state.js, storage.js, screens.js, promptCrud.js
+
 function updateTemplateGroupDropdown() {
     const dropdown = document.getElementById('template-group-dropdown');
     if (!dropdown) return;
@@ -3363,9 +3209,6 @@ function setupTemplateGroupHandlers() {
     }
 }
 
-// =========================
-// Workspace Save / Load
-// =========================
 function setupWorkspaceHandlers() {
     const saveBtn = document.getElementById('save-workspace-btn');
     if (saveBtn) {
@@ -3438,9 +3281,6 @@ function setupWorkspaceHandlers() {
     }
 }
 
-// =========================
-// App Bar Overflow Menu
-// =========================
 function setupAppBarMenu() {
     const kebabBtn = document.getElementById('app-bar-kebab');
     const menu = document.getElementById('app-bar-menu');
@@ -3481,9 +3321,43 @@ function setupAppBarMenu() {
     if (menuReset) menuReset.style.display = 'none';
 }
 
-// =========================
-// Tab Setup
-// =========================
+</script>
+<script>
+// App entry point — wires all modules together and starts the app
+
+function init() {
+    loadTemplateGroupsFromStorage();
+    updateTemplateGroupDropdown();
+
+    const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
+    const defaultTemplateName = window.preloadedConfig?.defaultTemplate || 'Template Builder';
+
+    if (environment.templateGroups[defaultGroup]) {
+        currentTemplateGroup = defaultGroup;
+        prompts = environment.templateGroups[defaultGroup].map(normalizePrompt);
+        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
+        const startId = (defaultPrompt || prompts[0])?.id;
+        if (startId) {
+            currentPromptId = startId;
+            viewPrompt(currentPromptId);
+            setTabActive('Use Template');
+            showView();
+        } else {
+            showWelcome();
+        }
+    } else if (prompts.length > 0) {
+        currentPromptId = prompts[0].id;
+        viewPrompt(currentPromptId);
+        setTabActive('Use Template');
+        showView();
+    } else {
+        showWelcome();
+    }
+
+    syncWindowState();
+    renderPromptsList();
+}
+
 function setupTabListeners() {
     const editTabBtn = document.getElementById('tab-edit');
     if (editTabBtn) {
@@ -3494,18 +3368,15 @@ function setupTabListeners() {
     }
 }
 
-// =========================
-// App Startup
-// =========================
 function startApp() {
-    initApp();
+    init();
+    setupTabListeners();
 
     const saveBtn = document.getElementById('save-prompt');
     if (saveBtn) saveBtn.addEventListener('click', savePrompt);
     const cancelBtn = document.getElementById('cancel-edit');
     if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
 
-    // Tab buttons (onclick attrs removed from HTML, wired here)
     const viewTabBtn = document.getElementById('tab-view');
     if (viewTabBtn) viewTabBtn.addEventListener('click', () => { if (currentPromptId) showView(); });
     const historyTabBtn = document.getElementById('tab-history');
@@ -3548,7 +3419,6 @@ function startApp() {
         });
     }
 
-    // Copy modal close
     const closeCopyModal = document.getElementById('close-copy-modal');
     const copyModal = document.getElementById('copy-modal');
     if (closeCopyModal) closeCopyModal.addEventListener('click', () => { if (copyModal) copyModal.style.display = 'none'; });
@@ -3570,7 +3440,6 @@ function startApp() {
     const blankPromptBtn = document.getElementById('blank-prompt-btn');
     if (blankPromptBtn) blankPromptBtn.addEventListener('click', startBlankPrompt);
 
-    // File import
     const importFile = document.getElementById('import-file');
     if (importFile) importFile.addEventListener('change', handleImport);
 
