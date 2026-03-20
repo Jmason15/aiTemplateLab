@@ -1,5 +1,21 @@
-// Prompt CRUD, list rendering, view, and edit-form drag-drop — depends on state.js, screens.js, promptOutput.js
+/**
+ * @fileoverview Prompt CRUD operations, sidebar list rendering, view population,
+ * and drag-and-drop reordering for the edit form.
+ *
+ * Data model note: prompts are stored in two places simultaneously:
+ *   - `prompts[]`  — the flat working array for the current group
+ *   - `environment.templateGroups[currentTemplateGroup][]` — the authoritative
+ *     source that gets persisted to localStorage
+ * Both must be kept in sync; every mutation writes to both then calls
+ * savePromptsToLocalStorage() and syncWindowState().
+ *
+ * Load order: depends on state.js, screens.js, and promptOutput.js.
+ */
 
+/**
+ * Creates a new blank prompt in the current template group and opens it
+ * in the edit form.
+ */
 function startBlankPrompt() {
     const newId = Date.now();
     const newPromptObj = {
@@ -11,13 +27,18 @@ function startBlankPrompt() {
     prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
     window.savePromptsToLocalStorage();
     currentPromptId = newId;
-    editPrompt(newId);
+    editPrompt(newId); // defined in editPrompt.js
     setTabActive('Edit');
     renderPromptsList();
     syncWindowState();
 }
 window.startBlankPrompt = startBlankPrompt;
 
+/**
+ * Removes a prompt from the current template group by ID.
+ * After deletion, opens the first remaining prompt or the welcome screen.
+ * @param {number} id - The prompt's id.
+ */
 function deletePrompt(id) {
     if (environment.templateGroups[currentTemplateGroup]) {
         environment.templateGroups[currentTemplateGroup] =
@@ -38,11 +59,20 @@ function deletePrompt(id) {
     syncWindowState();
 }
 
+/**
+ * Reads all edit-form field values from the DOM and saves them to the
+ * in-memory prompt array and localStorage.
+ *
+ * Uses querySelectorAll with ID-prefix patterns rather than the counter
+ * variables so that deleted fields are automatically skipped — only elements
+ * still present in the DOM get saved.
+ */
 function savePrompt() {
     const nameEl = document.getElementById('prompt-name');
     const descEl = document.getElementById('prompt-desc');
     if (!nameEl || !descEl) return;
 
+    // Collect inputs — only rows where the name field has a value.
     const inputs = [];
     document.querySelectorAll('[id^="input-name-"]').forEach(el => {
         const fieldName = el.value.trim();
@@ -56,6 +86,7 @@ function savePrompt() {
         if (el.value.trim()) constraints.push(el.value.trim());
     });
 
+    // Collect outputs — default type to 'string' if the field is blank.
     const outputs = [];
     document.querySelectorAll('[id^="output-name-"]').forEach(el => {
         const fieldName = el.value.trim();
@@ -84,6 +115,7 @@ function savePrompt() {
         inputs, constraints, outputs, success
     };
 
+    // Update both the flat prompts array and the authoritative templateGroups entry.
     const idx = prompts.findIndex(p => p.id === currentPromptId);
     if (idx !== -1) {
         prompts[idx] = promptData;
@@ -93,6 +125,7 @@ function savePrompt() {
             if (gIdx !== -1) group[gIdx] = promptData;
         }
     } else {
+        // New prompt not yet in the array (edge case).
         prompts.push(promptData);
         currentPromptId = promptData.id;
         if (environment.templateGroups[currentTemplateGroup]) {
@@ -105,18 +138,31 @@ function savePrompt() {
 }
 window.savePrompt = savePrompt;
 
+/**
+ * Called by editPrompt.js on every field input event to auto-save.
+ * Guards against running when the edit screen is not visible (e.g. during
+ * initial page load when events fire before the screen is shown).
+ */
 window.regenerateOutput = function () {
     const editScreen = document.getElementById('edit-screen');
     if (!editScreen || !editScreen.classList.contains('active')) return;
     savePrompt();
 };
 
+/**
+ * Cancels the current edit and returns to the view screen.
+ * If no prompt was previously open, falls back to the welcome screen.
+ */
 function cancelEdit() {
     if (currentPromptId != null) viewPrompt(currentPromptId);
     else showWelcome();
 }
 window.cancelEdit = cancelEdit;
 
+/**
+ * Re-renders the sidebar prompt list for the current template group.
+ * Highlights the active prompt and wires click and drag-to-reorder events.
+ */
 function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
@@ -133,6 +179,8 @@ function renderPromptsList() {
         item.addEventListener('click', () => viewPrompt(parseInt(item.getAttribute('data-id'))));
     });
 
+    // Drag-to-reorder: track the source index in draggedIdx, then splice
+    // the item into its new position on drop and persist immediately.
     let draggedIdx = null;
     container.querySelectorAll('.prompt-tile').forEach(item => {
         item.addEventListener('dragstart', e => {
@@ -163,12 +211,18 @@ function renderPromptsList() {
 }
 window.renderPromptsList = renderPromptsList;
 
+/**
+ * Populates the view screen with a prompt's data and regenerates its output JSON.
+ * Also updates the sidebar selection highlight.
+ * @param {number} id - The prompt's id.
+ */
 function viewPrompt(id) {
     const prompt = prompts.find(p => p.id === id);
     if (!prompt) return;
     currentPromptId = id;
 
     showChrome(true);
+    // Hide the welcome screen in case it was showing.
     const welcomeScreen = document.getElementById('welcome-screen');
     if (welcomeScreen) { welcomeScreen.style.display = 'none'; welcomeScreen.classList.remove('active'); }
 
@@ -177,6 +231,7 @@ function viewPrompt(id) {
     if (viewName) viewName.textContent = prompt.name;
     if (viewDesc) viewDesc.textContent = prompt.description;
 
+    // Build the collapsible metadata block (objective / actor / context).
     const meta = [];
     if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
     if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
@@ -184,6 +239,7 @@ function viewPrompt(id) {
     const viewMeta = document.getElementById('view-meta');
     if (viewMeta) viewMeta.innerHTML = meta.join('');
 
+    // Render input fields as labelled textareas. Each change regenerates the output JSON.
     const inputsContainer = document.getElementById('view-inputs');
     if (inputsContainer) {
         if (prompt.inputs.length === 0) {
@@ -207,6 +263,11 @@ function viewPrompt(id) {
     syncWindowState();
 }
 
+/**
+ * Removes a dynamic field card from the edit form by element ID,
+ * then triggers an auto-save so the deletion is persisted.
+ * @param {string} id - The element ID of the card to remove.
+ */
 function removeElement(id) {
     const el = document.getElementById(id);
     if (el) { el.remove(); regenerateOutput(); }
@@ -216,6 +277,14 @@ window.removeElement = removeElement;
 // =========================
 // Drag-and-Drop (Edit Form Fields)
 // =========================
+
+/**
+ * Attaches drag-and-drop reordering to all items matching itemClass inside
+ * a container. Uses live DOM insertion (insertBefore) for a smooth drag feel.
+ * Triggers regenerateOutput on dragend so the new order is persisted.
+ * @param {string} containerId - The container element's ID.
+ * @param {string} itemClass - CSS selector for draggable child items.
+ */
 function makeFieldsSortable(containerId, itemClass) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -232,6 +301,7 @@ function makeFieldsSortable(containerId, itemClass) {
         item.addEventListener('dragover', e => {
             e.preventDefault();
             if (!dragged || dragged === item) return;
+            // Insert before or after the target based on cursor position.
             const before = e.clientY < item.getBoundingClientRect().top + item.getBoundingClientRect().height / 2;
             container.insertBefore(dragged, before ? item : item.nextSibling);
         });

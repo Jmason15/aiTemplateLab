@@ -1910,6 +1910,16 @@ input[type="text"] {
     });
 </script>
 <script>
+/**
+ * @fileoverview Shared utility functions available to all scripts.
+ * Must be the first JS file loaded.
+ */
+
+/**
+ * Escapes a string for safe insertion into HTML to prevent XSS.
+ * @param {string} text - Raw user-supplied string.
+ * @returns {string} HTML-escaped string.
+ */
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
@@ -1917,6 +1927,11 @@ function escapeHtml(text) {
 }
 window.escapeHtml = escapeHtml;
 
+/**
+ * Serializes data as JSON and triggers a file download in the browser.
+ * @param {*} data - Any JSON-serializable value.
+ * @param {string} fileName - Suggested filename for the download.
+ */
 function downloadJson(data, fileName) {
     try {
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1933,6 +1948,13 @@ function downloadJson(data, fileName) {
     }
 }
 
+/**
+ * Renders a list of items as labelled checkboxes (all checked by default)
+ * into a container element. Used by the import and export modals.
+ * @param {HTMLElement} container - The element to render into.
+ * @param {Array<{id: *, name: string}>} items - Items to render.
+ * @param {string} idPrefix - Prefix for checkbox element IDs to avoid collisions.
+ */
 function renderCheckboxGrid(container, items, idPrefix) {
     container.innerHTML = items.map(item =>
         `<div class="checkbox-row">
@@ -1944,19 +1966,41 @@ function renderCheckboxGrid(container, items, idPrefix) {
 
 </script>
 <script>
-// Shared application state — must load before all other app scripts
+/**
+ * @fileoverview Shared application state and normalization helpers.
+ *
+ * All mutable state lives here as plain `let` variables so every other script
+ * in the same global scope can read and write them directly. After any mutation,
+ * call syncWindowState() so that editPrompt.js (which runs in the same scope
+ * but was written to read from window.*) sees the latest values.
+ *
+ * Load order: must be first after utils.js.
+ */
 
+// Active prompt list for the currently selected template group.
 let prompts = [];
+
+// ID of the prompt currently open in the view/edit tabs. null = none selected.
 let currentPromptId = null;
+
+// Counters track the highest DOM element ID issued for each dynamic field type
+// in the edit form. They only increment — never reset between edits — so IDs
+// remain unique even after items are deleted and re-added.
 let inputCounter = 0;
 let constraintCounter = 0;
 let outputCounter = 0;
 let successCounter = 0;
 
+// Top-level data container.
+// templateGroups: { [groupName]: prompt[] }
+// history:        { [groupName]: inputHistory[] }
 let environment = { templateGroups: {}, history: {} };
+
+// Name of the template group currently shown in the sidebar.
 let currentTemplateGroup = 'Default';
 
-// editPrompt.js reads/writes these via window.*
+// Mirror initial values onto window so editPrompt.js can reference them
+// before the first syncWindowState() call.
 window.prompts = prompts;
 window.currentPromptId = currentPromptId;
 window.inputCounter = inputCounter;
@@ -1964,6 +2008,11 @@ window.constraintCounter = constraintCounter;
 window.outputCounter = outputCounter;
 window.successCounter = successCounter;
 
+/**
+ * Copies all mutable state variables onto window so that editPrompt.js,
+ * which reads/writes via window.*, stays in sync after any state mutation.
+ * Call this at the end of any function that changes the variables above.
+ */
 function syncWindowState() {
     window.prompts = prompts;
     window.currentPromptId = currentPromptId;
@@ -1973,6 +2022,15 @@ function syncWindowState() {
     window.successCounter = successCounter;
 }
 
+/**
+ * Ensures a prompt's constraints and success arrays contain only strings.
+ * Older saved data and some imported prompts may have stored these fields
+ * as objects (e.g. { rule: '...' } or { criterion: '...' }) — this
+ * flattens them to plain strings so the rest of the app can treat them
+ * uniformly.
+ * @param {Object} prompt - A prompt object (mutated in place).
+ * @returns {Object} The same prompt object, normalised.
+ */
 function normalizePrompt(prompt) {
     if (Array.isArray(prompt.constraints)) {
         prompt.constraints = prompt.constraints.map(c => typeof c === 'string' ? c : (c.rule || ''));
@@ -1989,8 +2047,26 @@ function normalizePrompt(prompt) {
 
 </script>
 <script>
-// Template group persistence — depends on state.js
+/**
+ * @fileoverview Persistence layer for template groups and input history.
+ *
+ * All user data is stored in localStorage under three keys:
+ *   'templateGroups'       — the full { [groupName]: prompt[] } map
+ *   'templateGroupHistory' — per-group input history
+ *   'currentTemplateGroup' — name of the last active group
+ *
+ * window.savePromptsToLocalStorage and window.loadPromptsFromLocalStorage
+ * are the names editPrompt.js calls, aliased here to the real functions.
+ *
+ * Load order: depends on state.js (uses environment, currentTemplateGroup).
+ * preloadedPrompts data (window.preloadedWorkspaces) must be available before
+ * resetToPreloaded() is called — guaranteed by script load order in index.html.
+ */
 
+/**
+ * Loads template groups from localStorage into the environment object.
+ * Falls back to the built-in preloaded data if storage is empty or corrupted.
+ */
 function loadTemplateGroupsFromStorage() {
     const rawGroups = localStorage.getItem('templateGroups');
     const rawHistory = localStorage.getItem('templateGroupHistory');
@@ -1999,39 +2075,66 @@ function loadTemplateGroupsFromStorage() {
         try {
             environment.templateGroups = JSON.parse(rawGroups);
             environment.history = rawHistory ? JSON.parse(rawHistory) : {};
+            // Use the last active group, fall back to the first available, then 'Default'.
             currentTemplateGroup = rawCurrent || Object.keys(environment.templateGroups)[0] || 'Default';
         } catch {
+            // Corrupted data — start fresh from preloaded defaults.
             resetToPreloaded();
         }
     } else {
+        // First run — no data in storage yet.
         resetToPreloaded();
     }
 }
 
+/**
+ * Persists the current environment state to localStorage.
+ */
 function saveTemplateGroupsToStorage() {
     localStorage.setItem('templateGroups', JSON.stringify(environment.templateGroups));
     localStorage.setItem('templateGroupHistory', JSON.stringify(environment.history));
     localStorage.setItem('currentTemplateGroup', currentTemplateGroup);
 }
 
+/**
+ * Resets environment to the preloaded workspace data defined in
+ * main/config/workspaces.json and main/Prompts/*.json (inlined at build time).
+ * Called on first run or when localStorage data is unreadable.
+ */
 function resetToPreloaded() {
-    environment.templateGroups = {
-        'Default': window.preloadedWorkspaces['Default'].templates,
-        'Jira': window.preloadedWorkspaces['Jira'].templates
-    };
+    environment.templateGroups = {};
+    for (const [name, workspace] of Object.entries(window.preloadedWorkspaces)) {
+        environment.templateGroups[name] = workspace.templates;
+    }
     environment.history = {};
-    currentTemplateGroup = 'Default';
+    currentTemplateGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
 }
 
+// Alias to the names editPrompt.js expects on window.
 window.savePromptsToLocalStorage = saveTemplateGroupsToStorage;
 window.loadPromptsFromLocalStorage = loadTemplateGroupsFromStorage;
 
 </script>
 <script>
-// Screen and tab switching — depends on state.js
+/**
+ * @fileoverview Screen and tab switching, chrome visibility, and form clearing.
+ *
+ * "Chrome" refers to the info bar and tab strip that appear above the main
+ * content area whenever a prompt is selected. They are hidden on the welcome
+ * screen where no prompt is active.
+ *
+ * Load order: depends on state.js. Referenced by promptOutput.js (renderHistoryList
+ * calls showView) so must load before promptOutput.js.
+ */
 
+/** All content panel IDs managed by switchToScreen. */
 const SCREENS = ['view-screen', 'edit-screen', 'history-screen', 'output-screen', 'welcome-screen'];
 
+/**
+ * Shows one screen and hides all others. Also sets the `active` CSS class
+ * so CSS rules can style the visible panel.
+ * @param {string} activeId - The element ID of the screen to show.
+ */
 function switchToScreen(activeId) {
     SCREENS.forEach(id => {
         const el = document.getElementById(id);
@@ -2041,6 +2144,11 @@ function switchToScreen(activeId) {
     });
 }
 
+/**
+ * Shows or hides the info bar and tab strip above the main content area.
+ * Pass false when showing the welcome screen (no prompt selected).
+ * @param {boolean} visible
+ */
 function showChrome(visible) {
     const infoDisplay = document.getElementById('info-display');
     const tabsElem = document.getElementById('tabs');
@@ -2051,6 +2159,11 @@ function showChrome(visible) {
     if (tabContent) tabContent.style.display = val;
 }
 
+/**
+ * Marks the tab button whose text matches tabName as active,
+ * clearing the active state from all other tab buttons.
+ * @param {string} tabName - Exact text content of the tab button to activate.
+ */
 function setTabActive(tabName) {
     document.querySelectorAll('#tabs button').forEach(btn => {
         btn.classList.toggle('active', btn.textContent.trim() === tabName);
@@ -2058,6 +2171,7 @@ function setTabActive(tabName) {
 }
 window.setTabActive = setTabActive;
 
+/** Switches to the Use Template (view) screen. */
 function showView() {
     setTabActive('Use Template');
     switchToScreen('view-screen');
@@ -2065,6 +2179,7 @@ function showView() {
 }
 window.showView = showView;
 
+/** Switches to the Edit Template screen. */
 function showEdit() {
     setTabActive('Edit Template');
     switchToScreen('edit-screen');
@@ -2072,14 +2187,19 @@ function showEdit() {
 }
 window.showEdit = showEdit;
 
+/**
+ * Switches to the Template History screen and re-renders the history list
+ * for the currently active prompt.
+ */
 function showHistory() {
     setTabActive('Template History');
     switchToScreen('history-screen');
     showChrome(true);
-    renderHistoryList(currentPromptId);
+    renderHistoryList(currentPromptId); // defined in promptOutput.js
 }
 window.showHistory = showHistory;
 
+/** Switches to the Output screen. */
 function showPromptOutput() {
     setTabActive('Output');
     switchToScreen('output-screen');
@@ -2087,6 +2207,10 @@ function showPromptOutput() {
 }
 window.showPromptOutput = showPromptOutput;
 
+/**
+ * Shows the welcome screen and hides the chrome.
+ * Displayed when no prompt is selected (empty workspace or after deletion).
+ */
 function showWelcome() {
     showChrome(false);
     const welcomeScreen = document.getElementById('welcome-screen');
@@ -2097,6 +2221,10 @@ function showWelcome() {
 }
 window.showWelcome = showWelcome;
 
+/**
+ * Clears all edit-form fields and resets the dynamic field counters.
+ * Called when opening a blank new prompt form with no existing prompt loaded.
+ */
 function clearForm() {
     ['prompt-name', 'prompt-desc', 'objective', 'actor', 'context'].forEach(id => {
         const el = document.getElementById(id);
@@ -2113,15 +2241,36 @@ function clearForm() {
 </script>
 <script>
 /**
- * @fileoverview Edit form — dynamic field management and auto-save
+ * @fileoverview Edit form — dynamic field management and auto-save.
+ *
+ * This file manages the edit screen UI: populating it when a prompt is opened
+ * for editing, adding/removing dynamic field cards (inputs, outputs, constraints,
+ * success criteria), and auto-saving changes to localStorage as the user types.
+ *
+ * Auto-save flow:
+ *   User types → attachFieldListeners debounces → saveCurrentPrompt() →
+ *   savePromptsToLocalStorage() + renderPromptsList() + regenerateOutput()
+ *
+ * Note on window.*: this file reads/writes state via window.* (e.g.
+ * window.inputCounter) because it was written independently of state.js.
+ * syncWindowState() in state.js keeps both in sync.
+ *
+ * Load order: depends on state.js and screens.js.
  */
 
-// Shared SVG for all delete buttons
+/** Inline SVG used for all delete buttons to avoid repeating markup. */
 const DELETE_BTN_SVG = `<svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 8V15M10 8V15M14 8V15M3 5H17M8 5V3H12V5" stroke="#b91c1c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="4" y="7" width="12" height="9" rx="2" stroke="#b91c1c" stroke-width="1.5"/></svg>`;
 
 // =========================
 // Edit Form Population
 // =========================
+
+/**
+ * Populates the edit form with a prompt's current values and switches to the
+ * edit screen. Clears all dynamic field containers and counters first so
+ * stale fields from a previous edit session are not left behind.
+ * @param {number} id - The ID of the prompt to edit.
+ */
 function editPrompt(id) {
     const prompt = prompts.find(p => p.id === id);
     if (!prompt) {
@@ -2131,31 +2280,36 @@ function editPrompt(id) {
 
     window.currentPromptId = id;
 
+    // Clear all dynamic field containers before repopulating.
     document.getElementById('inputs-container').innerHTML = '';
     document.getElementById('constraints-container').innerHTML = '';
     document.getElementById('outputs-container').innerHTML = '';
     document.getElementById('success-container').innerHTML = '';
 
+    // Reset counters so new field IDs start from 1.
     window.inputCounter = 0;
     window.constraintCounter = 0;
     window.outputCounter = 0;
     window.successCounter = 0;
 
+    // Populate static fields.
     document.getElementById('prompt-name').value = prompt.name;
     document.getElementById('prompt-desc').value = prompt.description;
     document.getElementById('objective').value = prompt.objective;
     document.getElementById('actor').value = prompt.actor;
     document.getElementById('context').value = prompt.context;
 
+    // Populate dynamic field cards.
     prompt.inputs.forEach(i => addInput(i.name, i.description));
     prompt.constraints.forEach(c => addConstraint(c));
-    // Preloaded prompts use `example`, saved prompts use `description` — accept both
+    // Preloaded prompts use `example`; saved prompts use `description` — accept both.
     prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description || o.example || ''));
     prompt.success.forEach(s => addSuccess(s));
 
     window.showEdit();
     window.setTabActive('Edit Template');
 
+    // Defer listener attachment so all DOM insertions above are complete first.
     setTimeout(attachFieldListeners, 0);
 }
 window.editPrompt = editPrompt;
@@ -2163,6 +2317,13 @@ window.editPrompt = editPrompt;
 // =========================
 // Dynamic Field Management
 // =========================
+
+/**
+ * Appends a new input field card (name + description) to the inputs container.
+ * Each card gets a unique numeric suffix ID and is made draggable for reordering.
+ * @param {string} [name=''] - Pre-fill value for the field name input.
+ * @param {string} [description=''] - Pre-fill value for the description textarea.
+ */
 window.addInput = function (name = '', description = '') {
     window.inputCounter++;
     const container = document.getElementById('inputs-container');
@@ -2217,7 +2378,18 @@ window.addInput = function (name = '', description = '') {
     attachFieldListeners();
 };
 
-// Shared helper for single-textarea fields (constraint and success are identical in structure)
+/**
+ * Shared builder for single-textarea field cards (constraints and success criteria
+ * have identical DOM structure, differing only in labels and IDs).
+ * @param {Object} opts
+ * @param {string} opts.counterKey    - window property name for this field's counter.
+ * @param {string} opts.containerId   - ID of the container element.
+ * @param {string} opts.itemClass     - CSS class added to the card div.
+ * @param {string} opts.itemPrefix    - Prefix used for element IDs (e.g. 'constraint').
+ * @param {string} opts.placeholder   - Textarea placeholder text.
+ * @param {string} opts.deleteLabel   - Accessible label for the delete button.
+ * @param {string} opts.value         - Pre-fill value for the textarea.
+ */
 function addTextareaField({ counterKey, containerId, itemClass, itemPrefix, placeholder, deleteLabel, value }) {
     window[counterKey]++;
     const id = window[counterKey];
@@ -2246,6 +2418,7 @@ function addTextareaField({ counterKey, containerId, itemClass, itemPrefix, plac
     attachFieldListeners();
 }
 
+/** Appends a new constraint card. @param {string} [text=''] Pre-fill value. */
 window.addConstraint = function (text = '') {
     addTextareaField({
         counterKey: 'constraintCounter',
@@ -2258,6 +2431,7 @@ window.addConstraint = function (text = '') {
     });
 };
 
+/** Appends a new success criterion card. @param {string} [text=''] Pre-fill value. */
 window.addSuccess = function (text = '') {
     addTextareaField({
         counterKey: 'successCounter',
@@ -2270,6 +2444,12 @@ window.addSuccess = function (text = '') {
     });
 };
 
+/**
+ * Appends a new output field card (name + type + description) to the outputs container.
+ * @param {string} [name='']        - Property name.
+ * @param {string} [type='string']  - Data type (e.g. 'string', 'markdown', 'JSON').
+ * @param {string} [description=''] - Example or description text.
+ */
 window.addOutput = function (name = '', type = 'string', description = '') {
     window.outputCounter++;
     const container = document.getElementById('outputs-container');
@@ -2341,6 +2521,15 @@ window.addOutput = function (name = '', type = 'string', description = '') {
 // =========================
 // Auto-save
 // =========================
+
+/**
+ * Returns a debounced version of fn that delays execution until delay ms
+ * have passed since the last call. Prevents saveCurrentPrompt from firing
+ * on every keypress.
+ * @param {Function} fn
+ * @param {number} delay - Milliseconds.
+ * @returns {Function}
+ */
 function debounce(fn, delay) {
     let timer = null;
     return function (...args) {
@@ -2352,6 +2541,11 @@ function debounce(fn, delay) {
 const debouncedSaveCurrentPrompt = debounce(saveCurrentPrompt, 200);
 
 let saveIndicatorTimeout;
+
+/**
+ * Briefly shows the "All changes saved" indicator, then fades it out.
+ * The indicator element is created on demand and reused on subsequent calls.
+ */
 function showSaveIndicator() {
     let indicator = document.getElementById('save-indicator');
     if (!indicator) {
@@ -2366,6 +2560,15 @@ function showSaveIndicator() {
     saveIndicatorTimeout = setTimeout(() => { indicator.style.opacity = '0'; }, 1200);
 }
 
+/**
+ * Reads the current edit form state and writes it directly onto the prompt
+ * object in window.prompts, then persists to localStorage.
+ *
+ * Uses window.inputCounter (and other counters) to iterate field IDs rather
+ * than querySelectorAll, because fields may have been deleted and their
+ * elements removed from the DOM — the counter tells us the highest ID ever
+ * issued, and we skip any that are missing.
+ */
 function saveCurrentPrompt() {
     if (window.currentPromptId == null || !window.prompts) return;
     const idx = window.prompts.findIndex(p => p.id === window.currentPromptId);
@@ -2412,6 +2615,12 @@ function saveCurrentPrompt() {
     showSaveIndicator();
 }
 
+/**
+ * Attaches the debounced save handler to every input and textarea in the edit
+ * screen. Called after each dynamic field is added so new fields are covered.
+ * Removes the previous handler before re-adding to avoid duplicate listeners
+ * accumulating across multiple calls.
+ */
 function attachFieldListeners() {
     const editScreen = document.getElementById('edit-screen');
     if (!editScreen) return;
@@ -2611,18 +2820,46 @@ window.preloadedConfig = {
 
 </script>
 <script>
-// Prompt JSON generation and input history — depends on state.js, screens.js
+/**
+ * @fileoverview Prompt JSON generation and input history.
+ *
+ * generateViewPrompt() reads the current prompt's stored data plus any values
+ * the user has typed into the input fields, then builds a structured JSON
+ * object that can be copied and pasted directly into an AI tool.
+ *
+ * Input history is saved to localStorage each time the user copies output,
+ * capped at 50 entries, and displayed in the Template History tab.
+ *
+ * Load order: depends on state.js and screens.js.
+ */
 
+/**
+ * Builds the prompt JSON from the active prompt's stored definition and the
+ * current values in the view-screen input fields, then writes it to the
+ * output textarea (#view-output-json).
+ *
+ * Output shape:
+ * {
+ *   objective, actor, context,   // from stored prompt (omitted if empty)
+ *   input: { fieldName: value }, // from user-filled text areas
+ *   constraints: [...],
+ *   output_schema: { type, properties, required },
+ *   success_criteria: [...],
+ *   output_instructions: '...'   // injected instruction for the AI
+ * }
+ */
 function generateViewPrompt() {
     const prompt = prompts.find(p => p.id === currentPromptId);
     if (!prompt) return;
 
+    // Collect current values from the dynamic input textareas.
     const inputs = {};
     prompt.inputs.forEach((i, idx) => {
         const field = document.getElementById(`input-value-${idx}`);
         inputs[i.name] = field ? field.value : '';
     });
 
+    // Build the output_schema from the prompt's output definitions.
     const outputProperties = {};
     const requiredFields = [];
     prompt.outputs.forEach(o => {
@@ -2630,6 +2867,7 @@ function generateViewPrompt() {
         requiredFields.push(o.name);
     });
 
+    // Assemble the final JSON, omitting empty top-level fields.
     const promptJson = {};
     if (prompt.objective) promptJson.objective = prompt.objective;
     if (prompt.actor) promptJson.actor = prompt.actor;
@@ -2639,6 +2877,8 @@ function generateViewPrompt() {
     promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };
     if (prompt.success.length > 0) promptJson.success_criteria = prompt.success;
 
+    // Append an output instruction that names the expected properties so the
+    // AI knows exactly what to return without extra prose.
     const outputExample = Object.keys(outputProperties).join(', ');
     promptJson.output_instructions = outputExample
         ? `Return only the output exactly as specified by the properties: ${outputExample}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`
@@ -2652,12 +2892,25 @@ window.generateViewPrompt = generateViewPrompt;
 // =========================
 // Input History
 // =========================
+
+/**
+ * Returns all stored input history entries across all prompts.
+ * Each entry is { templateId, inputValues: { fieldName: value } }.
+ * @returns {Array}
+ */
 function getPromptInputHistoryAll() {
     const raw = localStorage.getItem('promptInputHistory');
     if (!raw) return [];
     try { return JSON.parse(raw); } catch { return []; }
 }
 
+/**
+ * Saves a set of input values to history for a given template.
+ * Skips saving if all values are empty (user copied without filling anything in).
+ * History is capped at 50 entries, newest first.
+ * @param {*} templateId - The prompt's id.
+ * @param {Object} inputObj - Map of field name to value.
+ */
 function savePromptInputHistory(templateId, inputObj) {
     if (!templateId || !inputObj) return;
     if (Object.values(inputObj).every(v => !v)) return;
@@ -2666,10 +2919,22 @@ function savePromptInputHistory(templateId, inputObj) {
     localStorage.setItem('promptInputHistory', JSON.stringify(history.slice(0, 50)));
 }
 
+/**
+ * Returns all history entries for a specific template.
+ * @param {*} templateId
+ * @returns {Array<Object>} Array of inputValues objects.
+ */
 function getPromptInputHistory(templateId) {
     return getPromptInputHistoryAll().filter(h => h.templateId === templateId).map(h => h.inputValues);
 }
 
+/**
+ * Renders the input history table for a prompt into #history-list.
+ * Columns are derived from the union of all field names seen across history
+ * entries so the table handles prompts whose inputs changed over time.
+ * Each row has a Restore button that repopulates the view-screen inputs.
+ * @param {*} promptId
+ */
 function renderHistoryList(promptId) {
     const history = getPromptInputHistory(promptId);
     const container = document.getElementById('history-list');
@@ -2678,7 +2943,10 @@ function renderHistoryList(promptId) {
         container.innerHTML = '<span style="color:#888;font-size:0.95em;">No input history for this prompt.</span>';
         return;
     }
+
+    // Build column list from all unique field names across every history entry.
     const allFields = Array.from(new Set(history.flatMap(h => Object.keys(h))));
+    // Give the Jira text column extra width via CSS — it tends to be long.
     const jiraIdx = allFields.findIndex(f => f.toLowerCase().includes('jira text'));
     container.style.setProperty('--history-cols', allFields.length + 1);
     container.innerHTML = `
@@ -2695,11 +2963,13 @@ function renderHistoryList(promptId) {
             `).join('')}
         </div>
     `;
+
     container.querySelectorAll('.restore-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const selected = history[parseInt(btn.getAttribute('data-idx'))];
             if (!selected) return;
             showView();
+            // Match each saved field value back to its textarea by label text.
             Object.entries(selected).forEach(([k, v]) => {
                 const input = Array.from(document.querySelectorAll('[id^="input-value-"]')).find(el => {
                     const label = el.previousElementSibling;
@@ -2714,8 +2984,24 @@ function renderHistoryList(promptId) {
 
 </script>
 <script>
-// Prompt CRUD, list rendering, view, and edit-form drag-drop — depends on state.js, screens.js, promptOutput.js
+/**
+ * @fileoverview Prompt CRUD operations, sidebar list rendering, view population,
+ * and drag-and-drop reordering for the edit form.
+ *
+ * Data model note: prompts are stored in two places simultaneously:
+ *   - `prompts[]`  — the flat working array for the current group
+ *   - `environment.templateGroups[currentTemplateGroup][]` — the authoritative
+ *     source that gets persisted to localStorage
+ * Both must be kept in sync; every mutation writes to both then calls
+ * savePromptsToLocalStorage() and syncWindowState().
+ *
+ * Load order: depends on state.js, screens.js, and promptOutput.js.
+ */
 
+/**
+ * Creates a new blank prompt in the current template group and opens it
+ * in the edit form.
+ */
 function startBlankPrompt() {
     const newId = Date.now();
     const newPromptObj = {
@@ -2727,13 +3013,18 @@ function startBlankPrompt() {
     prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
     window.savePromptsToLocalStorage();
     currentPromptId = newId;
-    editPrompt(newId);
+    editPrompt(newId); // defined in editPrompt.js
     setTabActive('Edit');
     renderPromptsList();
     syncWindowState();
 }
 window.startBlankPrompt = startBlankPrompt;
 
+/**
+ * Removes a prompt from the current template group by ID.
+ * After deletion, opens the first remaining prompt or the welcome screen.
+ * @param {number} id - The prompt's id.
+ */
 function deletePrompt(id) {
     if (environment.templateGroups[currentTemplateGroup]) {
         environment.templateGroups[currentTemplateGroup] =
@@ -2754,11 +3045,20 @@ function deletePrompt(id) {
     syncWindowState();
 }
 
+/**
+ * Reads all edit-form field values from the DOM and saves them to the
+ * in-memory prompt array and localStorage.
+ *
+ * Uses querySelectorAll with ID-prefix patterns rather than the counter
+ * variables so that deleted fields are automatically skipped — only elements
+ * still present in the DOM get saved.
+ */
 function savePrompt() {
     const nameEl = document.getElementById('prompt-name');
     const descEl = document.getElementById('prompt-desc');
     if (!nameEl || !descEl) return;
 
+    // Collect inputs — only rows where the name field has a value.
     const inputs = [];
     document.querySelectorAll('[id^="input-name-"]').forEach(el => {
         const fieldName = el.value.trim();
@@ -2772,6 +3072,7 @@ function savePrompt() {
         if (el.value.trim()) constraints.push(el.value.trim());
     });
 
+    // Collect outputs — default type to 'string' if the field is blank.
     const outputs = [];
     document.querySelectorAll('[id^="output-name-"]').forEach(el => {
         const fieldName = el.value.trim();
@@ -2800,6 +3101,7 @@ function savePrompt() {
         inputs, constraints, outputs, success
     };
 
+    // Update both the flat prompts array and the authoritative templateGroups entry.
     const idx = prompts.findIndex(p => p.id === currentPromptId);
     if (idx !== -1) {
         prompts[idx] = promptData;
@@ -2809,6 +3111,7 @@ function savePrompt() {
             if (gIdx !== -1) group[gIdx] = promptData;
         }
     } else {
+        // New prompt not yet in the array (edge case).
         prompts.push(promptData);
         currentPromptId = promptData.id;
         if (environment.templateGroups[currentTemplateGroup]) {
@@ -2821,18 +3124,31 @@ function savePrompt() {
 }
 window.savePrompt = savePrompt;
 
+/**
+ * Called by editPrompt.js on every field input event to auto-save.
+ * Guards against running when the edit screen is not visible (e.g. during
+ * initial page load when events fire before the screen is shown).
+ */
 window.regenerateOutput = function () {
     const editScreen = document.getElementById('edit-screen');
     if (!editScreen || !editScreen.classList.contains('active')) return;
     savePrompt();
 };
 
+/**
+ * Cancels the current edit and returns to the view screen.
+ * If no prompt was previously open, falls back to the welcome screen.
+ */
 function cancelEdit() {
     if (currentPromptId != null) viewPrompt(currentPromptId);
     else showWelcome();
 }
 window.cancelEdit = cancelEdit;
 
+/**
+ * Re-renders the sidebar prompt list for the current template group.
+ * Highlights the active prompt and wires click and drag-to-reorder events.
+ */
 function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
@@ -2849,6 +3165,8 @@ function renderPromptsList() {
         item.addEventListener('click', () => viewPrompt(parseInt(item.getAttribute('data-id'))));
     });
 
+    // Drag-to-reorder: track the source index in draggedIdx, then splice
+    // the item into its new position on drop and persist immediately.
     let draggedIdx = null;
     container.querySelectorAll('.prompt-tile').forEach(item => {
         item.addEventListener('dragstart', e => {
@@ -2879,12 +3197,18 @@ function renderPromptsList() {
 }
 window.renderPromptsList = renderPromptsList;
 
+/**
+ * Populates the view screen with a prompt's data and regenerates its output JSON.
+ * Also updates the sidebar selection highlight.
+ * @param {number} id - The prompt's id.
+ */
 function viewPrompt(id) {
     const prompt = prompts.find(p => p.id === id);
     if (!prompt) return;
     currentPromptId = id;
 
     showChrome(true);
+    // Hide the welcome screen in case it was showing.
     const welcomeScreen = document.getElementById('welcome-screen');
     if (welcomeScreen) { welcomeScreen.style.display = 'none'; welcomeScreen.classList.remove('active'); }
 
@@ -2893,6 +3217,7 @@ function viewPrompt(id) {
     if (viewName) viewName.textContent = prompt.name;
     if (viewDesc) viewDesc.textContent = prompt.description;
 
+    // Build the collapsible metadata block (objective / actor / context).
     const meta = [];
     if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
     if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
@@ -2900,6 +3225,7 @@ function viewPrompt(id) {
     const viewMeta = document.getElementById('view-meta');
     if (viewMeta) viewMeta.innerHTML = meta.join('');
 
+    // Render input fields as labelled textareas. Each change regenerates the output JSON.
     const inputsContainer = document.getElementById('view-inputs');
     if (inputsContainer) {
         if (prompt.inputs.length === 0) {
@@ -2923,6 +3249,11 @@ function viewPrompt(id) {
     syncWindowState();
 }
 
+/**
+ * Removes a dynamic field card from the edit form by element ID,
+ * then triggers an auto-save so the deletion is persisted.
+ * @param {string} id - The element ID of the card to remove.
+ */
 function removeElement(id) {
     const el = document.getElementById(id);
     if (el) { el.remove(); regenerateOutput(); }
@@ -2932,6 +3263,14 @@ window.removeElement = removeElement;
 // =========================
 // Drag-and-Drop (Edit Form Fields)
 // =========================
+
+/**
+ * Attaches drag-and-drop reordering to all items matching itemClass inside
+ * a container. Uses live DOM insertion (insertBefore) for a smooth drag feel.
+ * Triggers regenerateOutput on dragend so the new order is persisted.
+ * @param {string} containerId - The container element's ID.
+ * @param {string} itemClass - CSS selector for draggable child items.
+ */
 function makeFieldsSortable(containerId, itemClass) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -2948,6 +3287,7 @@ function makeFieldsSortable(containerId, itemClass) {
         item.addEventListener('dragover', e => {
             e.preventDefault();
             if (!dragged || dragged === item) return;
+            // Insert before or after the target based on cursor position.
             const before = e.clientY < item.getBoundingClientRect().top + item.getBoundingClientRect().height / 2;
             container.insertBefore(dragged, before ? item : item.nextSibling);
         });
@@ -2958,13 +3298,33 @@ window.makeOutputsSortable = () => makeFieldsSortable('outputs-container', '.out
 
 </script>
 <script>
-// Import / export and new-prompt modal — depends on state.js, promptCrud.js, utils.js
+/**
+ * @fileoverview Import / export of prompt templates and the JSON import modal.
+ *
+ * Export: opens a modal where the user selects which prompts to download as JSON.
+ * File import: reads a JSON file from disk, deduplicates against existing prompts
+ *   by ID, then opens a confirmation modal before adding.
+ * JSON import modal: lets the user paste a raw JSON prompt definition directly
+ *   into a textarea instead of uploading a file.
+ *
+ * Load order: depends on state.js, promptCrud.js, and utils.js.
+ */
 
+/**
+ * Entry point for the Export button. Opens the export modal if there are
+ * prompts to export.
+ */
 window.exportPrompts = function () {
     if (prompts.length === 0) { alert('No prompts to export'); return; }
     showExportModal();
 };
 
+/**
+ * Populates and shows the export modal. The user selects which prompts to
+ * include via checkboxes, then clicks Download to trigger a JSON file download.
+ * onclick handlers are reassigned each time the modal opens to avoid
+ * stacking duplicate listeners.
+ */
 function showExportModal() {
     const modal = document.getElementById('export-modal');
     const grid = document.getElementById('export-template-grid');
@@ -2988,10 +3348,17 @@ function showExportModal() {
     modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 }
 
+/** Triggers the hidden file input to open the OS file picker. */
 window.importPrompts = function () {
     document.getElementById('import-file').click();
 };
 
+/**
+ * Handles the file-input change event after the user selects a JSON file.
+ * Parses the file, checks for duplicates, and opens the import confirmation
+ * modal. Resets the file input so the same file can be re-selected later.
+ * @param {Event} event - The file input change event.
+ */
 function handleImport(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -2999,6 +3366,7 @@ function handleImport(event) {
     reader.onload = function (e) {
         try {
             const loaded = JSON.parse(e.target.result);
+            // Accept either a single object or an array.
             const allTemplates = Array.isArray(loaded) ? loaded : [loaded];
             const existingIds = new Set(prompts.map(p => p.id));
             const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
@@ -3012,9 +3380,15 @@ function handleImport(event) {
         }
     };
     reader.readAsText(file);
+    // Reset so selecting the same file again fires the change event.
     event.target.value = '';
 }
 
+/**
+ * Populates and shows the import confirmation modal.
+ * @param {Array} templates - New prompts not yet in the library (shown with checkboxes).
+ * @param {Array} allTemplates - Full list from the file (used to show already-imported names).
+ */
 function showImportModal(templates, allTemplates) {
     const modal = document.getElementById('import-modal');
     const grid = document.getElementById('import-template-grid');
@@ -3025,6 +3399,7 @@ function showImportModal(templates, allTemplates) {
     errorDiv.style.display = 'none';
     const existingIds = new Set(prompts.map(p => p.id));
     const duplicates = (allTemplates || []).filter(t => t.id && existingIds.has(t.id));
+    // Show which prompts from the file are already present.
     alreadyGrid.innerHTML = duplicates.length > 0
         ? `<strong>Already imported:</strong><ul style="margin:0.3em 0 0.7em 1.2em;">${duplicates.map(t => `<li>${window.escapeHtml(t.name)}</li>`).join('')}</ul>`
         : '';
@@ -3064,6 +3439,11 @@ function showImportModal(templates, allTemplates) {
     modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 }
 
+/**
+ * Imports prompts from a parsed JSON value (object or array).
+ * Called by the JSON import modal after the user pastes and confirms.
+ * @param {Object|Array} json - A single prompt object or array of prompt objects.
+ */
 function importPromptFromJson(json) {
     let importedPrompts = Array.isArray(json) ? json : (typeof json === 'object' && json !== null ? [json] : null);
     if (!importedPrompts) { alert('Invalid JSON: Must be a prompt object or array of prompt objects'); return; }
@@ -3086,8 +3466,13 @@ function importPromptFromJson(json) {
 window.importPromptFromJson = importPromptFromJson;
 
 // =========================
-// New Prompt Modal (JSON Import)
+// New Prompt Modal (JSON paste import)
 // =========================
+
+/**
+ * Opens the JSON import modal and focuses the textarea.
+ * The small setTimeout ensures focus works after the display change.
+ */
 function openNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     if (!modal) return;
@@ -3097,6 +3482,7 @@ function openNewPromptModal() {
 }
 window.openNewPromptModal = openNewPromptModal;
 
+/** Closes the JSON import modal and clears its textarea and error message. */
 function closeNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     if (!modal) return;
@@ -3108,6 +3494,10 @@ function closeNewPromptModal() {
 }
 window.closeNewPromptModal = closeNewPromptModal;
 
+/**
+ * Wires the confirm / cancel buttons and backdrop-click / Escape behaviour
+ * for the JSON import modal. Called once during app startup.
+ */
 function setupNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     const cancelBtn = document.getElementById('new-prompt-cancel');
@@ -3136,8 +3526,22 @@ function setupNewPromptModal() {
 
 </script>
 <script>
-// Template group management, workspace save/load, app-bar menu — depends on state.js, storage.js, screens.js, promptCrud.js
+/**
+ * @fileoverview Template group management, workspace save/load, and app-bar overflow menu.
+ *
+ * Terminology:
+ *   Workspace     — the full environment: all template groups + their history,
+ *                   saved/loaded as a single JSON file.
+ *   Template group — a named collection of prompts (e.g. "Default", "Jira").
+ *                   Users can create, rename, save, load, and delete groups.
+ *
+ * Load order: depends on state.js, storage.js, screens.js, and promptCrud.js.
+ */
 
+/**
+ * Rebuilds the template group <select> dropdown from environment.templateGroups
+ * and ensures the currently active group is selected.
+ */
 function updateTemplateGroupDropdown() {
     const dropdown = document.getElementById('template-group-dropdown');
     if (!dropdown) return;
@@ -3148,6 +3552,10 @@ function updateTemplateGroupDropdown() {
     dropdown.disabled = false;
 }
 
+/**
+ * Opens the Create Template Group modal with a blank name field.
+ * Also called from the app-bar overflow menu.
+ */
 function openCreateGroupModal() {
     const modal = document.getElementById('create-template-group-modal');
     const nameInput = document.getElementById('create-template-group-name');
@@ -3158,7 +3566,14 @@ function openCreateGroupModal() {
     modal.style.display = 'flex';
 }
 
+/**
+ * Wires all template group UI interactions:
+ *   - Dropdown change (switch active group)
+ *   - Save / Load / Create / Delete group modals and their confirm/cancel buttons
+ * Called once during app startup.
+ */
 function setupTemplateGroupHandlers() {
+    // Switch active group when the dropdown changes.
     const dropdown = document.getElementById('template-group-dropdown');
     if (dropdown) {
         dropdown.addEventListener('change', function () {
@@ -3178,7 +3593,7 @@ function setupTemplateGroupHandlers() {
         });
     }
 
-    // Save Template Group
+    // Save Template Group — exports one group to a JSON file.
     const saveBtn = document.getElementById('save-template-group-btn');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
@@ -3190,6 +3605,7 @@ function setupTemplateGroupHandlers() {
                 `<option value="${name}">${name}</option>`).join('');
             select.value = currentTemplateGroup;
             filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0, 10)}.json`;
+            // Update suggested filename when the group selection changes.
             select.onchange = () => { filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0, 10)}.json`; };
             modal.style.display = 'flex';
         });
@@ -3209,7 +3625,7 @@ function setupTemplateGroupHandlers() {
     }
     if (saveCancel) saveCancel.addEventListener('click', () => { document.getElementById('save-template-group-modal').style.display = 'none'; });
 
-    // Load Template Group
+    // Load Template Group — imports a group file saved by the above.
     const loadBtn = document.getElementById('load-template-group-btn');
     if (loadBtn) loadBtn.addEventListener('click', () => document.getElementById('load-template-group-file').click());
     const loadFile = document.getElementById('load-template-group-file');
@@ -3234,7 +3650,7 @@ function setupTemplateGroupHandlers() {
         });
     }
 
-    // Create Template Group
+    // Create Template Group — adds a new empty group.
     const createBtn = document.getElementById('create-template-group-btn');
     if (createBtn) createBtn.addEventListener('click', openCreateGroupModal);
     const createConfirm = document.getElementById('create-template-group-confirm');
@@ -3266,7 +3682,8 @@ function setupTemplateGroupHandlers() {
         });
     }
 
-    // Delete Template Group
+    // Delete Template Group — guarded: cannot delete the active group or
+    // the last remaining group.
     const deleteConfirm = document.getElementById('delete-template-group-confirm');
     const deleteCancel = document.getElementById('delete-template-group-cancel');
     if (deleteConfirm) {
@@ -3291,6 +3708,13 @@ function setupTemplateGroupHandlers() {
     }
 }
 
+/**
+ * Wires the workspace save and load buttons.
+ * Save: downloads the full environment (all groups + history) as one JSON file.
+ * Load: replaces the entire environment from a previously saved workspace file.
+ *       Shows a warning modal first because this overwrites all current data.
+ * Called once during app startup.
+ */
 function setupWorkspaceHandlers() {
     const saveBtn = document.getElementById('save-workspace-btn');
     if (saveBtn) {
@@ -3309,12 +3733,14 @@ function setupWorkspaceHandlers() {
             const filenameInput = document.getElementById('save-workspace-filename');
             let fileName = filenameInput.value.trim() || `workspace-${new Date().toISOString().slice(0, 10)}.json`;
             if (!fileName.endsWith('.json')) fileName += '.json';
+            // Include currentTemplateGroup so the workspace reopens on the same group.
             downloadJson({ templateGroups: environment.templateGroups, history: environment.history, currentTemplateGroup }, fileName);
             document.getElementById('save-workspace-modal').style.display = 'none';
         });
     }
     if (saveCancel) saveCancel.addEventListener('click', () => { document.getElementById('save-workspace-modal').style.display = 'none'; });
 
+    // Load — shows a destructive-action warning before opening the file picker.
     const loadBtn = document.getElementById('load-workspace-btn');
     if (loadBtn) {
         loadBtn.addEventListener('click', () => {
@@ -3363,6 +3789,13 @@ function setupWorkspaceHandlers() {
     }
 }
 
+/**
+ * Wires the app-bar kebab (⋮) overflow menu.
+ * Menu items proxy their actions through the hidden sidebar buttons so all
+ * logic stays in setupTemplateGroupHandlers / setupWorkspaceHandlers.
+ * Closes on outside click.
+ * Called once during app startup.
+ */
 function setupAppBarMenu() {
     const kebabBtn = document.getElementById('app-bar-kebab');
     const menu = document.getElementById('app-bar-menu');
@@ -3371,10 +3804,13 @@ function setupAppBarMenu() {
     const toggleMenu = () => { menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
     kebabBtn.addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
     kebabBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggleMenu(); });
+    // Close when clicking anywhere outside the menu.
     document.addEventListener('click', e => {
         if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== kebabBtn) menu.style.display = 'none';
     });
 
+    // Map menu item IDs to their actions. Most just click the equivalent
+    // sidebar button so the handler only lives in one place.
     const menuActions = {
         'menu-save-workspace': () => document.getElementById('save-workspace-btn').click(),
         'menu-load-workspace': () => document.getElementById('load-workspace-btn').click(),
@@ -3399,24 +3835,42 @@ function setupAppBarMenu() {
         if (btn) btn.addEventListener('click', () => { menu.style.display = 'none'; action(); });
     });
 
+    // Reset button kept hidden for now — may be re-enabled in a future release.
     const menuReset = document.getElementById('menu-reset-templates');
     if (menuReset) menuReset.style.display = 'none';
 }
 
 </script>
 <script>
-// App entry point — wires all modules together and starts the app
+/**
+ * @fileoverview App entry point — initializes state and wires all UI events.
+ *
+ * Startup sequence:
+ *   1. loadTemplateGroupsFromStorage() — restore saved data (or load preloaded defaults)
+ *   2. Open the default workspace and prompt defined in config/workspaces.json
+ *   3. Wire every button, tab, and modal to its handler
+ *
+ * This file depends on every other script being already loaded.
+ * It must be the last JS file in the load order.
+ */
 
+/**
+ * Initializes the app state and opens the starting prompt.
+ * Falls back gracefully if the configured default workspace or template
+ * does not exist in storage.
+ */
 function init() {
     loadTemplateGroupsFromStorage();
     updateTemplateGroupDropdown();
 
+    // Prefer the defaults from config/workspaces.json, fall back to safe values.
     const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
     const defaultTemplateName = window.preloadedConfig?.defaultTemplate || 'Template Builder';
 
     if (environment.templateGroups[defaultGroup]) {
         currentTemplateGroup = defaultGroup;
         prompts = environment.templateGroups[defaultGroup].map(normalizePrompt);
+        // Open the named default template, or the first template if not found.
         const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
         const startId = (defaultPrompt || prompts[0])?.id;
         if (startId) {
@@ -3428,6 +3882,7 @@ function init() {
             showWelcome();
         }
     } else if (prompts.length > 0) {
+        // Default group not found but there are prompts — open the first one.
         currentPromptId = prompts[0].id;
         viewPrompt(currentPromptId);
         setTabActive('Use Template');
@@ -3440,25 +3895,39 @@ function init() {
     renderPromptsList();
 }
 
+/**
+ * Wires the Edit Template tab button.
+ * Separated from startApp so it can be called after init() without
+ * being entangled with the full button-wiring pass.
+ */
 function setupTabListeners() {
     const editTabBtn = document.getElementById('tab-edit');
     if (editTabBtn) {
         editTabBtn.addEventListener('click', function () {
+            // Open the current prompt in edit mode, or show a blank form if none is selected.
             if (currentPromptId) editPrompt(currentPromptId);
             else { clearForm(); showEdit(); }
         });
     }
 }
 
+/**
+ * Full app startup: runs init(), wires all buttons and modals, then
+ * delegates to the setup functions in workspaceManager.js and importExport.js.
+ * Called immediately at the bottom of this file.
+ */
 function startApp() {
     init();
     setupTabListeners();
 
+    // Edit form action buttons.
     const saveBtn = document.getElementById('save-prompt');
     if (saveBtn) saveBtn.addEventListener('click', savePrompt);
     const cancelBtn = document.getElementById('cancel-edit');
     if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
 
+    // Main tab buttons (Use Template / Template History / Output).
+    // Edit Template is handled by setupTabListeners above.
     const viewTabBtn = document.getElementById('tab-view');
     if (viewTabBtn) viewTabBtn.addEventListener('click', () => { if (currentPromptId) showView(); });
     const historyTabBtn = document.getElementById('tab-history');
@@ -3466,7 +3935,7 @@ function startApp() {
     const outputTabBtn = document.getElementById('tab-output');
     if (outputTabBtn) outputTabBtn.addEventListener('click', () => { if (currentPromptId) showPromptOutput(); });
 
-    // Delete modal
+    // Delete prompt — confirmation modal before destructive action.
     const deleteBtn = document.getElementById('delete-prompt');
     const deleteModal = document.getElementById('delete-modal');
     const confirmDeleteBtn = document.getElementById('confirm-delete-prompt');
@@ -3481,18 +3950,21 @@ function startApp() {
         deleteModal.addEventListener('click', e => { if (e.target === deleteModal) deleteModal.style.display = 'none'; });
     }
 
-    // Copy button
+    // Copy button — saves current inputs to history, copies JSON to clipboard,
+    // and shows a confirmation modal.
     const copyBtn = document.getElementById('copy-view-output');
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
             const prompt = prompts.find(p => p.id === currentPromptId);
             if (!prompt) return;
+            // Collect current input values to record in history.
             const inputs = {};
             prompt.inputs.forEach((i, idx) => {
                 const field = document.getElementById(`input-value-${idx}`);
                 inputs[i.name] = field ? field.value : '';
             });
             savePromptInputHistory(prompt.id, inputs);
+            // Refresh the history tab if it's currently visible.
             const historyScreen = document.getElementById('history-screen');
             if (historyScreen && historyScreen.classList.contains('active')) renderHistoryList(prompt.id);
             const pre = document.getElementById('view-output-json');
@@ -3501,12 +3973,13 @@ function startApp() {
         });
     }
 
+    // Copy confirmation modal.
     const closeCopyModal = document.getElementById('close-copy-modal');
     const copyModal = document.getElementById('copy-modal');
     if (closeCopyModal) closeCopyModal.addEventListener('click', () => { if (copyModal) copyModal.style.display = 'none'; });
     if (copyModal) copyModal.addEventListener('click', e => { if (e.target === copyModal) copyModal.style.display = 'none'; });
 
-    // Add field buttons
+    // Add field buttons in the edit form (inputs / constraints / outputs / success).
     const addInputBtn = document.getElementById('add-input');
     if (addInputBtn) addInputBtn.addEventListener('click', () => { if (window.addInput) window.addInput(); });
     const addConstraintBtn = document.getElementById('add-constraint');
@@ -3516,12 +3989,13 @@ function startApp() {
     const addSuccessBtn = document.getElementById('add-success');
     if (addSuccessBtn) addSuccessBtn.addEventListener('click', () => { if (window.addSuccess) window.addSuccess(); });
 
-    // Sidebar buttons
+    // Sidebar action buttons.
     const importJsonBtn = document.getElementById('import-json-btn');
     if (importJsonBtn) importJsonBtn.addEventListener('click', openNewPromptModal);
     const blankPromptBtn = document.getElementById('blank-prompt-btn');
     if (blankPromptBtn) blankPromptBtn.addEventListener('click', startBlankPrompt);
 
+    // Hidden file input for JSON template import.
     const importFile = document.getElementById('import-file');
     if (importFile) importFile.addEventListener('change', handleImport);
 

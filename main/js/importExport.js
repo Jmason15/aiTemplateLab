@@ -1,10 +1,30 @@
-// Import / export and new-prompt modal — depends on state.js, promptCrud.js, utils.js
+/**
+ * @fileoverview Import / export of prompt templates and the JSON import modal.
+ *
+ * Export: opens a modal where the user selects which prompts to download as JSON.
+ * File import: reads a JSON file from disk, deduplicates against existing prompts
+ *   by ID, then opens a confirmation modal before adding.
+ * JSON import modal: lets the user paste a raw JSON prompt definition directly
+ *   into a textarea instead of uploading a file.
+ *
+ * Load order: depends on state.js, promptCrud.js, and utils.js.
+ */
 
+/**
+ * Entry point for the Export button. Opens the export modal if there are
+ * prompts to export.
+ */
 window.exportPrompts = function () {
     if (prompts.length === 0) { alert('No prompts to export'); return; }
     showExportModal();
 };
 
+/**
+ * Populates and shows the export modal. The user selects which prompts to
+ * include via checkboxes, then clicks Download to trigger a JSON file download.
+ * onclick handlers are reassigned each time the modal opens to avoid
+ * stacking duplicate listeners.
+ */
 function showExportModal() {
     const modal = document.getElementById('export-modal');
     const grid = document.getElementById('export-template-grid');
@@ -28,10 +48,17 @@ function showExportModal() {
     modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 }
 
+/** Triggers the hidden file input to open the OS file picker. */
 window.importPrompts = function () {
     document.getElementById('import-file').click();
 };
 
+/**
+ * Handles the file-input change event after the user selects a JSON file.
+ * Parses the file, checks for duplicates, and opens the import confirmation
+ * modal. Resets the file input so the same file can be re-selected later.
+ * @param {Event} event - The file input change event.
+ */
 function handleImport(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -39,6 +66,7 @@ function handleImport(event) {
     reader.onload = function (e) {
         try {
             const loaded = JSON.parse(e.target.result);
+            // Accept either a single object or an array.
             const allTemplates = Array.isArray(loaded) ? loaded : [loaded];
             const existingIds = new Set(prompts.map(p => p.id));
             const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
@@ -52,9 +80,15 @@ function handleImport(event) {
         }
     };
     reader.readAsText(file);
+    // Reset so selecting the same file again fires the change event.
     event.target.value = '';
 }
 
+/**
+ * Populates and shows the import confirmation modal.
+ * @param {Array} templates - New prompts not yet in the library (shown with checkboxes).
+ * @param {Array} allTemplates - Full list from the file (used to show already-imported names).
+ */
 function showImportModal(templates, allTemplates) {
     const modal = document.getElementById('import-modal');
     const grid = document.getElementById('import-template-grid');
@@ -65,6 +99,7 @@ function showImportModal(templates, allTemplates) {
     errorDiv.style.display = 'none';
     const existingIds = new Set(prompts.map(p => p.id));
     const duplicates = (allTemplates || []).filter(t => t.id && existingIds.has(t.id));
+    // Show which prompts from the file are already present.
     alreadyGrid.innerHTML = duplicates.length > 0
         ? `<strong>Already imported:</strong><ul style="margin:0.3em 0 0.7em 1.2em;">${duplicates.map(t => `<li>${window.escapeHtml(t.name)}</li>`).join('')}</ul>`
         : '';
@@ -104,6 +139,11 @@ function showImportModal(templates, allTemplates) {
     modal.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 }
 
+/**
+ * Imports prompts from a parsed JSON value (object or array).
+ * Called by the JSON import modal after the user pastes and confirms.
+ * @param {Object|Array} json - A single prompt object or array of prompt objects.
+ */
 function importPromptFromJson(json) {
     let importedPrompts = Array.isArray(json) ? json : (typeof json === 'object' && json !== null ? [json] : null);
     if (!importedPrompts) { alert('Invalid JSON: Must be a prompt object or array of prompt objects'); return; }
@@ -126,8 +166,13 @@ function importPromptFromJson(json) {
 window.importPromptFromJson = importPromptFromJson;
 
 // =========================
-// New Prompt Modal (JSON Import)
+// New Prompt Modal (JSON paste import)
 // =========================
+
+/**
+ * Opens the JSON import modal and focuses the textarea.
+ * The small setTimeout ensures focus works after the display change.
+ */
 function openNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     if (!modal) return;
@@ -137,6 +182,7 @@ function openNewPromptModal() {
 }
 window.openNewPromptModal = openNewPromptModal;
 
+/** Closes the JSON import modal and clears its textarea and error message. */
 function closeNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     if (!modal) return;
@@ -148,6 +194,10 @@ function closeNewPromptModal() {
 }
 window.closeNewPromptModal = closeNewPromptModal;
 
+/**
+ * Wires the confirm / cancel buttons and backdrop-click / Escape behaviour
+ * for the JSON import modal. Called once during app startup.
+ */
 function setupNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     const cancelBtn = document.getElementById('new-prompt-cancel');

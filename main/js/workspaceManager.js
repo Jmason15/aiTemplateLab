@@ -1,5 +1,19 @@
-// Template group management, workspace save/load, app-bar menu — depends on state.js, storage.js, screens.js, promptCrud.js
+/**
+ * @fileoverview Template group management, workspace save/load, and app-bar overflow menu.
+ *
+ * Terminology:
+ *   Workspace     — the full environment: all template groups + their history,
+ *                   saved/loaded as a single JSON file.
+ *   Template group — a named collection of prompts (e.g. "Default", "Jira").
+ *                   Users can create, rename, save, load, and delete groups.
+ *
+ * Load order: depends on state.js, storage.js, screens.js, and promptCrud.js.
+ */
 
+/**
+ * Rebuilds the template group <select> dropdown from environment.templateGroups
+ * and ensures the currently active group is selected.
+ */
 function updateTemplateGroupDropdown() {
     const dropdown = document.getElementById('template-group-dropdown');
     if (!dropdown) return;
@@ -10,6 +24,10 @@ function updateTemplateGroupDropdown() {
     dropdown.disabled = false;
 }
 
+/**
+ * Opens the Create Template Group modal with a blank name field.
+ * Also called from the app-bar overflow menu.
+ */
 function openCreateGroupModal() {
     const modal = document.getElementById('create-template-group-modal');
     const nameInput = document.getElementById('create-template-group-name');
@@ -20,7 +38,14 @@ function openCreateGroupModal() {
     modal.style.display = 'flex';
 }
 
+/**
+ * Wires all template group UI interactions:
+ *   - Dropdown change (switch active group)
+ *   - Save / Load / Create / Delete group modals and their confirm/cancel buttons
+ * Called once during app startup.
+ */
 function setupTemplateGroupHandlers() {
+    // Switch active group when the dropdown changes.
     const dropdown = document.getElementById('template-group-dropdown');
     if (dropdown) {
         dropdown.addEventListener('change', function () {
@@ -40,7 +65,7 @@ function setupTemplateGroupHandlers() {
         });
     }
 
-    // Save Template Group
+    // Save Template Group — exports one group to a JSON file.
     const saveBtn = document.getElementById('save-template-group-btn');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
@@ -52,6 +77,7 @@ function setupTemplateGroupHandlers() {
                 `<option value="${name}">${name}</option>`).join('');
             select.value = currentTemplateGroup;
             filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0, 10)}.json`;
+            // Update suggested filename when the group selection changes.
             select.onchange = () => { filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0, 10)}.json`; };
             modal.style.display = 'flex';
         });
@@ -71,7 +97,7 @@ function setupTemplateGroupHandlers() {
     }
     if (saveCancel) saveCancel.addEventListener('click', () => { document.getElementById('save-template-group-modal').style.display = 'none'; });
 
-    // Load Template Group
+    // Load Template Group — imports a group file saved by the above.
     const loadBtn = document.getElementById('load-template-group-btn');
     if (loadBtn) loadBtn.addEventListener('click', () => document.getElementById('load-template-group-file').click());
     const loadFile = document.getElementById('load-template-group-file');
@@ -96,7 +122,7 @@ function setupTemplateGroupHandlers() {
         });
     }
 
-    // Create Template Group
+    // Create Template Group — adds a new empty group.
     const createBtn = document.getElementById('create-template-group-btn');
     if (createBtn) createBtn.addEventListener('click', openCreateGroupModal);
     const createConfirm = document.getElementById('create-template-group-confirm');
@@ -128,7 +154,8 @@ function setupTemplateGroupHandlers() {
         });
     }
 
-    // Delete Template Group
+    // Delete Template Group — guarded: cannot delete the active group or
+    // the last remaining group.
     const deleteConfirm = document.getElementById('delete-template-group-confirm');
     const deleteCancel = document.getElementById('delete-template-group-cancel');
     if (deleteConfirm) {
@@ -153,6 +180,13 @@ function setupTemplateGroupHandlers() {
     }
 }
 
+/**
+ * Wires the workspace save and load buttons.
+ * Save: downloads the full environment (all groups + history) as one JSON file.
+ * Load: replaces the entire environment from a previously saved workspace file.
+ *       Shows a warning modal first because this overwrites all current data.
+ * Called once during app startup.
+ */
 function setupWorkspaceHandlers() {
     const saveBtn = document.getElementById('save-workspace-btn');
     if (saveBtn) {
@@ -171,12 +205,14 @@ function setupWorkspaceHandlers() {
             const filenameInput = document.getElementById('save-workspace-filename');
             let fileName = filenameInput.value.trim() || `workspace-${new Date().toISOString().slice(0, 10)}.json`;
             if (!fileName.endsWith('.json')) fileName += '.json';
+            // Include currentTemplateGroup so the workspace reopens on the same group.
             downloadJson({ templateGroups: environment.templateGroups, history: environment.history, currentTemplateGroup }, fileName);
             document.getElementById('save-workspace-modal').style.display = 'none';
         });
     }
     if (saveCancel) saveCancel.addEventListener('click', () => { document.getElementById('save-workspace-modal').style.display = 'none'; });
 
+    // Load — shows a destructive-action warning before opening the file picker.
     const loadBtn = document.getElementById('load-workspace-btn');
     if (loadBtn) {
         loadBtn.addEventListener('click', () => {
@@ -225,6 +261,13 @@ function setupWorkspaceHandlers() {
     }
 }
 
+/**
+ * Wires the app-bar kebab (⋮) overflow menu.
+ * Menu items proxy their actions through the hidden sidebar buttons so all
+ * logic stays in setupTemplateGroupHandlers / setupWorkspaceHandlers.
+ * Closes on outside click.
+ * Called once during app startup.
+ */
 function setupAppBarMenu() {
     const kebabBtn = document.getElementById('app-bar-kebab');
     const menu = document.getElementById('app-bar-menu');
@@ -233,10 +276,13 @@ function setupAppBarMenu() {
     const toggleMenu = () => { menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
     kebabBtn.addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
     kebabBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggleMenu(); });
+    // Close when clicking anywhere outside the menu.
     document.addEventListener('click', e => {
         if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== kebabBtn) menu.style.display = 'none';
     });
 
+    // Map menu item IDs to their actions. Most just click the equivalent
+    // sidebar button so the handler only lives in one place.
     const menuActions = {
         'menu-save-workspace': () => document.getElementById('save-workspace-btn').click(),
         'menu-load-workspace': () => document.getElementById('load-workspace-btn').click(),
@@ -261,6 +307,7 @@ function setupAppBarMenu() {
         if (btn) btn.addEventListener('click', () => { menu.style.display = 'none'; action(); });
     });
 
+    // Reset button kept hidden for now — may be re-enabled in a future release.
     const menuReset = document.getElementById('menu-reset-templates');
     if (menuReset) menuReset.style.display = 'none';
 }
