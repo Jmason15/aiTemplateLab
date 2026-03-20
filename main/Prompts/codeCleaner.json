@@ -1,4 +1,4 @@
-[
+
   {
     "id": 1770408110308,
     "name": "Improve Function Implementation with Risk Analysis",
@@ -51,4 +51,3 @@
       "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
     ]
   }
-]
