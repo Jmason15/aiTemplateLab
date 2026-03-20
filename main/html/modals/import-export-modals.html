@@ -1,0 +1,29 @@
+<!-- Export Templates Modal -->
+<div id="export-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:800px; max-height:80vh; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:1rem; color:#2563eb;">Export Templates</h2>
+        <p style="margin-bottom:1rem; color:#666;">Select templates to export and name your file:</p>
+        <div id="export-template-grid" style="margin-bottom:1rem; max-height:300px; overflow-y:auto;"></div>
+        <label for="export-file-name">Export File Name:</label>
+        <input type="text" id="export-file-name" placeholder="e.g., prompts.json" style="margin-bottom:1rem;">
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button class="btn btn-success" id="export-modal-download">Download</button>
+            <button class="btn btn-secondary" id="export-modal-close">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Import Templates Modal -->
+<div id="import-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:800px; max-height:80vh; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:1rem; color:#2563eb;">Import Templates</h2>
+        <p style="margin-bottom:1rem; color:#666;">Select templates to import:</p>
+        <div id="import-already-grid" style="margin-bottom:1rem; color:#888; font-size:0.97em;"></div>
+        <div id="import-template-grid" style="margin-bottom:1rem; max-height:300px; overflow-y:auto;"></div>
+        <div id="import-modal-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button class="btn btn-success" id="import-modal-confirm">Import</button>
+            <button class="btn btn-secondary" id="import-modal-cancel">Cancel</button>
+        </div>
+    </div>
+</div>

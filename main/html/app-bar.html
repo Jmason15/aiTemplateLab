@@ -1,0 +1,28 @@
+<header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:56px; background:#232a36; color:#fff; display:flex; align-items:center; justify-content:space-between; z-index:10000; box-shadow:0 2px 8px rgba(30,41,59,0.08); padding:0 2rem;">
+    <div style="font-size:1.35em; font-weight:700; letter-spacing:0.02em;">aiTemplateLab</div>
+    <div id="app-bar-center" style="flex:1; display:flex; justify-content:center; align-items:center;">
+        <select id="template-group-dropdown" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; border:none; outline:none; min-width:180px; text-align:center;">
+            <!-- Options rendered dynamically by JS -->
+        </select>
+    </div>
+    <div id="app-bar-actions" style="display:flex; gap:1.2em; align-items:center;">
+        <button id="app-bar-kebab" aria-label="More actions" style="background:none; border:none; color:#fff; font-size:1.5em; padding:0.2em 0.6em; border-radius:50%; cursor:pointer;">
+            <span style="font-size:1.5em;">&#x22EE;</span>
+        </button>
+        <div id="app-bar-menu" style="display:none; position:absolute; top:56px; right:2rem; min-width:220px; background:#232a36; color:#fff; border-radius:8px; box-shadow:0 8px 32px rgba(30,41,59,0.18); z-index:10001; padding:0.5em 0;">
+            <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Workspace</div>
+            <button class="menu-item" id="menu-save-workspace">Save Workspace</button>
+            <button class="menu-item" id="menu-load-workspace">Load Workspace…</button>
+            <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
+            <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Template Groups</div>
+            <button class="menu-item" id="menu-create-template-group">Create Template Group…</button>
+            <button class="menu-item" id="menu-save-template-group">Save Template Group…</button>
+            <button class="menu-item" id="menu-load-template-group">Load Template Group…</button>
+            <button class="menu-item" id="menu-delete-template-group">Delete Template Group</button>
+            <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
+            <button class="menu-item" id="menu-export-templates">Export Templates…</button>
+            <button class="menu-item" id="menu-import-templates">Import Templates…</button>
+            <button class="menu-item" id="menu-reset-templates" style="display:none;">Reset Default Templates</button>
+        </div>
+    </div>
+</header>

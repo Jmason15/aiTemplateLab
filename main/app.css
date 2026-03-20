@@ -1193,3 +1193,38 @@ hr {
     margin-top:56px;
   }
 }
+
+/* Save indicator toast */
+.save-indicator {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    background: #2563eb;
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(30,41,59,0.12);
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+/* Checkbox rows in import/export modals */
+.checkbox-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+}
+.checkbox-row input { margin-right: 8px; }
+.checkbox-row label { cursor: pointer; }
+
+/* Constraint/success textareas */
+.constraint-textarea {
+    min-height: 140px;
+    max-height: 320px;
+    font-size: 1.12em;
+    padding: 16px 14px;
+    width: 100%;
+    box-sizing: border-box;
+}

@@ -1,0 +1,24 @@
+<!-- Save Workspace Modal -->
+<div id="save-workspace-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:600px; max-height:80vh; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:1rem; color:#2563eb;">Save Workspace</h2>
+        <label for="save-workspace-filename">Workspace File Name:</label>
+        <input type="text" id="save-workspace-filename" placeholder="e.g., workspace.json" style="margin-bottom:1rem;">
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button class="btn btn-success" id="save-workspace-confirm">Save</button>
+            <button class="btn btn-secondary" id="save-workspace-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Load Workspace Warning Modal -->
+<div id="load-workspace-warning-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:600px; max-height:80vh; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:1rem; color:#ef4444;">Warning: Replace Workspace</h2>
+        <p style="margin-bottom:1rem; color:#333;">Loading a workspace will <strong>replace all templates and history</strong>.<br>If you want to add templates, use <strong>Import File</strong> instead.</p>
+        <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button class="btn btn-danger" id="load-workspace-continue">Continue</button>
+            <button class="btn btn-secondary" id="load-workspace-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
