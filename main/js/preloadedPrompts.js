@@ -95,3 +95,8 @@ window.preloadedWorkspaces = {
         inputHistory: []
     }
 };
+
+window.preloadedConfig = {
+    defaultWorkspace: "Jira",
+    defaultTemplate: "Jira Story and Acceptance Criteria Generator"
+};

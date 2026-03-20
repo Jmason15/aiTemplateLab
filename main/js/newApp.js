@@ -64,12 +64,36 @@ function setupCollapsibleSection() {
 function init() {
     window.loadPromptsFromLocalStorage();
     prompts = prompts.map(normalizePrompt);
-    renderPromptsList();
-    if (prompts.length > 0) {
-        viewPrompt(prompts[0].id);
+    // Use default workspace and template from preloadedConfig
+    const defaultGroup = window.preloadedConfig?.defaultWorkspace || "Default";
+    const defaultTemplateName = window.preloadedConfig?.defaultTemplate || "Template Builder";
+    if (environment.templateGroups[defaultGroup]) {
+        currentTemplateGroup = defaultGroup;
+        prompts = environment.templateGroups[defaultGroup].map(normalizePrompt);
+        // Find default template
+        let defaultPrompt = prompts.find(p => p.name && p.name === defaultTemplateName);
+        if (defaultPrompt) {
+            currentPromptId = defaultPrompt.id;
+            viewPrompt(currentPromptId);
+            setTabActive('Use Template');
+            showView(); // Ensure tab body is visible and populated
+        } else if (prompts.length > 0) {
+            currentPromptId = prompts[0].id;
+            viewPrompt(currentPromptId);
+            setTabActive('Use Template');
+            showView();
+        } else {
+            showWelcome();
+        }
+    } else if (prompts.length > 0) {
+        currentPromptId = prompts[0].id;
+        viewPrompt(currentPromptId);
+        setTabActive('Use Template');
+        showView();
     } else {
         showWelcome();
     }
+    renderPromptsList();
 }
 
 // Initialize template groups from preloadedWorkspaces
