@@ -20,6 +20,12 @@
         <p style="margin-bottom:1rem; color:#666;">Select templates to import:</p>
         <div id="import-already-grid" style="margin-bottom:1rem; color:#888; font-size:0.97em;"></div>
         <div id="import-template-grid" style="margin-bottom:1rem; max-height:300px; overflow-y:auto;"></div>
+        <label for="import-group-select">Import into Group:</label>
+        <select id="import-group-select" style="margin-bottom:0.7rem;"></select>
+        <div id="import-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.7rem;">
+            <label for="import-new-group-name">New Group Name:</label>
+            <input type="text" id="import-new-group-name" placeholder="e.g., Marketing" style="margin-top:0.3rem;">
+        </div>
         <div id="import-modal-error" style="color:#ef4444; margin-bottom:1rem; display:none;"></div>
         <div style="display:flex; gap:1rem; margin-top:1rem;">
             <button class="btn btn-success" id="import-modal-confirm">Import</button>

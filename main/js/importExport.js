@@ -99,11 +99,16 @@ function showImportModal(templates, allTemplates) {
     errorDiv.style.display = 'none';
     const existingIds = new Set(prompts.map(p => p.id));
     const duplicates = (allTemplates || []).filter(t => t.id && existingIds.has(t.id));
-    // Show which prompts from the file are already present.
     alreadyGrid.innerHTML = duplicates.length > 0
         ? `<strong>Already imported:</strong><ul style="margin:0.3em 0 0.7em 1.2em;">${duplicates.map(t => `<li>${window.escapeHtml(t.name)}</li>`).join('')}</ul>`
         : '';
     renderCheckboxGrid(grid, templates, 'import-tpl');
+    populateImportGroupSelect('import-group-select');
+    const newGroupRow = document.getElementById('import-new-group-row');
+    const newGroupInput = document.getElementById('import-new-group-name');
+    if (newGroupRow) newGroupRow.style.display = 'none';
+    if (newGroupInput) newGroupInput.value = '';
+    wireNewGroupToggle('import-group-select', 'import-new-group-row', 'import-new-group-name');
     modal.style.display = 'flex';
 
     document.getElementById('import-modal-confirm').onclick = function () {
@@ -114,23 +119,25 @@ function showImportModal(templates, allTemplates) {
             errorDiv.style.display = 'block';
             return;
         }
-        const newTemplates = selected.filter(t => !existingIds.has(t.id));
+        const targetGroup = resolveImportGroup('import-group-select', 'import-new-group-name', errorDiv);
+        if (!targetGroup) return;
+        const groupExistingIds = new Set((environment.templateGroups[targetGroup] || []).map(p => p.id));
+        const newTemplates = selected.filter(t => !groupExistingIds.has(t.id));
         if (newTemplates.length === 0) {
-            errorDiv.textContent = 'No new templates to import (all IDs already exist).';
+            errorDiv.textContent = 'No new templates to import (all IDs already exist in that group).';
             errorDiv.style.display = 'block';
             return;
         }
-        if (environment.templateGroups[currentTemplateGroup]) {
-            environment.templateGroups[currentTemplateGroup] =
-                environment.templateGroups[currentTemplateGroup].concat(newTemplates);
-            prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
-            window.savePromptsToLocalStorage();
-            renderPromptsList();
-            modal.style.display = 'none';
-            errorDiv.style.display = 'none';
-            alert(`Imported ${newTemplates.length} template(s) successfully!`);
-            syncWindowState();
+        environment.templateGroups[targetGroup] = (environment.templateGroups[targetGroup] || []).concat(newTemplates);
+        if (targetGroup === currentTemplateGroup) {
+            prompts = environment.templateGroups[targetGroup].map(normalizePrompt);
         }
+        window.savePromptsToLocalStorage();
+        renderPromptsList();
+        modal.style.display = 'none';
+        errorDiv.style.display = 'none';
+        alert(`Imported ${newTemplates.length} template(s) into "${targetGroup}" successfully!`);
+        syncWindowState();
     };
     document.getElementById('import-modal-cancel').onclick = function () {
         modal.style.display = 'none';
@@ -140,28 +147,97 @@ function showImportModal(templates, allTemplates) {
 }
 
 /**
- * Imports prompts from a parsed JSON value (object or array).
- * Called by the JSON import modal after the user pastes and confirms.
+ * Builds the group <select> options for an import modal, defaulting to the
+ * currently active group, with a "New Group..." sentinel at the bottom.
+ * @param {string} selectId - ID of the <select> element to populate.
+ */
+function populateImportGroupSelect(selectId) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.innerHTML = Object.keys(environment.templateGroups)
+        .map(g => `<option value="${g}"${g === currentTemplateGroup ? ' selected' : ''}>${window.escapeHtml(g)}</option>`)
+        .join('');
+    select.innerHTML += `<option value="__new__">New Group...</option>`;
+}
+
+/**
+ * Wires the "New Group..." toggle on a group select so the name input
+ * appears/disappears when the sentinel option is chosen.
+ * @param {string} selectId   - ID of the <select> element.
+ * @param {string} rowId      - ID of the new-group row div to show/hide.
+ * @param {string} inputId    - ID of the new-group name <input>.
+ */
+function wireNewGroupToggle(selectId, rowId, inputId) {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    select.addEventListener('change', () => {
+        const row = document.getElementById(rowId);
+        const input = document.getElementById(inputId);
+        const isNew = select.value === '__new__';
+        if (row) row.style.display = isNew ? 'flex' : 'none';
+        if (isNew && input) setTimeout(() => input.focus(), 0);
+    });
+}
+
+/**
+ * Resolves the target group name from a group select, creating a new group
+ * if the "__new__" sentinel is selected. Returns null and shows an error if
+ * validation fails.
+ * @param {string} selectId  - ID of the <select> element.
+ * @param {string} inputId   - ID of the new-group name <input>.
+ * @param {HTMLElement} errorDiv - Element to display error messages in.
+ * @returns {string|null} The resolved group name, or null on validation failure.
+ */
+function resolveImportGroup(selectId, inputId, errorDiv) {
+    const select = document.getElementById(selectId);
+    if (!select) return currentTemplateGroup;
+
+    if (select.value !== '__new__') return select.value;
+
+    const newName = document.getElementById(inputId)?.value.trim();
+    if (!newName) {
+        errorDiv.textContent = 'Please enter a group name.';
+        errorDiv.style.display = 'block';
+        return null;
+    }
+    if (environment.templateGroups[newName]) {
+        errorDiv.textContent = 'A group with that name already exists.';
+        errorDiv.style.display = 'block';
+        return null;
+    }
+    environment.templateGroups[newName] = [];
+    environment.history[newName] = [];
+    if (typeof updateTemplateGroupDropdown === 'function') updateTemplateGroupDropdown();
+    return newName;
+}
+
+/**
+ * Imports prompts from a parsed JSON value (object or array) into the group
+ * selected in the JSON import modal.
  * @param {Object|Array} json - A single prompt object or array of prompt objects.
  */
 function importPromptFromJson(json) {
     let importedPrompts = Array.isArray(json) ? json : (typeof json === 'object' && json !== null ? [json] : null);
     if (!importedPrompts) { alert('Invalid JSON: Must be a prompt object or array of prompt objects'); return; }
 
-    const existingIds = new Set(prompts.map(p => p.id));
+    const errorDiv = document.getElementById('json-import-error');
+    const targetGroup = resolveImportGroup('json-import-group-select', 'json-import-new-group-name', errorDiv);
+    if (!targetGroup) return;
+
+    const existingIds = new Set((environment.templateGroups[targetGroup] || []).map(p => p.id));
     const newPrompts = importedPrompts.map(normalizePrompt).filter(p => p.id && !existingIds.has(p.id));
     if (newPrompts.length === 0) { alert('No new prompts to import (all IDs already exist)'); return; }
 
-    if (environment.templateGroups[currentTemplateGroup]) {
-        environment.templateGroups[currentTemplateGroup] =
-            environment.templateGroups[currentTemplateGroup].concat(newPrompts);
-        prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
-        window.savePromptsToLocalStorage();
-        renderPromptsList();
-        closeNewPromptModal();
-        alert(`Imported ${newPrompts.length} prompt(s) successfully!`);
-        syncWindowState();
+    environment.templateGroups[targetGroup] = (environment.templateGroups[targetGroup] || []).concat(newPrompts);
+    // Refresh the working prompts array only if importing into the active group.
+    if (targetGroup === currentTemplateGroup) {
+        prompts = environment.templateGroups[targetGroup].map(normalizePrompt);
     }
+    window.savePromptsToLocalStorage();
+    renderPromptsList();
+    closeNewPromptModal();
+    alert(`Imported ${newPrompts.length} prompt(s) into "${targetGroup}" successfully!`);
+    syncWindowState();
 }
 window.importPromptFromJson = importPromptFromJson;
 
@@ -176,6 +252,11 @@ window.importPromptFromJson = importPromptFromJson;
 function openNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     if (!modal) return;
+    populateImportGroupSelect('json-import-group-select');
+    const newGroupRow = document.getElementById('json-import-new-group-row');
+    const newGroupInput = document.getElementById('json-import-new-group-name');
+    if (newGroupRow) newGroupRow.style.display = 'none';
+    if (newGroupInput) newGroupInput.value = '';
     modal.style.display = 'flex';
     const textarea = document.getElementById('json-import-textarea');
     if (textarea) setTimeout(() => textarea.focus(), 50);
@@ -203,6 +284,7 @@ function setupNewPromptModal() {
     const cancelBtn = document.getElementById('new-prompt-cancel');
     const confirmBtn = document.getElementById('json-import-confirm');
 
+    wireNewGroupToggle('json-import-group-select', 'json-import-new-group-row', 'json-import-new-group-name');
     if (cancelBtn) cancelBtn.addEventListener('click', closeNewPromptModal);
     if (confirmBtn) {
         confirmBtn.addEventListener('click', function () {

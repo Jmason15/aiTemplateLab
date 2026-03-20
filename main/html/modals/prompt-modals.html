@@ -4,6 +4,12 @@
         <h2 class="modal-title">Import Prompt from JSON</h2>
         <label for="json-import-textarea">Prompt JSON</label>
         <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..."></textarea>
+        <label for="json-import-group-select" style="margin-top:0.7em;">Import into Group</label>
+        <select id="json-import-group-select" style="margin-top:0.3em; margin-bottom:0.5em;"></select>
+        <div id="json-import-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.5em;">
+            <label for="json-import-new-group-name">New Group Name:</label>
+            <input type="text" id="json-import-new-group-name" placeholder="e.g., Marketing" style="margin-top:0.3em;">
+        </div>
         <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
         <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
             <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
