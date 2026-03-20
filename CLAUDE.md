@@ -96,7 +96,7 @@ app.js             → entry point; depends on everything above
 ```json
 {
     "workspaces": {
-        "Default": ["promptBuilder.json"],
+        "Default": ["templateBuilder.json"],
         "Jira": ["jiraStory.json"]
     },
     "defaultWorkspace": "Jira",

@@ -2031,7 +2031,7 @@ function syncWindowState() {
  * @param {Object} prompt - A prompt object (mutated in place).
  * @returns {Object} The same prompt object, normalised.
  */
-export function normalizePrompt(prompt) {
+function normalizePrompt(prompt) {
     if (Array.isArray(prompt.constraints)) {
         prompt.constraints = prompt.constraints.map(c => typeof c === 'string' ? c : (c.rule || ''));
     } else {
@@ -2638,7 +2638,7 @@ function attachFieldListeners() {
 window.preloadedPrompts = [
     {
         "id": 1769809000002,
-        "name": "Prompt Builder",
+        "name": "Template Builder",
         "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
         "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
         "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
@@ -2720,11 +2720,11 @@ window.preloadedPrompts = [
 ];
 
 window.preloadedWorkspaces = {
-    "Default": {
+    "Template Lab": {
         "templates": [
             {
                 "id": 1769809000002,
-                "name": "Prompt Builder",
+                "name": "Template Builder",
                 "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
                 "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
                 "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",

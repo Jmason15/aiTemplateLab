@@ -155,8 +155,11 @@ for (const jsFile of JS_FILES_ORDERED) {
             ? fs.readFileSync(path.join(jsSrcDir, jsFile), 'utf8')
             : null;
     if (!jsContent) { console.warn(`Warning: ${jsFile} not found, skipping`); continue; }
+    // Strip ES module `export` keywords — source files use them for Vitest imports,
+    // but the browser build inlines everything into plain <script> tags (not modules).
+    const strippedContent = jsContent.replace(/^export\s+/gm, '');
     const scriptRegex = new RegExp(`<script src=["']${jsPath}["']><\\/script>`, 'i');
-    html = html.replace(scriptRegex, `<script>\n${jsContent}\n</script>`);
+    html = html.replace(scriptRegex, `<script>\n${strippedContent}\n</script>`);
 }
 
 fs.writeFileSync(htmlDistPath, html, 'utf8');

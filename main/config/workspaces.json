@@ -1,6 +1,6 @@
 {
     "workspaces": {
-        "Default": ["promptBuilder.json"],
+        "Template Lab": ["templateBuilder.json"],
         "Jira": ["jiraStory.json"]
     },
     "defaultWorkspace": "Jira",
