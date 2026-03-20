@@ -1,8 +1,7 @@
 {
     "workspaces": {
-        "Template Lab": ["templateBuilder.json"],
-        "Jira": ["jiraStory.json"]
+        "Template Lab": ["templateBuilder.json", "groupGenerator.json", "workflowGenerator.json"]
     },
-    "defaultWorkspace": "Jira",
-    "defaultTemplate": "Jira Story and Acceptance Criteria Generator"
+    "defaultWorkspace": "Template Lab",
+    "defaultTemplate": "Template Builder"
 }

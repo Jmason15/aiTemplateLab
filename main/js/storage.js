@@ -22,12 +22,15 @@ function loadTemplateGroupsFromStorage() {
     const rawGroups = localStorage.getItem('templateGroups');
     const rawHistory = localStorage.getItem('templateGroupHistory');
     const rawCurrent = localStorage.getItem('currentTemplateGroup');
+    const rawPromptId = localStorage.getItem('currentPromptId');
     if (rawGroups) {
         try {
             environment.templateGroups = JSON.parse(rawGroups);
             environment.history = rawHistory ? JSON.parse(rawHistory) : {};
             // Use the last active group, fall back to the first available, then 'Default'.
             currentTemplateGroup = rawCurrent || Object.keys(environment.templateGroups)[0] || 'Default';
+            // Restore the last open prompt ID if present.
+            if (rawPromptId) currentPromptId = rawPromptId;
         } catch {
             // Corrupted data — start fresh from preloaded defaults.
             resetToPreloaded();
@@ -45,6 +48,7 @@ function saveTemplateGroupsToStorage() {
     localStorage.setItem('templateGroups', JSON.stringify(environment.templateGroups));
     localStorage.setItem('templateGroupHistory', JSON.stringify(environment.history));
     localStorage.setItem('currentTemplateGroup', currentTemplateGroup);
+    if (currentPromptId != null) localStorage.setItem('currentPromptId', currentPromptId);
 }
 
 /**

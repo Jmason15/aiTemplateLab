@@ -1,0 +1,41 @@
+{
+  "id": "group-generator",
+  "name": "Template Group Generator",
+  "description": "Describe a role or domain and the AI generates a complete set of AI prompt templates for every tool or task that role needs, returned as a JSON array ready to import as a group.",
+  "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
+  "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
+  "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
+  "inputs": [
+    {
+      "name": "Role or Domain",
+      "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like (e.g. 'TikTok creator', 'B2B sales rep', 'Shopify store owner', 'email marketing')."
+    },
+    {
+      "name": "Additional Context",
+      "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates (e.g. 'focused on short-form video', 'sells handmade jewellery', 'works with enterprise clients')."
+    }
+  ],
+  "constraints": [
+    "Return only a valid JSON array of template objects with no text before or after the array.",
+    "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+    "IDs must be lowercase hyphen-separated slugs (e.g. 'caption-writer', 'hashtag-research').",
+    "Every template must solve a distinct, real task for the given role — no duplicates or filler.",
+    "Generate between 6 and 12 templates unless the role clearly warrants more or fewer.",
+    "Do not wrap the array in any parent object — the top-level response must be a bare JSON array.",
+    "All string values must be valid JSON strings: no literal newlines inside strings (use \\n instead), no unescaped double quotes (use \\\" instead), no trailing commas after the last item in any array or object.",
+    "The entire response must pass JSON.parse() without errors. When in doubt, keep string values short and simple rather than risk a syntax error."
+  ],
+  "outputs": [
+    {
+      "name": "Template Group",
+      "type": "JSON",
+      "description": "A JSON array of complete template objects ready to paste into the Import JSON modal."
+    }
+  ],
+  "success": [
+    "The response is a valid JSON array that can be pasted directly into the Import JSON modal without modification.",
+    "Every template covers a distinct, high-value task for the described role.",
+    "Templates are specific and actionable — not generic rewrites of the same idea.",
+    "A person in the described role would recognise every template as something they actually need."
+  ]
+}

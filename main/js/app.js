@@ -19,27 +19,34 @@ function init() {
     loadTemplateGroupsFromStorage();
     updateTemplateGroupDropdown();
 
-    // Prefer the defaults from config/workspaces.json, fall back to safe values.
-    const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
-    const defaultTemplateName = window.preloadedConfig?.defaultTemplate || 'Template Builder';
+    // Use the group and prompt restored from localStorage if valid.
+    // Only fall back to the config defaults on a first run (nothing in storage).
+    const hasStoredGroup = !!localStorage.getItem('currentTemplateGroup');
 
-    if (environment.templateGroups[defaultGroup]) {
-        currentTemplateGroup = defaultGroup;
-        prompts = environment.templateGroups[defaultGroup].map(normalizePrompt);
-        // Open the named default template, or the first template if not found.
-        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
-        const startId = (defaultPrompt || prompts[0])?.id;
-        if (startId) {
-            currentPromptId = startId;
-            viewPrompt(currentPromptId);
-            setTabActive('Use Template');
-            showView();
-        } else {
-            showWelcome();
+    if (!hasStoredGroup) {
+        // First run — open the defaults from config/workspaces.json.
+        const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
+        const defaultTemplateName = window.preloadedConfig?.defaultTemplate || '';
+        if (environment.templateGroups[defaultGroup]) {
+            currentTemplateGroup = defaultGroup;
         }
-    } else if (prompts.length > 0) {
-        // Default group not found but there are prompts — open the first one.
-        currentPromptId = prompts[0].id;
+        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
+        currentPromptId = (defaultPrompt || prompts[0])?.id || null;
+    } else {
+        // Returning user — restore the last active group and prompt.
+        // Ensure the saved group still exists (may have been deleted).
+        if (!environment.templateGroups[currentTemplateGroup]) {
+            currentTemplateGroup = Object.keys(environment.templateGroups)[0] || 'Default';
+        }
+        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+        // Ensure the saved prompt still exists in this group.
+        if (!prompts.find(p => p.id === currentPromptId)) {
+            currentPromptId = prompts[0]?.id || null;
+        }
+    }
+
+    if (currentPromptId) {
         viewPrompt(currentPromptId);
         setTabActive('Use Template');
         showView();

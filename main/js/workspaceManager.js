@@ -310,4 +310,26 @@ function setupAppBarMenu() {
     // Reset button kept hidden for now — may be re-enabled in a future release.
     const menuReset = document.getElementById('menu-reset-templates');
     if (menuReset) menuReset.style.display = 'none';
+
+    // Clear storage — show confirmation modal before wiping everything.
+    const clearStorageBtn = document.getElementById('menu-clear-storage');
+    if (clearStorageBtn) {
+        clearStorageBtn.addEventListener('click', () => {
+            menu.style.display = 'none';
+            document.getElementById('clear-storage-modal').style.display = 'flex';
+        });
+    }
+
+    const clearConfirm = document.getElementById('clear-storage-confirm');
+    const clearCancel = document.getElementById('clear-storage-cancel');
+    const clearModal = document.getElementById('clear-storage-modal');
+
+    if (clearConfirm) {
+        clearConfirm.addEventListener('click', () => {
+            localStorage.clear();
+            location.reload();
+        });
+    }
+    if (clearCancel) clearCancel.addEventListener('click', () => { clearModal.style.display = 'none'; });
+    if (clearModal) clearModal.addEventListener('click', e => { if (e.target === clearModal) clearModal.style.display = 'none'; });
 }

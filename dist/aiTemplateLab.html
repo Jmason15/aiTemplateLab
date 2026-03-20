@@ -1594,6 +1594,8 @@ input[type="text"] {
             <button class="menu-item" id="menu-export-templates">Export Templates…</button>
             <button class="menu-item" id="menu-import-templates">Import Templates…</button>
             <button class="menu-item" id="menu-reset-templates" style="display:none;">Reset Default Templates</button>
+            <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
+            <button class="menu-item" id="menu-clear-storage" style="color:#f87171;">Reset to Defaults…</button>
         </div>
     </div>
 </header>
@@ -1936,6 +1938,19 @@ input[type="text"] {
     </div>
 </div>
 
+<!-- Clear Storage Confirmation Modal -->
+<div id="clear-storage-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:480px; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:1rem; color:#ef4444;">Reset to Defaults?</h2>
+        <p style="margin-bottom:1rem; color:#333;">This will <strong>delete all your templates, groups, and history</strong> and restore the built-in defaults. This cannot be undone.</p>
+        <p style="margin-bottom:1.5rem; color:#333;">If you want to keep your work, use <strong>Save Workspace</strong> first.</p>
+        <div style="display:flex; gap:1rem;">
+            <button class="btn btn-danger" id="clear-storage-confirm">Reset Everything</button>
+            <button class="btn btn-secondary" id="clear-storage-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- Load Workspace Warning Modal -->
 <div id="load-workspace-warning-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
     <div style="background:#fff; border-radius:8px; padding:2rem; max-width:600px; max-height:80vh; display:flex; flex-direction:column;">
@@ -2216,12 +2231,15 @@ function loadTemplateGroupsFromStorage() {
     const rawGroups = localStorage.getItem('templateGroups');
     const rawHistory = localStorage.getItem('templateGroupHistory');
     const rawCurrent = localStorage.getItem('currentTemplateGroup');
+    const rawPromptId = localStorage.getItem('currentPromptId');
     if (rawGroups) {
         try {
             environment.templateGroups = JSON.parse(rawGroups);
             environment.history = rawHistory ? JSON.parse(rawHistory) : {};
             // Use the last active group, fall back to the first available, then 'Default'.
             currentTemplateGroup = rawCurrent || Object.keys(environment.templateGroups)[0] || 'Default';
+            // Restore the last open prompt ID if present.
+            if (rawPromptId) currentPromptId = rawPromptId;
         } catch {
             // Corrupted data — start fresh from preloaded defaults.
             resetToPreloaded();
@@ -2239,6 +2257,7 @@ function saveTemplateGroupsToStorage() {
     localStorage.setItem('templateGroups', JSON.stringify(environment.templateGroups));
     localStorage.setItem('templateGroupHistory', JSON.stringify(environment.history));
     localStorage.setItem('currentTemplateGroup', currentTemplateGroup);
+    if (currentPromptId != null) localStorage.setItem('currentPromptId', currentPromptId);
 }
 
 /**
@@ -2815,51 +2834,88 @@ window.preloadedPrompts = [
         ]
     },
     {
-        "id": "jira-story-generator",
-        "name": "Jira Story and Acceptance Criteria Generator",
-        "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
-        "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
-        "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
-        "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+        "id": "group-generator",
+        "name": "Template Group Generator",
+        "description": "Describe a role or domain and the AI generates a complete set of AI prompt templates for every tool or task that role needs, returned as a JSON array ready to import as a group.",
+        "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
+        "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
+        "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
         "inputs": [
             {
-                "name": "Jira Text",
-                "description": "A freeform block of text copied from a Jira ticket or description field."
+                "name": "Role or Domain",
+                "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like (e.g. 'TikTok creator', 'B2B sales rep', 'Shopify store owner', 'email marketing')."
+            },
+            {
+                "name": "Additional Context",
+                "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates (e.g. 'focused on short-form video', 'sells handmade jewellery', 'works with enterprise clients')."
             }
         ],
         "constraints": [
-            "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
-            "Keep language clear and concise.",
-            "Preserve meaning and context from the Jira text without adding assumptions."
+            "Return only a valid JSON array of template objects with no text before or after the array.",
+            "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+            "IDs must be lowercase hyphen-separated slugs (e.g. 'caption-writer', 'hashtag-research').",
+            "Every template must solve a distinct, real task for the given role — no duplicates or filler.",
+            "Generate between 6 and 12 templates unless the role clearly warrants more or fewer.",
+            "Do not wrap the array in any parent object — the top-level response must be a bare JSON array.",
+            "All string values must be valid JSON strings: no literal newlines inside strings (use \\n instead), no unescaped double quotes (use \\\" instead), no trailing commas after the last item in any array or object.",
+            "The entire response must pass JSON.parse() without errors. When in doubt, keep string values short and simple rather than risk a syntax error."
         ],
         "outputs": [
             {
-                "name": "User Story",
-                "type": "markdown",
-                "example": "```Markdown format"
-            },
-            {
-                "name": "Acceptance Criteria",
-                "type": "markdown",
-                "example": "```Markdown Gherkin format."
-            },
-            {
-                "name": "Estimated Storypoints",
-                "type": "String",
-                "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
-            },
-            {
-                "name": "Story point description",
-                "type": "string",
-                "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+                "name": "Template Group",
+                "type": "JSON",
+                "description": "A JSON array of complete template objects ready to paste into the Import JSON modal."
             }
         ],
         "success": [
-            "The user story accurately reflects the intent of the Jira input.",
-            "Acceptance criteria are testable, unambiguous, and aligned with the story.",
-            "Output is cleanly formatted and ready to paste into Jira or documentation.",
-            "Questions needed to reduce uncertainty are asked in the story point description",
-            "Estimated story points should be exceptionally larger based on uncertainty or complexity."
+            "The response is a valid JSON array that can be pasted directly into the Import JSON modal without modification.",
+            "Every template covers a distinct, high-value task for the described role.",
+            "Templates are specific and actionable — not generic rewrites of the same idea.",
+            "A person in the described role would recognise every template as something they actually need."
+        ]
+    },
+    {
+        "id": "workflow-generator",
+        "name": "Workflow Generator",
+        "description": "Describe a goal or process and the AI designs a step-by-step workflow where each step is a complete prompt template. You run each step manually in your AI tool and carry the output into the next step.",
+        "objective": "Take a goal or multi-stage process and produce an ordered sequence of prompt templates, one per step, where the output of each step becomes the input to the next.",
+        "actor": "You are an AI process designer who breaks complex goals into clear, sequential AI-assisted steps and designs a structured prompt template for each one.",
+        "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
+        "inputs": [
+            {
+                "name": "Workflow Goal",
+                "description": "The end-to-end process or goal to design a workflow for (e.g. 'produce and post a TikTok video', 'write a blog post from idea to published', 'respond to a sales lead and close the deal')."
+            },
+            {
+                "name": "Additional Context",
+                "description": "Optional. Any constraints, tools, audience, or style preferences that should shape the workflow (e.g. 'videos are under 60 seconds', 'audience is small business owners', 'we use HubSpot')."
+            }
+        ],
+        "constraints": [
+            "Return only a valid JSON array of template objects in workflow order, with no text before or after the array.",
+            "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+            "IDs must follow the pattern 'step-N-readable-slug' (e.g. 'step-1-idea-generator', 'step-2-script-writer').",
+            "Names must follow the pattern 'Step N: Step Name' (e.g. 'Step 1: Idea Generator').",
+            "Every step after step 1 must have an input field explicitly labelled to receive the previous step's output (e.g. 'Script Draft from Step 1').",
+            "Each step must be genuinely distinct — do not split work that belongs in one step or combine work that should be separate.",
+            "The output description of each step should note what it produces and how it is used in the next step.",
+            "Do not wrap the array in any parent object — the top-level response must be a bare JSON array.",
+            "All string values must be valid JSON strings: no literal newlines inside strings (use \\n instead), no unescaped double quotes (use \\\" instead), no trailing commas after the last item in any array or object.",
+            "The entire response must pass JSON.parse() without errors. When in doubt, keep string values short and simple rather than risk a syntax error."
+        ],
+        "outputs": [
+            {
+                "name": "Workflow Templates",
+                "type": "JSON",
+                "description": "A JSON array of complete template objects in step order, ready to paste into the Import JSON modal."
+            }
+        ],
+        "success": [
+            "The response is a valid JSON array that can be pasted directly into the Import JSON modal without modification.",
+            "Steps are in logical order and each builds meaningfully on the previous one.",
+            "Every step after the first explicitly accepts the previous step's output as an input.",
+            "Running the steps in sequence would take a user from the starting point to the stated goal with no gaps.",
+            "A person doing this workflow would find every step genuinely useful and non-redundant."
         ]
     }
 ];
@@ -2899,58 +2955,90 @@ window.preloadedWorkspaces = {
                     "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
                     "All suggested content reflects the user's described prompt idea and is specific, not generic."
                 ]
-            }
-        ],
-        "inputHistory": []
-    },
-    "Jira": {
-        "templates": [
+            },
             {
-                "id": "jira-story-generator",
-                "name": "Jira Story and Acceptance Criteria Generator",
-                "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
-                "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
-                "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
-                "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+                "id": "group-generator",
+                "name": "Template Group Generator",
+                "description": "Describe a role or domain and the AI generates a complete set of AI prompt templates for every tool or task that role needs, returned as a JSON array ready to import as a group.",
+                "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
+                "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
+                "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
                 "inputs": [
                     {
-                        "name": "Jira Text",
-                        "description": "A freeform block of text copied from a Jira ticket or description field."
+                        "name": "Role or Domain",
+                        "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like (e.g. 'TikTok creator', 'B2B sales rep', 'Shopify store owner', 'email marketing')."
+                    },
+                    {
+                        "name": "Additional Context",
+                        "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates (e.g. 'focused on short-form video', 'sells handmade jewellery', 'works with enterprise clients')."
                     }
                 ],
                 "constraints": [
-                    "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
-                    "Keep language clear and concise.",
-                    "Preserve meaning and context from the Jira text without adding assumptions."
+                    "Return only a valid JSON array of template objects with no text before or after the array.",
+                    "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+                    "IDs must be lowercase hyphen-separated slugs (e.g. 'caption-writer', 'hashtag-research').",
+                    "Every template must solve a distinct, real task for the given role — no duplicates or filler.",
+                    "Generate between 6 and 12 templates unless the role clearly warrants more or fewer.",
+                    "Do not wrap the array in any parent object — the top-level response must be a bare JSON array.",
+                    "All string values must be valid JSON strings: no literal newlines inside strings (use \\n instead), no unescaped double quotes (use \\\" instead), no trailing commas after the last item in any array or object.",
+                    "The entire response must pass JSON.parse() without errors. When in doubt, keep string values short and simple rather than risk a syntax error."
                 ],
                 "outputs": [
                     {
-                        "name": "User Story",
-                        "type": "markdown",
-                        "example": "```Markdown format"
-                    },
-                    {
-                        "name": "Acceptance Criteria",
-                        "type": "markdown",
-                        "example": "```Markdown Gherkin format."
-                    },
-                    {
-                        "name": "Estimated Storypoints",
-                        "type": "String",
-                        "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
-                    },
-                    {
-                        "name": "Story point description",
-                        "type": "string",
-                        "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+                        "name": "Template Group",
+                        "type": "JSON",
+                        "description": "A JSON array of complete template objects ready to paste into the Import JSON modal."
                     }
                 ],
                 "success": [
-                    "The user story accurately reflects the intent of the Jira input.",
-                    "Acceptance criteria are testable, unambiguous, and aligned with the story.",
-                    "Output is cleanly formatted and ready to paste into Jira or documentation.",
-                    "Questions needed to reduce uncertainty are asked in the story point description",
-                    "Estimated story points should be exceptionally larger based on uncertainty or complexity."
+                    "The response is a valid JSON array that can be pasted directly into the Import JSON modal without modification.",
+                    "Every template covers a distinct, high-value task for the described role.",
+                    "Templates are specific and actionable — not generic rewrites of the same idea.",
+                    "A person in the described role would recognise every template as something they actually need."
+                ]
+            },
+            {
+                "id": "workflow-generator",
+                "name": "Workflow Generator",
+                "description": "Describe a goal or process and the AI designs a step-by-step workflow where each step is a complete prompt template. You run each step manually in your AI tool and carry the output into the next step.",
+                "objective": "Take a goal or multi-stage process and produce an ordered sequence of prompt templates, one per step, where the output of each step becomes the input to the next.",
+                "actor": "You are an AI process designer who breaks complex goals into clear, sequential AI-assisted steps and designs a structured prompt template for each one.",
+                "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
+                "inputs": [
+                    {
+                        "name": "Workflow Goal",
+                        "description": "The end-to-end process or goal to design a workflow for (e.g. 'produce and post a TikTok video', 'write a blog post from idea to published', 'respond to a sales lead and close the deal')."
+                    },
+                    {
+                        "name": "Additional Context",
+                        "description": "Optional. Any constraints, tools, audience, or style preferences that should shape the workflow (e.g. 'videos are under 60 seconds', 'audience is small business owners', 'we use HubSpot')."
+                    }
+                ],
+                "constraints": [
+                    "Return only a valid JSON array of template objects in workflow order, with no text before or after the array.",
+                    "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+                    "IDs must follow the pattern 'step-N-readable-slug' (e.g. 'step-1-idea-generator', 'step-2-script-writer').",
+                    "Names must follow the pattern 'Step N: Step Name' (e.g. 'Step 1: Idea Generator').",
+                    "Every step after step 1 must have an input field explicitly labelled to receive the previous step's output (e.g. 'Script Draft from Step 1').",
+                    "Each step must be genuinely distinct — do not split work that belongs in one step or combine work that should be separate.",
+                    "The output description of each step should note what it produces and how it is used in the next step.",
+                    "Do not wrap the array in any parent object — the top-level response must be a bare JSON array.",
+                    "All string values must be valid JSON strings: no literal newlines inside strings (use \\n instead), no unescaped double quotes (use \\\" instead), no trailing commas after the last item in any array or object.",
+                    "The entire response must pass JSON.parse() without errors. When in doubt, keep string values short and simple rather than risk a syntax error."
+                ],
+                "outputs": [
+                    {
+                        "name": "Workflow Templates",
+                        "type": "JSON",
+                        "description": "A JSON array of complete template objects in step order, ready to paste into the Import JSON modal."
+                    }
+                ],
+                "success": [
+                    "The response is a valid JSON array that can be pasted directly into the Import JSON modal without modification.",
+                    "Steps are in logical order and each builds meaningfully on the previous one.",
+                    "Every step after the first explicitly accepts the previous step's output as an input.",
+                    "Running the steps in sequence would take a user from the starting point to the stated goal with no gaps.",
+                    "A person doing this workflow would find every step genuinely useful and non-redundant."
                 ]
             }
         ],
@@ -2959,8 +3047,8 @@ window.preloadedWorkspaces = {
 };
 
 window.preloadedConfig = {
-    "defaultWorkspace": "Jira",
-    "defaultTemplate": "Jira Story and Acceptance Criteria Generator"
+    "defaultWorkspace": "Template Lab",
+    "defaultTemplate": "Template Builder"
 };
 
 </script>
@@ -4323,6 +4411,28 @@ function setupAppBarMenu() {
     // Reset button kept hidden for now — may be re-enabled in a future release.
     const menuReset = document.getElementById('menu-reset-templates');
     if (menuReset) menuReset.style.display = 'none';
+
+    // Clear storage — show confirmation modal before wiping everything.
+    const clearStorageBtn = document.getElementById('menu-clear-storage');
+    if (clearStorageBtn) {
+        clearStorageBtn.addEventListener('click', () => {
+            menu.style.display = 'none';
+            document.getElementById('clear-storage-modal').style.display = 'flex';
+        });
+    }
+
+    const clearConfirm = document.getElementById('clear-storage-confirm');
+    const clearCancel = document.getElementById('clear-storage-cancel');
+    const clearModal = document.getElementById('clear-storage-modal');
+
+    if (clearConfirm) {
+        clearConfirm.addEventListener('click', () => {
+            localStorage.clear();
+            location.reload();
+        });
+    }
+    if (clearCancel) clearCancel.addEventListener('click', () => { clearModal.style.display = 'none'; });
+    if (clearModal) clearModal.addEventListener('click', e => { if (e.target === clearModal) clearModal.style.display = 'none'; });
 }
 
 </script>
@@ -4348,27 +4458,34 @@ function init() {
     loadTemplateGroupsFromStorage();
     updateTemplateGroupDropdown();
 
-    // Prefer the defaults from config/workspaces.json, fall back to safe values.
-    const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
-    const defaultTemplateName = window.preloadedConfig?.defaultTemplate || 'Template Builder';
+    // Use the group and prompt restored from localStorage if valid.
+    // Only fall back to the config defaults on a first run (nothing in storage).
+    const hasStoredGroup = !!localStorage.getItem('currentTemplateGroup');
 
-    if (environment.templateGroups[defaultGroup]) {
-        currentTemplateGroup = defaultGroup;
-        prompts = environment.templateGroups[defaultGroup].map(normalizePrompt);
-        // Open the named default template, or the first template if not found.
-        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
-        const startId = (defaultPrompt || prompts[0])?.id;
-        if (startId) {
-            currentPromptId = startId;
-            viewPrompt(currentPromptId);
-            setTabActive('Use Template');
-            showView();
-        } else {
-            showWelcome();
+    if (!hasStoredGroup) {
+        // First run — open the defaults from config/workspaces.json.
+        const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
+        const defaultTemplateName = window.preloadedConfig?.defaultTemplate || '';
+        if (environment.templateGroups[defaultGroup]) {
+            currentTemplateGroup = defaultGroup;
         }
-    } else if (prompts.length > 0) {
-        // Default group not found but there are prompts — open the first one.
-        currentPromptId = prompts[0].id;
+        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
+        currentPromptId = (defaultPrompt || prompts[0])?.id || null;
+    } else {
+        // Returning user — restore the last active group and prompt.
+        // Ensure the saved group still exists (may have been deleted).
+        if (!environment.templateGroups[currentTemplateGroup]) {
+            currentTemplateGroup = Object.keys(environment.templateGroups)[0] || 'Default';
+        }
+        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+        // Ensure the saved prompt still exists in this group.
+        if (!prompts.find(p => p.id === currentPromptId)) {
+            currentPromptId = prompts[0]?.id || null;
+        }
+    }
+
+    if (currentPromptId) {
         viewPrompt(currentPromptId);
         setTabActive('Use Template');
         showView();

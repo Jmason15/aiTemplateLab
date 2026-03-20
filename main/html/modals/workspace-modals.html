@@ -11,6 +11,19 @@
     </div>
 </div>
 
+<!-- Clear Storage Confirmation Modal -->
+<div id="clear-storage-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:8px; padding:2rem; max-width:480px; display:flex; flex-direction:column;">
+        <h2 style="margin-bottom:1rem; color:#ef4444;">Reset to Defaults?</h2>
+        <p style="margin-bottom:1rem; color:#333;">This will <strong>delete all your templates, groups, and history</strong> and restore the built-in defaults. This cannot be undone.</p>
+        <p style="margin-bottom:1.5rem; color:#333;">If you want to keep your work, use <strong>Save Workspace</strong> first.</p>
+        <div style="display:flex; gap:1rem;">
+            <button class="btn btn-danger" id="clear-storage-confirm">Reset Everything</button>
+            <button class="btn btn-secondary" id="clear-storage-cancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <!-- Load Workspace Warning Modal -->
 <div id="load-workspace-warning-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
     <div style="background:#fff; border-radius:8px; padding:2rem; max-width:600px; max-height:80vh; display:flex; flex-direction:column;">
