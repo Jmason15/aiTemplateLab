@@ -58,7 +58,7 @@ Templates are organized into groups (workspaces). Use the dropdown in the sideba
 ## Building from Source
 
 ```bash
-node build.js
+npm run build
 # produces dist/aiTemplateLab.html
 ```
 
@@ -70,6 +70,6 @@ Source files live in `main/`. The build step inlines all CSS and JS into a singl
 
 1. Create a JSON file in `main/Prompts/` following the template schema
 2. Reference it in `main/config/workspaces.json`
-3. Run `node build.js`
+3. Run `npm run build`
 
 No JavaScript changes needed. See [CLAUDE.md](CLAUDE.md) for the full data model.

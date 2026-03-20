@@ -2031,7 +2031,7 @@ function syncWindowState() {
  * @param {Object} prompt - A prompt object (mutated in place).
  * @returns {Object} The same prompt object, normalised.
  */
-function normalizePrompt(prompt) {
+export function normalizePrompt(prompt) {
     if (Array.isArray(prompt.constraints)) {
         prompt.constraints = prompt.constraints.map(c => typeof c === 'string' ? c : (c.rule || ''));
     } else {

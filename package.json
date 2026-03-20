@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "Prompt Builder Pro build tools",
   "scripts": {
-    "build": "node build.js"
+    "build": "node build.js",
+    "test": "vitest run"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "happy-dom": "^20.8.4",
+    "vitest": "^2.0.0"
+  },
   "author": "",
   "license": "MIT"
 }
-
