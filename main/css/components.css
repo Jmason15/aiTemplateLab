@@ -1,0 +1,433 @@
+/* ==============================
+   Buttons — base
+   ============================== */
+
+.btn {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+
+.btn-block {
+  width: 100%;
+  display: block;
+}
+
+/* Variants */
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background: var(--color-primary-dark);
+}
+
+.btn-secondary {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background: var(--color-border);
+  color: var(--color-primary-dark);
+}
+
+/* Solid red — used in modals for destructive actions */
+.btn-danger {
+  background: var(--color-danger);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-weight: 500;
+  transition: background 0.2s;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background: var(--color-danger-dark);
+  color: #fff;
+}
+
+.btn-success {
+  background: var(--color-success-dark);
+  color: #fff;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+  background: #15803d;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.12);
+}
+
+.btn-outline {
+  background: var(--color-surface);
+  color: var(--color-border);
+  border: 1.5px solid var(--color-border-dark);
+}
+
+.btn-outline:hover,
+.btn-outline:focus {
+  background: var(--color-sidebar-accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+}
+
+.btn-text {
+  background: none;
+  color: var(--color-primary);
+  border: none;
+  font-size: 1.08em;
+  font-weight: 500;
+  padding: 0.5em 1.2em;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.2s;
+  box-shadow: none;
+  text-align: right;
+}
+
+.btn-text:hover,
+.btn-text:focus {
+  color: var(--color-primary-dark);
+  background: var(--color-primary-light);
+}
+
+.btn-caret {
+  background: var(--color-sidebar-accent);
+  color: #fff;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  width: 38px;
+  padding: 0;
+  font-size: 1.2em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-caret:hover,
+.btn-caret:focus {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.btn-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.split-btn-group {
+  display: flex;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+/* ==============================
+   Cards
+   ============================== */
+
+.card,
+.edit-panel,
+.view-panel {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--color-shadow);
+  padding: var(--padding);
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+.card-body {
+  padding: var(--padding);
+}
+
+/* ==============================
+   Dropdowns (dark theme — matches app-bar/sidebar context)
+   ============================== */
+
+.dropdown-group {
+  position: relative;
+  width: 100%;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  background: var(--color-surface);
+  color: #fff;
+  border: 1px solid #222e3a;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(30, 41, 59, 0.18);
+  padding: 4px 0;
+  min-width: 180px;
+  max-width: 220px;
+  width: 220px;
+  z-index: 1000;
+}
+
+.dropdown-item {
+  border-radius: 6px;
+  font-weight: 500;
+  padding: 0.45em 0.9em;
+  font-size: 1em;
+  background: none;
+  color: #fff;
+  border: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+  background: var(--color-border-dark);
+  color: #fff;
+}
+
+/* Floating dark dropdown (used in sidebar split-buttons) */
+.dropdown-menu-dark {
+  display: none;
+  position: absolute;
+  min-width: 160px;
+  max-width: 220px;
+  background: var(--color-sidebar-accent);
+  color: #fff;
+  border: 1px solid #222e3a;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(30, 41, 59, 0.18);
+  padding: 4px 0;
+  z-index: 1000;
+  margin: 12px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.dropdown-item-dark {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  padding: 8px 18px;
+  font-size: 1.08em;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+  font-weight: 500;
+  outline: none;
+}
+
+.dropdown-item-dark:hover,
+.dropdown-item-dark:focus {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ==============================
+   App-bar menu items
+   ============================== */
+
+.menu-item {
+  width: 100%;
+  background: none;
+  border: none;
+  color: #fff;
+  text-align: left;
+  font-size: 1em;
+  padding: 0.45em 1.2em;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.menu-item:hover:not(.disabled):not([disabled]) {
+  background: var(--color-border-dark);
+}
+
+.menu-item.disabled,
+.menu-item[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==============================
+   Choice / tile cards
+   ============================== */
+
+.accent-tile {
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
+  transition: border 0.2s, background 0.2s, color 0.2s;
+}
+
+.accent-tile:hover,
+.accent-tile:focus {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary-dark);
+}
+
+.import-section {
+  margin-top: 0.2em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.import-tile {
+  font-size: 1.08em;
+  background: #f3f6fa;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-light);
+  border-radius: 10px;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+}
+
+.import-tile:hover,
+.import-tile:focus {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary-dark);
+}
+
+.tile-subtitle {
+  font-size: 0.98em;
+  color: var(--color-text-muted);
+  margin-top: 0.2em;
+  font-weight: 400;
+  display: block;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.primary-card {
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 1.15em;
+  box-shadow: 0 2px 12px rgba(30, 41, 59, 0.12);
+  border-radius: 12px;
+  padding: 1.3em 1em;
+  transition: border 0.2s, background 0.2s, color 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.primary-card:hover,
+.primary-card:focus {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary-dark);
+}
+
+.secondary-card {
+  min-width: 160px;
+  max-width: 200px;
+  border: 1px solid var(--color-primary-light);
+  background: #f3f6fa;
+  color: var(--color-primary);
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 1.08em;
+  box-shadow: 0 1px 6px rgba(30, 41, 59, 0.08);
+  padding: 1.1em 1em;
+  transition: background 0.2s, color 0.2s, border 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.secondary-card:hover,
+.secondary-card:focus {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary-dark);
+}
+
+.divider-label {
+  margin: 1em 0 0.5em 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 1.05em;
+  letter-spacing: 0.02em;
+}
+
+.other-options-group {
+  display: flex;
+  gap: 0.7em;
+  justify-content: center;
+  margin-bottom: 0.5em;
+}
+
+/* ==============================
+   Toasts / indicators
+   ============================== */
+
+.save-indicator {
+  position: fixed;
+  bottom: 24px;
+  right: 32px;
+  background: var(--color-primary);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-weight: bold;
+  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.12);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+/* ==============================
+   Checkbox rows (import/export modals)
+   ============================== */
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.checkbox-row input  { margin-right: 8px; }
+.checkbox-row label  { cursor: pointer; }

@@ -1,0 +1,38 @@
+:root {
+  /* Brand colors */
+  --color-primary:       #2563eb;
+  --color-primary-dark:  #1d4ed8;
+  --color-primary-light: #e0e7ef;
+  --color-success:       #22c55e;
+  --color-success-dark:  #16a34a;
+  --color-danger:        #ef4444;
+  --color-danger-dark:   #b91c1c;
+
+  /* Surfaces */
+  --color-bg:        #f8fafc;
+  --color-bg-subtle: #f9fafb;
+  --color-card:      #fff;
+  --color-surface:   #232a36;   /* app-bar, sidebar, footer */
+
+  /* Sidebar */
+  --color-sidebar:        #1e293b;
+  --color-sidebar-accent: #334155;
+  --color-sidebar-text:   #fff;
+
+  /* Text */
+  --color-text:       #222;
+  --color-text-muted: #64748b;
+
+  /* Borders */
+  --color-border:      #e5e7eb;
+  --color-border-dark: #475569;   /* dark-theme dividers */
+
+  /* Shadows */
+  --color-shadow: 0 4px 24px rgba(30, 41, 59, 0.07);
+
+  /* Sizing */
+  --radius:        12px;
+  --padding:       24px;
+  --sidebar-width: 260px;
+  --appbar-height: 56px;
+}

@@ -1,0 +1,264 @@
+/* ==============================
+   Edit fields container
+   ============================== */
+
+.edit-fields,
+.edit-card {
+  box-sizing: border-box;
+}
+
+.edit-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 20px 0;
+  max-width: 900px;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.edit-fields textarea {
+  min-height: 140px;
+  font-size: 1.08em;
+  padding: 18px 14px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: #fafbfc;
+  resize: vertical;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.edit-fields textarea:focus {
+  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.13);
+  outline: none;
+  background: #fff;
+}
+
+.edit-fields input[type="text"] {
+  font-size: 1.08em;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1.5px solid var(--color-border);
+  background: #fafbfc;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.edit-fields input[type="text"]:focus {
+  border: 1.5px solid var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.13);
+  outline: none;
+  background: #fff;
+}
+
+.edit-fields label {
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--color-text);
+}
+
+/* ==============================
+   Edit card (individual field row)
+   ============================== */
+
+.edit-card {
+  display: flex;
+  align-items: center;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  box-shadow: 0 1.5px 6px rgba(30, 41, 59, 0.06);
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  position: relative;
+  gap: 0.7rem;
+  min-height: 0;
+  width: 100%;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.edit-card-label {
+  font-size: 0.98em;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 2px;
+  display: block;
+}
+
+.edit-card-content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding-left: 16px;
+  padding-right: 8px;
+}
+
+.edit-card-content input[type="text"],
+.edit-card-content textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 0;
+  font-size: 1em;
+  padding: 6px 8px;
+  border-radius: 4px;
+}
+
+.edit-fields > .edit-card:last-child {
+  margin-bottom: 0;
+}
+
+/* Larger textareas — all three selectors point to the same style */
+.edit-card.constraint-item textarea,
+.edit-card.success-item textarea,
+.constraint-textarea {
+  min-height: 140px;
+  max-height: 320px;
+  font-size: 1.12em;
+  padding: 16px 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.large-textarea {
+  min-height: 90px !important;
+  max-height: 220px;
+  font-size: 1em;
+  padding: 10px;
+  resize: vertical;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==============================
+   Delete button
+   ============================== */
+
+.delete-btn {
+  background: none;
+  border: none;
+  padding: 2px;
+  margin-left: 6px;
+  cursor: pointer;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.delete-btn svg {
+  width: 16px;
+  height: 16px;
+  display: block;
+  pointer-events: none;
+}
+
+.delete-btn:hover svg path,
+.delete-btn:focus svg path,
+.delete-btn:hover svg rect,
+.delete-btn:focus svg rect {
+  stroke: var(--color-danger);
+}
+
+/* ==============================
+   Add field button
+   ============================== */
+
+.edit-fields .add-btn {
+  margin-top: 0.6rem;
+  align-self: flex-start;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
+  border-radius: 4px;
+  padding: 0.35em 1.1em 0.35em 0.9em;
+  font-size: 0.97em;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  box-shadow: none;
+  transition: background 0.18s, color 0.18s, border 0.18s;
+}
+
+.edit-fields .add-btn svg {
+  width: 1.1em;
+  height: 1.1em;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.1em;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 2.2;
+}
+
+.edit-fields .add-btn:hover,
+.edit-fields .add-btn:focus {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary-dark);
+}
+
+.edit-fields .add-btn:hover svg,
+.edit-fields .add-btn:focus svg {
+  stroke: #fff;
+}
+
+/* ==============================
+   Section hint
+   ============================== */
+
+.section-hint {
+  font-size: 1em;
+  color: var(--color-text-muted);
+  background: #f3f6fa;
+  border-left: 3px solid var(--color-primary-light);
+  padding: 10px 16px;
+  margin-bottom: 12px;
+  margin-top: 2px;
+  border-radius: 4px;
+  font-style: italic;
+  display: block;
+}
+
+.section-hint .hint-icon {
+  display: none;
+}
+
+/* ==============================
+   Edit footer (sticky save bar)
+   ============================== */
+
+.edit-footer {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #fafbfc;
+  border-top: 1px solid #eee;
+  padding: 12px 0 0 0;
+  margin-top: 18px;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.edit-btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.edit-btn-group .btn {
+  font-size: 1em;
+  padding: 0.55em 1.5em;
+  border-radius: 5px;
+  box-shadow: none;
+  font-weight: 500;
+}

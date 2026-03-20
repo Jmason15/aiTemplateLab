@@ -1,0 +1,199 @@
+/* ==============================
+   Top-level structure
+   ============================== */
+
+#container {
+  display: flex;
+  min-height: 100vh;
+  margin-top: var(--appbar-height);
+}
+
+#main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  background: none;
+  padding: 0;
+}
+
+.main-panel {
+  background: var(--color-card);
+  border-radius: var(--radius);
+  box-shadow: var(--color-shadow);
+  margin: 32px auto;
+  max-width: 900px;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ==============================
+   App bar
+   ============================== */
+
+#app-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--appbar-height);
+  background: var(--color-surface);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10000;
+  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
+  padding: 0 2rem;
+}
+
+#app-bar-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#template-group-dropdown {
+  background: var(--color-sidebar-accent);
+  color: #fff;
+  border-radius: 16px;
+  padding: 0.35em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  opacity: 0.95;
+  border: none;
+  outline: none;
+  min-width: 180px;
+  text-align: center;
+}
+
+#app-bar-actions {
+  display: flex;
+  gap: 1.2em;
+  align-items: center;
+}
+
+#app-bar-kebab {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5em;
+  padding: 0.2em 0.6em;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+#app-bar-menu {
+  display: none;
+  position: absolute;
+  top: var(--appbar-height);
+  right: 2rem;
+  min-width: 220px;
+  background: var(--color-surface);
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(30, 41, 59, 0.18);
+  z-index: 10001;
+  padding: 0.5em 0;
+}
+
+/* ==============================
+   Tabs
+   ============================== */
+
+#tabs {
+  background: var(--color-primary-light);
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 32px;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#tabs button {
+  padding: 12px 32px;
+  border: none;
+  background: var(--color-primary-light);
+  color: var(--color-text);
+  border-radius: 8px 8px 0 0;
+  font-size: 1.1em;
+  font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+  margin-bottom: -1px;
+  cursor: pointer;
+}
+
+#tabs button.active,
+#tabs button:focus {
+  background: var(--color-card);
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  outline: none;
+}
+
+.tab-content {
+  flex: 1 1 auto;
+  padding: var(--padding);
+  background: var(--color-card);
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==============================
+   Screens
+   ============================== */
+
+.screen {
+  display: none;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.screen.active {
+  display: flex !important;
+}
+
+/* ==============================
+   Footer
+   ============================== */
+
+#app-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  z-index: 10001;
+  background: var(--color-surface);
+  box-shadow: 0 -2px 8px rgba(30, 41, 59, 0.08);
+  padding: 0;
+}
+
+.toast-warning {
+  width: 100%;
+  text-align: center;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 1em;
+  font-weight: 500;
+  padding: 0.7em 0;
+  border-top: 1.5px solid #fde68a;
+  border-radius: 0;
+  box-shadow: none;
+  margin: 0;
+}
+
+/* ==============================
+   Responsive
+   ============================== */
+
+@media (max-width: 600px) {
+  #app-bar {
+    padding: 0 1em;
+  }
+}

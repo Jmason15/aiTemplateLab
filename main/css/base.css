@@ -1,0 +1,58 @@
+/* Global element defaults */
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color-border-dark);
+  margin: 0.5em 0;
+}
+
+details {
+  margin-bottom: 16px;
+  background: #f0f0f0;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+summary {
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Default form inputs — scoped overrides live in forms.css */
+textarea,
+input[type="text"] {
+  font-size: 1em;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==============================
+   Utilities
+   ============================== */
+
+.visually-hidden {
+  position: absolute;
+  left: -9999px;
+}
+
+.warning-banner {
+  background: #fef3c7;
+  color: #b45309;
+  padding: 10px 20px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  margin: auto;
+}
