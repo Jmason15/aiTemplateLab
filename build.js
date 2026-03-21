@@ -58,6 +58,9 @@ const JS_FILES_ORDERED = [
 if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
 if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir);
 
+// Prevent GitHub Pages from running Jekyll (which would ignore index.html and serve README instead).
+fs.writeFileSync(path.join(docsDir, '.nojekyll'), '');
+
 // Encode full logo as base64 for the app bar (large image is fine there).
 let logoDataUri = '';
 if (fs.existsSync(logoSrcPath)) {
