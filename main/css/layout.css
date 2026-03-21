@@ -189,11 +189,130 @@
 }
 
 /* ==============================
-   Responsive
+   Sidebar overlay (mobile)
    ============================== */
 
-@media (max-width: 600px) {
-  #app-bar {
-    padding: 0 1em;
+#sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 8999;
+}
+
+#sidebar-overlay.open {
+  display: block;
+}
+
+/* ==============================
+   Hamburger button (hidden on desktop)
+   ============================== */
+
+#sidebar-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 40px;
+  height: 100%;
+  flex-shrink: 0;
+  padding: 0 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+#sidebar-toggle span {
+  display: block;
+  height: 2px;
+  width: 20px;
+  background: #d1d5db;
+  border-radius: 2px;
+  transition: background 0.15s;
+}
+
+#sidebar-toggle:hover span {
+  background: #fff;
+}
+
+/* ==============================
+   Responsive — tablet (≤ 1024px)
+   ============================== */
+
+@media (max-width: 1024px) {
+  .main-panel {
+    margin: 16px auto;
+  }
+}
+
+/* ==============================
+   Responsive — mobile (≤ 768px)
+   ============================== */
+
+@media (max-width: 768px) {
+  /* Show hamburger, hide GitHub link label */
+  #sidebar-toggle {
+    display: flex;
+  }
+
+  /* Shrink menu bar items */
+  .menu-bar-btn {
+    font-size: 0.8em !important;
+    padding: 0 0.6rem !important;
+  }
+
+  /* Hide GitHub link text, keep icon */
+  #github-link span {
+    display: none;
+  }
+
+  /* Main content fills full width */
+  #main-content {
+    margin-left: 0 !important;
+  }
+
+  .main-panel {
+    margin: 8px;
+    border-radius: 8px;
+  }
+
+  /* Tabs scroll horizontally */
+  #tabs {
+    padding: 0 12px;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  #tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  #tabs button {
+    padding: 10px 16px;
+    font-size: 0.9em;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Info display padding */
+  #info-display {
+    margin: 8px 8px 12px;
+  }
+
+  /* Tab content padding */
+  .tab-content {
+    padding: 16px;
+  }
+
+  /* Welcome screen */
+  .welcome-content {
+    padding: 1rem;
+    margin: 1rem auto;
+  }
+
+  .welcome-title {
+    font-size: 1.7em;
   }
 }

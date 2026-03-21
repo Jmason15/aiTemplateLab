@@ -125,6 +125,19 @@ function startApp() {
     const addSuccessBtn = document.getElementById('add-success');
     if (addSuccessBtn) addSuccessBtn.addEventListener('click', () => { if (window.addSuccess) window.addSuccess(); });
 
+    // Mobile sidebar toggle.
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    function openSidebar() { sidebar.classList.add('open'); sidebarOverlay.classList.add('open'); }
+    function closeSidebar() { sidebar.classList.remove('open'); sidebarOverlay.classList.remove('open'); }
+    if (sidebarToggle) sidebarToggle.addEventListener('click', () => sidebar.classList.contains('open') ? closeSidebar() : openSidebar());
+    if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeSidebar);
+    // Close sidebar when a template tile is clicked on mobile.
+    document.addEventListener('click', e => {
+        if (window.innerWidth <= 768 && e.target.closest('.prompt-tile')) closeSidebar();
+    });
+
     // Sidebar search — re-render list on every keystroke.
     const sidebarSearch = document.getElementById('sidebar-search');
     if (sidebarSearch) sidebarSearch.addEventListener('input', renderPromptsList);

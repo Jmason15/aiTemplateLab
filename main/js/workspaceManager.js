@@ -300,6 +300,15 @@ function setupMenuBar() {
     document.getElementById('menu-save-workspace')?.addEventListener('click', () => { closeAll(); document.getElementById('save-workspace-btn').click(); });
     document.getElementById('menu-load-workspace')?.addEventListener('click', () => { closeAll(); document.getElementById('load-workspace-btn').click(); });
     document.getElementById('menu-clear-storage')?.addEventListener('click', () => { closeAll(); document.getElementById('clear-storage-modal').style.display = 'flex'; });
+    const liveSiteBtn = document.getElementById('menu-live-site');
+    if (liveSiteBtn) {
+        if (window.location.hostname === 'jmason15.github.io') {
+            liveSiteBtn.style.display = 'none';
+        } else {
+            liveSiteBtn.addEventListener('click', () => { closeAll(); window.open('https://jmason15.github.io/aiTemplateLab/', '_blank', 'noopener'); });
+        }
+    }
+    document.getElementById('menu-download-app')?.addEventListener('click', () => { closeAll(); window.open('https://github.com/Jmason15/aiTemplateLab/releases/latest/download/aiTemplateLab.html', '_blank', 'noopener'); });
 
     // Templates menu.
     document.getElementById('menu-new-template')?.addEventListener('click', () => { closeAll(); startBlankPrompt(); });

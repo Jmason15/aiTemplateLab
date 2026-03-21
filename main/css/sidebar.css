@@ -80,6 +80,11 @@
   min-width: 260px;
 }
 
+/* File menu is wider to fit "Download Latest Version" */
+#menu-file .menu-bar-dropdown {
+  min-width: 240px;
+}
+
 .menu-divider {
   height: 1px;
   background: rgba(255, 255, 255, 0.1);
@@ -105,6 +110,19 @@
   display: flex;
   flex-direction: column;
   z-index: 9000;
+  transition: transform 0.25s ease;
+}
+
+@media (max-width: 768px) {
+  #sidebar {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
+  #sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.4);
+  }
 }
 
 #sidebar h2 {
