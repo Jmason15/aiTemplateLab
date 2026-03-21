@@ -20,8 +20,10 @@ const srcDir = path.join(__dirname, 'main');
 const jsSrcDir = path.join(srcDir, 'js');
 const cssSrcDir = path.join(srcDir, 'css');
 const distDir = path.join(__dirname, 'dist');
+const docsDir = path.join(__dirname, 'docs');
 const htmlSrcPath = path.join(srcDir, 'index.html');
 const htmlDistPath = path.join(distDir, 'aiTemplateLab.html');
+const htmlDocsPath = path.join(docsDir, 'index.html');
 
 // CSS load order — must match the <link> tags in index.html.
 const CSS_FILES_ORDERED = [
@@ -52,6 +54,7 @@ const JS_FILES_ORDERED = [
 ];
 
 if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
+if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir);
 
 // =========================
 // Step 1: Generate prompt data from source JSON files
@@ -163,4 +166,6 @@ for (const jsFile of JS_FILES_ORDERED) {
 }
 
 fs.writeFileSync(htmlDistPath, html, 'utf8');
+fs.writeFileSync(htmlDocsPath, html, 'utf8');
 console.log(`Build complete: ${htmlDistPath}`);
+console.log(`GitHub Pages:  ${htmlDocsPath}`);
