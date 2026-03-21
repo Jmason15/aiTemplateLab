@@ -51,6 +51,8 @@
   --padding:       24px;
   --sidebar-width: 260px;
   --appbar-height: 40px;
+  --toast-height:  36px;
+  --bar-offset:    var(--appbar-height);
 }
 
 
@@ -124,6 +126,14 @@ input[type="text"] {
   display: flex;
   min-height: 100vh;
   margin-top: var(--appbar-height);
+}
+
+body.toast-visible {
+  --bar-offset: calc(var(--appbar-height) + var(--toast-height));
+}
+
+body.toast-visible #container {
+  margin-top: var(--bar-offset);
 }
 
 #main-content {
@@ -206,7 +216,7 @@ input[type="text"] {
 #app-bar-menu {
   display: none;
   position: absolute;
-  top: var(--appbar-height);
+  top: var(--bar-offset);
   right: 2rem;
   min-width: 220px;
   background: var(--color-surface);
@@ -277,33 +287,46 @@ input[type="text"] {
 }
 
 /* ==============================
-   Footer
+   Warning toast (top bar)
    ============================== */
 
-#app-footer {
+#toast-warning {
   position: fixed;
+  top: var(--appbar-height);
   left: 0;
   right: 0;
-  bottom: 0;
-  width: 100vw;
-  z-index: 10001;
-  background: var(--color-surface);
-  box-shadow: 0 -2px 8px rgba(30, 41, 59, 0.08);
-  padding: 0;
-}
-
-.toast-warning {
-  width: 100%;
-  text-align: center;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
   background: #fef3c7;
   color: #b45309;
-  font-size: 1em;
+  font-size: 0.9em;
   font-weight: 500;
-  padding: 0.7em 0;
-  border-top: 1.5px solid #fde68a;
-  border-radius: 0;
-  box-shadow: none;
-  margin: 0;
+  padding: 0.55em 1em;
+  border-bottom: 1.5px solid #fde68a;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+#toast-warning.hidden {
+  display: none;
+}
+
+#toast-close {
+  background: none;
+  border: none;
+  color: #b45309;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 0 0.2em;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+#toast-close:hover {
+  opacity: 1;
 }
 
 /* ==============================
@@ -344,7 +367,7 @@ input[type="text"] {
 
   #mobile-menu-panel {
     position: fixed;
-    top: var(--appbar-height);
+    top: var(--bar-offset);
     left: 0;
     right: 0;
     background: #2d3748;
@@ -625,10 +648,10 @@ input[type="text"] {
 
 #sidebar {
   position: fixed;
-  top: var(--appbar-height);
+  top: var(--bar-offset);
   left: 0;
   width: var(--sidebar-width);
-  height: calc(100vh - var(--appbar-height));
+  height: calc(100vh - var(--bar-offset));
   min-width: 240px;
   background: var(--color-surface);
   color: #fff;
@@ -714,7 +737,7 @@ input[type="text"] {
 }
 
 .sidebar-footer {
-  padding: 8px 0 44px;
+  padding: 8px 0 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
   background: var(--color-surface);
@@ -2769,11 +2792,10 @@ input[type="text"] {
     </div>
 </div>
 
-<footer id="app-footer">
-    <div id="toast-warning" class="toast-warning">
-        <span>Warning: Your data is stored in your browser and may be lost if you clear your cache or use a different device.</span>
-    </div>
-</footer>
+<div id="toast-warning" class="toast-warning" role="alert">
+    <span>Warning: Your data is stored in your browser and may be lost if you clear your cache or use a different device.</span>
+    <button id="toast-close" aria-label="Dismiss warning">✕</button>
+</div>
 
 <!-- Help Modal -->
 <div id="help-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
@@ -5969,6 +5991,24 @@ function startApp() {
     // Hidden file input for JSON template import.
     const importFile = document.getElementById('import-file');
     if (importFile) importFile.addEventListener('change', handleImport);
+
+    // Warning toast — show unless dismissed this session.
+    const toast = document.getElementById('toast-warning');
+    const toastClose = document.getElementById('toast-close');
+    if (toast) {
+        if (sessionStorage.getItem('toastDismissed')) {
+            toast.classList.add('hidden');
+        } else {
+            document.body.classList.add('toast-visible');
+        }
+        if (toastClose) {
+            toastClose.addEventListener('click', () => {
+                toast.classList.add('hidden');
+                document.body.classList.remove('toast-visible');
+                sessionStorage.setItem('toastDismissed', '1');
+            });
+        }
+    }
 
     setupNewPromptModal();
     setupTileContextMenu();

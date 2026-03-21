@@ -8,6 +8,14 @@
   margin-top: var(--appbar-height);
 }
 
+body.toast-visible {
+  --bar-offset: calc(var(--appbar-height) + var(--toast-height));
+}
+
+body.toast-visible #container {
+  margin-top: var(--bar-offset);
+}
+
 #main-content {
   flex: 1;
   margin-left: var(--sidebar-width);
@@ -88,7 +96,7 @@
 #app-bar-menu {
   display: none;
   position: absolute;
-  top: var(--appbar-height);
+  top: var(--bar-offset);
   right: 2rem;
   min-width: 220px;
   background: var(--color-surface);
@@ -159,33 +167,46 @@
 }
 
 /* ==============================
-   Footer
+   Warning toast (top bar)
    ============================== */
 
-#app-footer {
+#toast-warning {
   position: fixed;
+  top: var(--appbar-height);
   left: 0;
   right: 0;
-  bottom: 0;
-  width: 100vw;
-  z-index: 10001;
-  background: var(--color-surface);
-  box-shadow: 0 -2px 8px rgba(30, 41, 59, 0.08);
-  padding: 0;
-}
-
-.toast-warning {
-  width: 100%;
-  text-align: center;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1em;
   background: #fef3c7;
   color: #b45309;
-  font-size: 1em;
+  font-size: 0.9em;
   font-weight: 500;
-  padding: 0.7em 0;
-  border-top: 1.5px solid #fde68a;
-  border-radius: 0;
-  box-shadow: none;
-  margin: 0;
+  padding: 0.55em 1em;
+  border-bottom: 1.5px solid #fde68a;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+#toast-warning.hidden {
+  display: none;
+}
+
+#toast-close {
+  background: none;
+  border: none;
+  color: #b45309;
+  font-size: 1em;
+  cursor: pointer;
+  padding: 0 0.2em;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+#toast-close:hover {
+  opacity: 1;
 }
 
 /* ==============================
@@ -226,7 +247,7 @@
 
   #mobile-menu-panel {
     position: fixed;
-    top: var(--appbar-height);
+    top: var(--bar-offset);
     left: 0;
     right: 0;
     background: #2d3748;

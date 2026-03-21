@@ -152,6 +152,24 @@ function startApp() {
     const importFile = document.getElementById('import-file');
     if (importFile) importFile.addEventListener('change', handleImport);
 
+    // Warning toast — show unless dismissed this session.
+    const toast = document.getElementById('toast-warning');
+    const toastClose = document.getElementById('toast-close');
+    if (toast) {
+        if (sessionStorage.getItem('toastDismissed')) {
+            toast.classList.add('hidden');
+        } else {
+            document.body.classList.add('toast-visible');
+        }
+        if (toastClose) {
+            toastClose.addEventListener('click', () => {
+                toast.classList.add('hidden');
+                document.body.classList.remove('toast-visible');
+                sessionStorage.setItem('toastDismissed', '1');
+            });
+        }
+    }
+
     setupNewPromptModal();
     setupTileContextMenu();
     setupWorkspaceHandlers();

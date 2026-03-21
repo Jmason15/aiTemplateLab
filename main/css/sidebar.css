@@ -98,10 +98,10 @@
 
 #sidebar {
   position: fixed;
-  top: var(--appbar-height);
+  top: var(--bar-offset);
   left: 0;
   width: var(--sidebar-width);
-  height: calc(100vh - var(--appbar-height));
+  height: calc(100vh - var(--bar-offset));
   min-width: 240px;
   background: var(--color-surface);
   color: #fff;
@@ -187,7 +187,7 @@
 }
 
 .sidebar-footer {
-  padding: 8px 0 44px;
+  padding: 8px 0 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
   background: var(--color-surface);

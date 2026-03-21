@@ -35,4 +35,6 @@
   --padding:       24px;
   --sidebar-width: 260px;
   --appbar-height: 40px;
+  --toast-height:  36px;
+  --bar-offset:    var(--appbar-height);
 }
