@@ -41,11 +41,11 @@
   background: var(--color-surface);
   color: #fff;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: stretch;
+  justify-content: flex-start;
   z-index: 10000;
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
-  padding: 0 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  padding: 0;
 }
 
 #app-bar-center {

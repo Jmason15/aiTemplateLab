@@ -17,7 +17,6 @@
  */
 function init() {
     loadTemplateGroupsFromStorage();
-    updateTemplateGroupDropdown();
 
     // Use the group and prompt restored from localStorage if valid.
     // Only fall back to the config defaults on a first run (nothing in storage).
@@ -169,7 +168,7 @@ function startApp() {
     setupTileContextMenu();
     setupWorkspaceHandlers();
     setupTemplateGroupHandlers();
-    setupAppBarMenu();
+    setupMenuBar();
 }
 
 startApp();

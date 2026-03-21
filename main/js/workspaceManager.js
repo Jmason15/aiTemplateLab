@@ -114,6 +114,7 @@ function setupTemplateGroupHandlers() {
                     environment.templateGroups[loaded.name] = loaded.templates;
                     environment.history[loaded.name] = loaded.history || [];
                     updateTemplateGroupDropdown();
+                    renderPromptsList();
                     alert(`Template group '${loaded.name}' imported successfully!`);
                 } catch (err) { alert('Error loading template group: ' + err.message); }
             };
@@ -169,6 +170,7 @@ function setupTemplateGroupHandlers() {
             delete environment.history[groupName];
             document.getElementById('delete-template-group-modal').style.display = 'none';
             updateTemplateGroupDropdown();
+            renderPromptsList();
             alert(`Template group '${groupName}' deleted.`);
         });
     }
@@ -262,74 +264,68 @@ function setupWorkspaceHandlers() {
 }
 
 /**
- * Wires the app-bar kebab (⋮) overflow menu.
- * Menu items proxy their actions through the hidden sidebar buttons so all
- * logic stays in setupTemplateGroupHandlers / setupWorkspaceHandlers.
- * Closes on outside click.
+ * Wires the Windows-style menu bar (Workspace | Templates | Groups).
+ * Each top-level button toggles its dropdown. Hovering over a sibling
+ * while any dropdown is open switches immediately (Windows behaviour).
  * Called once during app startup.
  */
-function setupAppBarMenu() {
-    const kebabBtn = document.getElementById('app-bar-kebab');
-    const menu = document.getElementById('app-bar-menu');
-    if (!kebabBtn || !menu) return;
+function setupMenuBar() {
+    const closeAll = () => document.querySelectorAll('.menu-bar-dropdown').forEach(d => d.classList.remove('open'));
 
-    const toggleMenu = () => { menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
-    kebabBtn.addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
-    kebabBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggleMenu(); });
-    // Close when clicking anywhere outside the menu.
-    document.addEventListener('click', e => {
-        if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== kebabBtn) menu.style.display = 'none';
-    });
+    // Toggle on click; switch on hover when any dropdown is already open.
+    document.querySelectorAll('.menu-bar-item').forEach(item => {
+        const btn = item.querySelector('.menu-bar-btn');
+        const dropdown = item.querySelector('.menu-bar-dropdown');
+        if (!btn || !dropdown) return;
 
-    // Map menu item IDs to their actions. Most just click the equivalent
-    // sidebar button so the handler only lives in one place.
-    const menuActions = {
-        'menu-save-workspace': () => document.getElementById('save-workspace-btn').click(),
-        'menu-load-workspace': () => document.getElementById('load-workspace-btn').click(),
-        'menu-save-template-group': () => document.getElementById('save-template-group-btn').click(),
-        'menu-load-template-group': () => document.getElementById('load-template-group-btn').click(),
-        'menu-export-templates': () => window.exportPrompts(),
-        'menu-import-templates': () => document.getElementById('import-file').click(),
-        'menu-create-template-group': openCreateGroupModal,
-        'menu-delete-template-group': () => {
-            const modal = document.getElementById('delete-template-group-modal');
-            const select = document.getElementById('delete-template-group-select');
-            const errorDiv = document.getElementById('delete-template-group-error');
-            if (!modal || !select || !errorDiv) return;
-            select.innerHTML = Object.keys(environment.templateGroups).map(name => `<option value="${name}">${name}</option>`).join('');
-            errorDiv.style.display = 'none';
-            modal.style.display = 'flex';
-        }
-    };
-
-    Object.entries(menuActions).forEach(([id, action]) => {
-        const btn = document.getElementById(id);
-        if (btn) btn.addEventListener('click', () => { menu.style.display = 'none'; action(); });
-    });
-
-    // Reset button kept hidden for now — may be re-enabled in a future release.
-    const menuReset = document.getElementById('menu-reset-templates');
-    if (menuReset) menuReset.style.display = 'none';
-
-    // Clear storage — show confirmation modal before wiping everything.
-    const clearStorageBtn = document.getElementById('menu-clear-storage');
-    if (clearStorageBtn) {
-        clearStorageBtn.addEventListener('click', () => {
-            menu.style.display = 'none';
-            document.getElementById('clear-storage-modal').style.display = 'flex';
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.contains('open');
+            closeAll();
+            if (!isOpen) dropdown.classList.add('open');
         });
-    }
 
+        item.addEventListener('mouseenter', () => {
+            if (document.querySelector('.menu-bar-dropdown.open')) {
+                closeAll();
+                dropdown.classList.add('open');
+            }
+        });
+    });
+
+    // Close on any outside click.
+    document.addEventListener('click', () => closeAll());
+
+    // Workspace menu.
+    document.getElementById('menu-save-workspace')?.addEventListener('click', () => { closeAll(); document.getElementById('save-workspace-btn').click(); });
+    document.getElementById('menu-load-workspace')?.addEventListener('click', () => { closeAll(); document.getElementById('load-workspace-btn').click(); });
+    document.getElementById('menu-clear-storage')?.addEventListener('click', () => { closeAll(); document.getElementById('clear-storage-modal').style.display = 'flex'; });
+
+    // Templates menu.
+    document.getElementById('menu-new-template')?.addEventListener('click', () => { closeAll(); startBlankPrompt(); });
+    document.getElementById('menu-import-templates')?.addEventListener('click', () => { closeAll(); if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
+    document.getElementById('menu-export-templates')?.addEventListener('click', () => { closeAll(); if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
+
+    // Groups menu.
+    document.getElementById('menu-create-template-group')?.addEventListener('click', () => { closeAll(); openCreateGroupModal(); });
+    document.getElementById('menu-save-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('save-template-group-btn').click(); });
+    document.getElementById('menu-load-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('load-template-group-btn').click(); });
+    document.getElementById('menu-delete-template-group')?.addEventListener('click', () => {
+        closeAll();
+        const modal = document.getElementById('delete-template-group-modal');
+        const select = document.getElementById('delete-template-group-select');
+        const errorDiv = document.getElementById('delete-template-group-error');
+        if (!modal || !select || !errorDiv) return;
+        select.innerHTML = Object.keys(environment.templateGroups).map(name => `<option value="${window.escapeHtml(name)}">${window.escapeHtml(name)}</option>`).join('');
+        errorDiv.style.display = 'none';
+        modal.style.display = 'flex';
+    });
+
+    // Clear storage confirmation modal.
     const clearConfirm = document.getElementById('clear-storage-confirm');
     const clearCancel = document.getElementById('clear-storage-cancel');
     const clearModal = document.getElementById('clear-storage-modal');
-
-    if (clearConfirm) {
-        clearConfirm.addEventListener('click', () => {
-            localStorage.clear();
-            location.reload();
-        });
-    }
+    if (clearConfirm) clearConfirm.addEventListener('click', () => { localStorage.clear(); location.reload(); });
     if (clearCancel) clearCancel.addEventListener('click', () => { clearModal.style.display = 'none'; });
     if (clearModal) clearModal.addEventListener('click', e => { if (e.target === clearModal) clearModal.style.display = 'none'; });
 }

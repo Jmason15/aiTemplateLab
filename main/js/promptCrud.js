@@ -179,65 +179,91 @@ function cancelEdit() {
 window.cancelEdit = cancelEdit;
 
 /**
- * Re-renders the sidebar prompt list for the current template group.
- * Highlights the active prompt and wires click and drag-to-reorder events.
+ * Re-renders the sidebar showing all template groups as collapsible sections.
+ * The active group's section is open by default. Clicking a tile in any group
+ * switches the active group and opens that prompt.
  */
 function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
-    const templates = environment.templateGroups[currentTemplateGroup] || [];
-    if (templates.length === 0) {
-        container.innerHTML = `<div class="empty-state"><h3>No Templates Yet</h3><p>Create your first template to get started</p></div>`;
-        return;
-    }
-    container.innerHTML = templates.map((p, idx) =>
-        `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
-            <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
-            <button class="prompt-tile-move-btn" draggable="false" aria-label="Move to group" title="Move to group" data-id="${p.id}">⋮</button>
-        </div>`
-    ).join('');
 
+    const groups = Object.entries(environment.templateGroups);
+
+    container.innerHTML = groups.map(([groupName, templates]) => {
+        const isActive = groupName === currentTemplateGroup;
+        const tilesHtml = templates.length === 0
+            ? `<div class="group-empty">No templates yet</div>`
+            : templates.map((p, idx) =>
+                `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
+                    <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
+                    <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
+                </div>`
+            ).join('');
+        return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
+            <summary class="group-header">${window.escapeHtml(groupName)}</summary>
+            <div class="group-templates">${tilesHtml}</div>
+        </details>`;
+    }).join('');
+
+    // Tile clicks — switch active group if needed, then open the prompt.
     container.querySelectorAll('.prompt-tile').forEach(item => {
         item.addEventListener('click', e => {
             if (e.target.closest('.prompt-tile-move-btn')) return;
+            const group = item.getAttribute('data-group');
+            if (group !== currentTemplateGroup) {
+                currentTemplateGroup = group;
+                prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+                window.savePromptsToLocalStorage();
+                syncWindowState();
+            }
             viewPrompt(item.getAttribute('data-id'));
         });
     });
 
+    // ⋮ buttons — switch group context if needed, then open the tile menu.
     container.querySelectorAll('.prompt-tile-move-btn').forEach(btn => {
         btn.addEventListener('click', e => {
-            e.stopPropagation(); // prevent tile click from firing
+            e.stopPropagation();
+            const group = btn.getAttribute('data-group');
+            if (group !== currentTemplateGroup) {
+                currentTemplateGroup = group;
+                prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+                window.savePromptsToLocalStorage();
+                syncWindowState();
+            }
             openTileMenu(btn.getAttribute('data-id'), btn);
         });
     });
 
-    // Drag-to-reorder: track the source index in draggedIdx, then splice
-    // the item into its new position on drop and persist immediately.
-    let draggedIdx = null;
-    container.querySelectorAll('.prompt-tile').forEach(item => {
-        item.addEventListener('dragstart', e => {
-            draggedIdx = parseInt(item.getAttribute('data-index'));
-            item.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-        });
-        item.addEventListener('dragend', () => { item.classList.remove('dragging'); draggedIdx = null; });
-        item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
-        item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
-        item.addEventListener('drop', e => {
-            e.preventDefault();
-            item.classList.remove('drag-over');
-            const targetIdx = parseInt(item.getAttribute('data-index'));
-            if (draggedIdx !== null && draggedIdx !== targetIdx) {
-                const group = environment.templateGroups[currentTemplateGroup];
-                if (group) {
-                    const moved = group.splice(draggedIdx, 1)[0];
-                    group.splice(targetIdx, 0, moved);
-                    prompts = group.map(normalizePrompt);
-                    window.savePromptsToLocalStorage();
-                    renderPromptsList();
-                    syncWindowState();
+    // Drag-to-reorder within each group section.
+    container.querySelectorAll('.group-section').forEach(section => {
+        const groupName = section.getAttribute('data-group');
+        let draggedIdx = null;
+        section.querySelectorAll('.prompt-tile').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                draggedIdx = parseInt(item.getAttribute('data-index'));
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            item.addEventListener('dragend', () => { item.classList.remove('dragging'); draggedIdx = null; });
+            item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+            item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+            item.addEventListener('drop', e => {
+                e.preventDefault();
+                item.classList.remove('drag-over');
+                const targetIdx = parseInt(item.getAttribute('data-index'));
+                if (draggedIdx !== null && draggedIdx !== targetIdx) {
+                    const group = environment.templateGroups[groupName];
+                    if (group) {
+                        const moved = group.splice(draggedIdx, 1)[0];
+                        group.splice(targetIdx, 0, moved);
+                        if (groupName === currentTemplateGroup) prompts = group.map(normalizePrompt);
+                        window.savePromptsToLocalStorage();
+                        renderPromptsList();
+                        syncWindowState();
+                    }
                 }
-            }
+            });
         });
     });
 }

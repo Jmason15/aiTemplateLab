@@ -1,4 +1,87 @@
 /* ==============================
+   Windows-style menu bar
+   ============================== */
+
+.menu-bar-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.menu-bar-btn {
+  background: none;
+  border: none;
+  color: #d1d5db;
+  font-size: 0.9em;
+  padding: 0 0.9rem;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+
+.menu-bar-btn:hover,
+.menu-bar-item:has(.menu-bar-dropdown.open) .menu-bar-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.menu-bar-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  background: #2d3748;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 10002;
+  padding: 4px 0;
+}
+
+.menu-bar-dropdown.open {
+  display: block;
+}
+
+.menu-bar-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 7px 20px 7px 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: #d1d5db;
+  font-size: 0.9em;
+  cursor: pointer;
+  margin: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.menu-bar-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.menu-item-danger {
+  color: #f87171 !important;
+}
+
+.menu-item-danger:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 4px 0;
+}
+
+/* ==============================
    Sidebar shell
    #sidebar and .sidebar are on the same element — merged here.
    ============================== */
@@ -98,6 +181,70 @@
   padding: 0;
   min-height: 60px;
   margin-bottom: 2em;
+}
+
+/* ==============================
+   Group sections
+   ============================== */
+
+.group-section {
+  margin-bottom: 4px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.group-section > summary {
+  list-style: none;
+}
+
+.group-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.group-header::before {
+  content: '▶';
+  font-size: 0.65em;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.group-section[open] > .group-header::before {
+  transform: rotate(90deg);
+}
+
+.group-header:hover {
+  color: #94a3b8;
+}
+
+.group-templates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0 6px 8px;
+}
+
+.group-empty {
+  font-size: 0.85em;
+  color: #64748b;
+  padding: 6px 8px;
+  font-style: italic;
 }
 
 /* Legacy tile class */

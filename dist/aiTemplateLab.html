@@ -42,7 +42,7 @@
   --radius:        12px;
   --padding:       24px;
   --sidebar-width: 260px;
-  --appbar-height: 56px;
+  --appbar-height: 40px;
 }
 
 
@@ -151,11 +151,11 @@ input[type="text"] {
   background: var(--color-surface);
   color: #fff;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  align-items: stretch;
+  justify-content: flex-start;
   z-index: 10000;
-  box-shadow: 0 2px 8px rgba(30, 41, 59, 0.08);
-  padding: 0 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+  padding: 0;
 }
 
 #app-bar-center {
@@ -311,6 +311,89 @@ input[type="text"] {
 
 /* === sidebar.css === */
 /* ==============================
+   Windows-style menu bar
+   ============================== */
+
+.menu-bar-item {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.menu-bar-btn {
+  background: none;
+  border: none;
+  color: #d1d5db;
+  font-size: 0.9em;
+  padding: 0 0.9rem;
+  cursor: pointer;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  transition: background 0.1s, color 0.1s;
+  white-space: nowrap;
+}
+
+.menu-bar-btn:hover,
+.menu-bar-item:has(.menu-bar-dropdown.open) .menu-bar-btn {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.menu-bar-dropdown {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  background: #2d3748;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  z-index: 10002;
+  padding: 4px 0;
+}
+
+.menu-bar-dropdown.open {
+  display: block;
+}
+
+.menu-bar-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 7px 20px 7px 12px;
+  text-align: left;
+  background: none;
+  border: none;
+  border-radius: 0;
+  color: #d1d5db;
+  font-size: 0.9em;
+  cursor: pointer;
+  margin: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.menu-bar-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.menu-item-danger {
+  color: #f87171 !important;
+}
+
+.menu-item-danger:hover {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
+}
+
+.menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 4px 0;
+}
+
+/* ==============================
    Sidebar shell
    #sidebar and .sidebar are on the same element — merged here.
    ============================== */
@@ -410,6 +493,70 @@ input[type="text"] {
   padding: 0;
   min-height: 60px;
   margin-bottom: 2em;
+}
+
+/* ==============================
+   Group sections
+   ============================== */
+
+.group-section {
+  margin-bottom: 4px;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.group-section > summary {
+  list-style: none;
+}
+
+.group-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+.group-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  font-size: 0.75em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  cursor: pointer;
+  border-radius: 4px;
+  user-select: none;
+  transition: color 0.15s;
+}
+
+.group-header::before {
+  content: '▶';
+  font-size: 0.65em;
+  transition: transform 0.2s;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.group-section[open] > .group-header::before {
+  transform: rotate(90deg);
+}
+
+.group-header:hover {
+  color: #94a3b8;
+}
+
+.group-templates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 2px 0 6px 8px;
+}
+
+.group-empty {
+  font-size: 0.85em;
+  color: #64748b;
+  padding: 6px 8px;
+  font-style: italic;
 }
 
 /* Legacy tile class */
@@ -1675,35 +1822,36 @@ input[type="text"] {
 <body>
 
 <div id="container">
-    <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:56px; background:#232a36; color:#fff; display:flex; align-items:center; justify-content:space-between; z-index:10000; box-shadow:0 2px 8px rgba(30,41,59,0.08); padding:0 2rem;">
-    <div style="font-size:1.35em; font-weight:700; letter-spacing:0.02em;">aiTemplateLab</div>
-    <div id="app-bar-center" style="flex:1; display:flex; justify-content:center; align-items:center;">
-        <select id="template-group-dropdown" style="background:#334155; color:#fff; border-radius:16px; padding:0.35em 1.2em; font-size:1em; font-weight:500; opacity:0.95; border:none; outline:none; min-width:180px; text-align:center;">
-            <!-- Options rendered dynamically by JS -->
-        </select>
-    </div>
-    <div id="app-bar-actions" style="display:flex; gap:1.2em; align-items:center;">
-        <button id="app-bar-kebab" aria-label="More actions" style="background:none; border:none; color:#fff; font-size:1.5em; padding:0.2em 0.6em; border-radius:50%; cursor:pointer;">
-            <span style="font-size:1.5em;">&#x22EE;</span>
-        </button>
-        <div id="app-bar-menu" style="display:none; position:absolute; top:56px; right:2rem; min-width:220px; background:#232a36; color:#fff; border-radius:8px; box-shadow:0 8px 32px rgba(30,41,59,0.18); z-index:10001; padding:0.5em 0;">
-            <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Workspace</div>
-            <button class="menu-item" id="menu-save-workspace">Save Workspace</button>
-            <button class="menu-item" id="menu-load-workspace">Load Workspace…</button>
-            <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
-            <div style="padding:0.5em 1em; font-size:0.95em; color:#94a3b8;">Template Groups</div>
-            <button class="menu-item" id="menu-create-template-group">Create Template Group…</button>
-            <button class="menu-item" id="menu-save-template-group">Save Template Group…</button>
-            <button class="menu-item" id="menu-load-template-group">Load Template Group…</button>
-            <button class="menu-item" id="menu-delete-template-group">Delete Template Group</button>
-            <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
-            <button class="menu-item" id="menu-export-templates">Export Templates…</button>
-            <button class="menu-item" id="menu-import-templates">Import Templates…</button>
-            <button class="menu-item" id="menu-reset-templates" style="display:none;">Reset Default Templates</button>
-            <hr style="border:none; border-top:1px solid #475569; margin:0.5em 0;">
-            <button class="menu-item" id="menu-clear-storage" style="color:#f87171;">Reset to Defaults…</button>
+    <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:var(--appbar-height); background:#232a36; color:#fff; display:flex; align-items:stretch; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.35);">
+    <div style="padding:0 1.25rem; font-size:1.05em; font-weight:700; letter-spacing:0.02em; display:flex; align-items:center; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.1);">aiTemplateLab</div>
+    <nav id="menu-bar" style="display:flex; align-items:stretch;">
+        <div class="menu-bar-item">
+            <button class="menu-bar-btn">File</button>
+            <div class="menu-bar-dropdown">
+                <button id="menu-save-workspace">Save</button>
+                <button id="menu-load-workspace">Load…</button>
+                <div class="menu-divider"></div>
+                <button id="menu-clear-storage" class="menu-item-danger">Reset…</button>
+            </div>
         </div>
-    </div>
+        <div class="menu-bar-item">
+            <button class="menu-bar-btn">Groups</button>
+            <div class="menu-bar-dropdown">
+                <button id="menu-create-template-group">New…</button>
+                <button id="menu-save-template-group">Save…</button>
+                <button id="menu-load-template-group">Load…</button>
+                <button id="menu-delete-template-group">Delete…</button>
+            </div>
+        </div>
+        <div class="menu-bar-item">
+            <button class="menu-bar-btn">Templates</button>
+            <div class="menu-bar-dropdown">
+                <button id="menu-new-template">New</button>
+                <button id="menu-import-templates">Import…</button>
+                <button id="menu-export-templates">Export…</button>
+            </div>
+        </div>
+    </nav>
 </header>
 
     <!-- Tile context menu — shared, positioned by JS, lives outside sidebar so it can overflow -->
@@ -1720,9 +1868,9 @@ input[type="text"] {
         </div>
     </div>
     <div class="sidebar-footer">
-        <div class="sidebar-actions sidebar-actions-bottom" style="padding:1em 1em 1.2em 1em;">
-            <button class="btn btn-outline btn-block" id="import-json-btn" style="border-radius:8px; font-weight:500;">Import JSON</button>
-            <button class="btn btn-success btn-block" id="blank-prompt-btn" style="margin-top: 0.5rem; border-radius:8px; font-weight:500;">Blank Prompt</button>
+        <div class="sidebar-actions sidebar-actions-bottom" style="padding:0.6em 0.75em 1em 0.75em; display:flex; gap:0.4rem;">
+            <button class="btn btn-outline" id="import-json-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Import Template</button>
+            <button class="btn btn-success" id="blank-prompt-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">New Blank Template</button>
         </div>
 
         <!-- Hidden buttons used by workspace/group save-load logic -->
@@ -3812,65 +3960,91 @@ function cancelEdit() {
 window.cancelEdit = cancelEdit;
 
 /**
- * Re-renders the sidebar prompt list for the current template group.
- * Highlights the active prompt and wires click and drag-to-reorder events.
+ * Re-renders the sidebar showing all template groups as collapsible sections.
+ * The active group's section is open by default. Clicking a tile in any group
+ * switches the active group and opens that prompt.
  */
 function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
-    const templates = environment.templateGroups[currentTemplateGroup] || [];
-    if (templates.length === 0) {
-        container.innerHTML = `<div class="empty-state"><h3>No Templates Yet</h3><p>Create your first template to get started</p></div>`;
-        return;
-    }
-    container.innerHTML = templates.map((p, idx) =>
-        `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" draggable="true" data-index="${idx}">
-            <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
-            <button class="prompt-tile-move-btn" draggable="false" aria-label="Move to group" title="Move to group" data-id="${p.id}">⋮</button>
-        </div>`
-    ).join('');
 
+    const groups = Object.entries(environment.templateGroups);
+
+    container.innerHTML = groups.map(([groupName, templates]) => {
+        const isActive = groupName === currentTemplateGroup;
+        const tilesHtml = templates.length === 0
+            ? `<div class="group-empty">No templates yet</div>`
+            : templates.map((p, idx) =>
+                `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
+                    <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
+                    <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
+                </div>`
+            ).join('');
+        return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
+            <summary class="group-header">${window.escapeHtml(groupName)}</summary>
+            <div class="group-templates">${tilesHtml}</div>
+        </details>`;
+    }).join('');
+
+    // Tile clicks — switch active group if needed, then open the prompt.
     container.querySelectorAll('.prompt-tile').forEach(item => {
         item.addEventListener('click', e => {
             if (e.target.closest('.prompt-tile-move-btn')) return;
+            const group = item.getAttribute('data-group');
+            if (group !== currentTemplateGroup) {
+                currentTemplateGroup = group;
+                prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+                window.savePromptsToLocalStorage();
+                syncWindowState();
+            }
             viewPrompt(item.getAttribute('data-id'));
         });
     });
 
+    // ⋮ buttons — switch group context if needed, then open the tile menu.
     container.querySelectorAll('.prompt-tile-move-btn').forEach(btn => {
         btn.addEventListener('click', e => {
-            e.stopPropagation(); // prevent tile click from firing
+            e.stopPropagation();
+            const group = btn.getAttribute('data-group');
+            if (group !== currentTemplateGroup) {
+                currentTemplateGroup = group;
+                prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+                window.savePromptsToLocalStorage();
+                syncWindowState();
+            }
             openTileMenu(btn.getAttribute('data-id'), btn);
         });
     });
 
-    // Drag-to-reorder: track the source index in draggedIdx, then splice
-    // the item into its new position on drop and persist immediately.
-    let draggedIdx = null;
-    container.querySelectorAll('.prompt-tile').forEach(item => {
-        item.addEventListener('dragstart', e => {
-            draggedIdx = parseInt(item.getAttribute('data-index'));
-            item.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-        });
-        item.addEventListener('dragend', () => { item.classList.remove('dragging'); draggedIdx = null; });
-        item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
-        item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
-        item.addEventListener('drop', e => {
-            e.preventDefault();
-            item.classList.remove('drag-over');
-            const targetIdx = parseInt(item.getAttribute('data-index'));
-            if (draggedIdx !== null && draggedIdx !== targetIdx) {
-                const group = environment.templateGroups[currentTemplateGroup];
-                if (group) {
-                    const moved = group.splice(draggedIdx, 1)[0];
-                    group.splice(targetIdx, 0, moved);
-                    prompts = group.map(normalizePrompt);
-                    window.savePromptsToLocalStorage();
-                    renderPromptsList();
-                    syncWindowState();
+    // Drag-to-reorder within each group section.
+    container.querySelectorAll('.group-section').forEach(section => {
+        const groupName = section.getAttribute('data-group');
+        let draggedIdx = null;
+        section.querySelectorAll('.prompt-tile').forEach(item => {
+            item.addEventListener('dragstart', e => {
+                draggedIdx = parseInt(item.getAttribute('data-index'));
+                item.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+            });
+            item.addEventListener('dragend', () => { item.classList.remove('dragging'); draggedIdx = null; });
+            item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+            item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+            item.addEventListener('drop', e => {
+                e.preventDefault();
+                item.classList.remove('drag-over');
+                const targetIdx = parseInt(item.getAttribute('data-index'));
+                if (draggedIdx !== null && draggedIdx !== targetIdx) {
+                    const group = environment.templateGroups[groupName];
+                    if (group) {
+                        const moved = group.splice(draggedIdx, 1)[0];
+                        group.splice(targetIdx, 0, moved);
+                        if (groupName === currentTemplateGroup) prompts = group.map(normalizePrompt);
+                        window.savePromptsToLocalStorage();
+                        renderPromptsList();
+                        syncWindowState();
+                    }
                 }
-            }
+            });
         });
     });
 }
@@ -4644,6 +4818,7 @@ function setupTemplateGroupHandlers() {
                     environment.templateGroups[loaded.name] = loaded.templates;
                     environment.history[loaded.name] = loaded.history || [];
                     updateTemplateGroupDropdown();
+                    renderPromptsList();
                     alert(`Template group '${loaded.name}' imported successfully!`);
                 } catch (err) { alert('Error loading template group: ' + err.message); }
             };
@@ -4699,6 +4874,7 @@ function setupTemplateGroupHandlers() {
             delete environment.history[groupName];
             document.getElementById('delete-template-group-modal').style.display = 'none';
             updateTemplateGroupDropdown();
+            renderPromptsList();
             alert(`Template group '${groupName}' deleted.`);
         });
     }
@@ -4792,74 +4968,68 @@ function setupWorkspaceHandlers() {
 }
 
 /**
- * Wires the app-bar kebab (⋮) overflow menu.
- * Menu items proxy their actions through the hidden sidebar buttons so all
- * logic stays in setupTemplateGroupHandlers / setupWorkspaceHandlers.
- * Closes on outside click.
+ * Wires the Windows-style menu bar (Workspace | Templates | Groups).
+ * Each top-level button toggles its dropdown. Hovering over a sibling
+ * while any dropdown is open switches immediately (Windows behaviour).
  * Called once during app startup.
  */
-function setupAppBarMenu() {
-    const kebabBtn = document.getElementById('app-bar-kebab');
-    const menu = document.getElementById('app-bar-menu');
-    if (!kebabBtn || !menu) return;
+function setupMenuBar() {
+    const closeAll = () => document.querySelectorAll('.menu-bar-dropdown').forEach(d => d.classList.remove('open'));
 
-    const toggleMenu = () => { menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
-    kebabBtn.addEventListener('click', e => { e.stopPropagation(); toggleMenu(); });
-    kebabBtn.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') toggleMenu(); });
-    // Close when clicking anywhere outside the menu.
-    document.addEventListener('click', e => {
-        if (menu.style.display === 'block' && !menu.contains(e.target) && e.target !== kebabBtn) menu.style.display = 'none';
-    });
+    // Toggle on click; switch on hover when any dropdown is already open.
+    document.querySelectorAll('.menu-bar-item').forEach(item => {
+        const btn = item.querySelector('.menu-bar-btn');
+        const dropdown = item.querySelector('.menu-bar-dropdown');
+        if (!btn || !dropdown) return;
 
-    // Map menu item IDs to their actions. Most just click the equivalent
-    // sidebar button so the handler only lives in one place.
-    const menuActions = {
-        'menu-save-workspace': () => document.getElementById('save-workspace-btn').click(),
-        'menu-load-workspace': () => document.getElementById('load-workspace-btn').click(),
-        'menu-save-template-group': () => document.getElementById('save-template-group-btn').click(),
-        'menu-load-template-group': () => document.getElementById('load-template-group-btn').click(),
-        'menu-export-templates': () => window.exportPrompts(),
-        'menu-import-templates': () => document.getElementById('import-file').click(),
-        'menu-create-template-group': openCreateGroupModal,
-        'menu-delete-template-group': () => {
-            const modal = document.getElementById('delete-template-group-modal');
-            const select = document.getElementById('delete-template-group-select');
-            const errorDiv = document.getElementById('delete-template-group-error');
-            if (!modal || !select || !errorDiv) return;
-            select.innerHTML = Object.keys(environment.templateGroups).map(name => `<option value="${name}">${name}</option>`).join('');
-            errorDiv.style.display = 'none';
-            modal.style.display = 'flex';
-        }
-    };
-
-    Object.entries(menuActions).forEach(([id, action]) => {
-        const btn = document.getElementById(id);
-        if (btn) btn.addEventListener('click', () => { menu.style.display = 'none'; action(); });
-    });
-
-    // Reset button kept hidden for now — may be re-enabled in a future release.
-    const menuReset = document.getElementById('menu-reset-templates');
-    if (menuReset) menuReset.style.display = 'none';
-
-    // Clear storage — show confirmation modal before wiping everything.
-    const clearStorageBtn = document.getElementById('menu-clear-storage');
-    if (clearStorageBtn) {
-        clearStorageBtn.addEventListener('click', () => {
-            menu.style.display = 'none';
-            document.getElementById('clear-storage-modal').style.display = 'flex';
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = dropdown.classList.contains('open');
+            closeAll();
+            if (!isOpen) dropdown.classList.add('open');
         });
-    }
 
+        item.addEventListener('mouseenter', () => {
+            if (document.querySelector('.menu-bar-dropdown.open')) {
+                closeAll();
+                dropdown.classList.add('open');
+            }
+        });
+    });
+
+    // Close on any outside click.
+    document.addEventListener('click', () => closeAll());
+
+    // Workspace menu.
+    document.getElementById('menu-save-workspace')?.addEventListener('click', () => { closeAll(); document.getElementById('save-workspace-btn').click(); });
+    document.getElementById('menu-load-workspace')?.addEventListener('click', () => { closeAll(); document.getElementById('load-workspace-btn').click(); });
+    document.getElementById('menu-clear-storage')?.addEventListener('click', () => { closeAll(); document.getElementById('clear-storage-modal').style.display = 'flex'; });
+
+    // Templates menu.
+    document.getElementById('menu-new-template')?.addEventListener('click', () => { closeAll(); startBlankPrompt(); });
+    document.getElementById('menu-import-templates')?.addEventListener('click', () => { closeAll(); if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
+    document.getElementById('menu-export-templates')?.addEventListener('click', () => { closeAll(); if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
+
+    // Groups menu.
+    document.getElementById('menu-create-template-group')?.addEventListener('click', () => { closeAll(); openCreateGroupModal(); });
+    document.getElementById('menu-save-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('save-template-group-btn').click(); });
+    document.getElementById('menu-load-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('load-template-group-btn').click(); });
+    document.getElementById('menu-delete-template-group')?.addEventListener('click', () => {
+        closeAll();
+        const modal = document.getElementById('delete-template-group-modal');
+        const select = document.getElementById('delete-template-group-select');
+        const errorDiv = document.getElementById('delete-template-group-error');
+        if (!modal || !select || !errorDiv) return;
+        select.innerHTML = Object.keys(environment.templateGroups).map(name => `<option value="${window.escapeHtml(name)}">${window.escapeHtml(name)}</option>`).join('');
+        errorDiv.style.display = 'none';
+        modal.style.display = 'flex';
+    });
+
+    // Clear storage confirmation modal.
     const clearConfirm = document.getElementById('clear-storage-confirm');
     const clearCancel = document.getElementById('clear-storage-cancel');
     const clearModal = document.getElementById('clear-storage-modal');
-
-    if (clearConfirm) {
-        clearConfirm.addEventListener('click', () => {
-            localStorage.clear();
-            location.reload();
-        });
-    }
+    if (clearConfirm) clearConfirm.addEventListener('click', () => { localStorage.clear(); location.reload(); });
     if (clearCancel) clearCancel.addEventListener('click', () => { clearModal.style.display = 'none'; });
     if (clearModal) clearModal.addEventListener('click', e => { if (e.target === clearModal) clearModal.style.display = 'none'; });
 }
@@ -4885,7 +5055,6 @@ function setupAppBarMenu() {
  */
 function init() {
     loadTemplateGroupsFromStorage();
-    updateTemplateGroupDropdown();
 
     // Use the group and prompt restored from localStorage if valid.
     // Only fall back to the config defaults on a first run (nothing in storage).
@@ -5037,7 +5206,7 @@ function startApp() {
     setupTileContextMenu();
     setupWorkspaceHandlers();
     setupTemplateGroupHandlers();
-    setupAppBarMenu();
+    setupMenuBar();
 }
 
 startApp();
