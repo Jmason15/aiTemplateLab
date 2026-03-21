@@ -11,7 +11,7 @@ The app always opens on the home screen with no template selected. The sidebar s
 ## Build System
 
 ```bash
-node build.js          # produces dist/aiTemplateLab.html
+node build.js          # produces dist/aiTemplateLab.html and docs/index.html
 npm run build          # same, via package.json script
 ```
 
@@ -21,7 +21,31 @@ npm run build          # same, via package.json script
 3. **Inline CSS** — replaces all `<link rel="stylesheet">` tags with a single `<style>` block containing all CSS files concatenated in order.
 4. **Inline JS** — replaces each `<script src="js/...">` tag with an inline `<script>` block. `preloadedPrompts.js` is special: it is generated in memory (step 1) and never exists on disk.
 
+The build also:
+- Base64-encodes `images/aiTemplateLab.png` and injects it as the app bar logo (`__LOGO_SRC__` placeholder).
+- Base64-encodes `images/favicon.png` (small, <100KB) and injects it as the browser tab icon (`__FAVICON_SRC__` placeholder). Falls back to the GitHub Pages URL if the file is missing.
+- Copies both images to `docs/` so the OG image meta tag resolves correctly on GitHub Pages.
+
 **The dist file is the only deployable artifact.** After any source change, rebuild and commit both the source and `dist/aiTemplateLab.html` together.
+
+---
+
+## CI/CD — GitHub Actions
+
+Defined in `.github/workflows/release.yml`. Triggers on any tag matching `release_*`.
+
+**What it does:**
+1. Runs `node build.js`
+2. Deploys `docs/` to GitHub Pages
+3. Creates a GitHub Release with `dist/aiTemplateLab.html` attached
+
+**To release a new version:**
+```bash
+git tag release_YYYY_MM_DD
+git push origin release_YYYY_MM_DD
+```
+
+**One-time setup required:** In the repo's GitHub Settings → Pages → Build and deployment, set the source to **GitHub Actions** (not "Deploy from a branch").
 
 ---
 
@@ -32,6 +56,12 @@ aiTemplateLab_claude/
 ├── build.js                        # Build script (see above)
 ├── package.json
 ├── CLAUDE.md                       # This file
+├── images/
+│   ├── aiTemplateLab.png           # App bar logo + OG image (full size)
+│   └── favicon.png                 # Browser tab icon (keep <100KB for data URI)
+├── .github/
+│   └── workflows/
+│       └── release.yml             # CI/CD: build + deploy on release_* tags
 ├── main/                           # Source files — edit these
 │   ├── index.html                  # App shell + welcome screen + modal HTML
 │   ├── config/
@@ -63,8 +93,10 @@ aiTemplateLab_claude/
 │       ├── importExport.js         # Import/export modals, AI paste modal
 │       ├── workspaceManager.js     # Template groups, workspace save/load, menu bar, help modal
 │       └── app.js                  # Entry point — init + all event wiring (load last)
-└── dist/
-    └── aiTemplateLab.html          # Compiled output (auto-generated, commit alongside source)
+├── dist/
+│   └── aiTemplateLab.html          # Compiled output — attached to GitHub Releases
+└── docs/
+    └── index.html                  # GitHub Pages deployment target (copy of dist)
 ```
 
 ---
@@ -213,3 +245,5 @@ CSS files must be added to `CSS_FILES_ORDERED` in `build.js` **and** to `<link>`
 - No linter or formatter is configured. Be consistent with the surrounding code style.
 - `base.css` applies `details { background: #f0f0f0; padding: 8px 12px }` globally. Override per-component (e.g. `.group-section` in sidebar.css uses `background: transparent; padding: 0`).
 - The sidebar's generic `#sidebar button` rule overrides btn classes — use ID-specific rules with `!important` when a sidebar button needs a distinct colour (e.g. `#import-json-btn` for the green import button).
+- Never add inline `style="display:..."` to elements whose visibility is controlled by CSS media queries — inline styles have higher specificity and will silently break responsive behaviour. Manage show/hide via CSS classes only.
+- The favicon must stay under ~100KB. Base64-encoding a large image as a `data:` URI exceeds browser limits and the icon will silently not appear.
