@@ -304,7 +304,7 @@ function viewPrompt(id) {
     if (!prompt) return;
     currentPromptId = id;
 
-    showChrome(true);
+    showView();
     // Hide the welcome screen in case it was showing.
     const welcomeScreen = document.getElementById('welcome-screen');
     if (welcomeScreen) { welcomeScreen.style.display = 'none'; welcomeScreen.classList.remove('active'); }

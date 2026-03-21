@@ -24,6 +24,8 @@ const docsDir = path.join(__dirname, 'docs');
 const htmlSrcPath = path.join(srcDir, 'index.html');
 const htmlDistPath = path.join(distDir, 'aiTemplateLab.html');
 const htmlDocsPath = path.join(docsDir, 'index.html');
+const logoSrcPath = path.join(__dirname, 'images', 'aiTemplateLab.png');
+const faviconSrcPath = path.join(__dirname, 'images', 'favicon.png');
 
 // CSS load order — must match the <link> tags in index.html.
 const CSS_FILES_ORDERED = [
@@ -55,6 +57,29 @@ const JS_FILES_ORDERED = [
 
 if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
 if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir);
+
+// Encode full logo as base64 for the app bar (large image is fine there).
+let logoDataUri = '';
+if (fs.existsSync(logoSrcPath)) {
+    const logoBase64 = fs.readFileSync(logoSrcPath).toString('base64');
+    logoDataUri = `data:image/png;base64,${logoBase64}`;
+    // Copy to docs/ so the OG image URL resolves on GitHub Pages.
+    fs.copyFileSync(logoSrcPath, path.join(docsDir, 'aiTemplateLab.png'));
+} else {
+    console.warn('Warning: images/aiTemplateLab.png not found — app bar logo will be missing.');
+}
+
+// Favicon uses a small dedicated image (must be under ~100KB for browsers to accept it as a data URI).
+// If images/favicon.png exists use it; otherwise fall back to the GitHub Pages URL.
+let faviconSrc = 'https://jmason15.github.io/aiTemplateLab/favicon.png';
+if (fs.existsSync(faviconSrcPath)) {
+    const faviconBase64 = fs.readFileSync(faviconSrcPath).toString('base64');
+    faviconSrc = `data:image/png;base64,${faviconBase64}`;
+    fs.copyFileSync(faviconSrcPath, path.join(docsDir, 'favicon.png'));
+    console.log('Favicon: embedded from images/favicon.png');
+} else {
+    console.log('Favicon: using GitHub Pages URL (add images/favicon.png for offline support)');
+}
 
 // =========================
 // Step 1: Generate prompt data from source JSON files
@@ -164,6 +189,10 @@ for (const jsFile of JS_FILES_ORDERED) {
     const scriptRegex = new RegExp(`<script src=["']${jsPath}["']><\\/script>`, 'i');
     html = html.replace(scriptRegex, `<script>\n${strippedContent}\n</script>`);
 }
+
+// Inject logo and favicon placeholders.
+if (logoDataUri) html = html.replace(/__LOGO_SRC__/g, logoDataUri);
+html = html.replace(/__FAVICON_SRC__/g, faviconSrc);
 
 fs.writeFileSync(htmlDistPath, html, 'utf8');
 fs.writeFileSync(htmlDocsPath, html, 'utf8');
