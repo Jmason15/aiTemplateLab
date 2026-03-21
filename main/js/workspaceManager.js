@@ -377,19 +377,19 @@ function setupMenuBar() {
                     <li>Describe what you want — e.g. <em>"A prompt that turns meeting notes into action items."</em></li>
                     <li>Click <strong>Create Prompt</strong> and copy the result.</li>
                     <li>Paste it into your favorite AI tool. It will return a complete template as JSON.</li>
-                    <li>Copy the JSON it gives you, then use <strong>Templates → Import Template From AI Chat</strong> (or the <em>Import Template</em> button in the sidebar) to paste it in.</li>
+                    <li>Copy the response, then click the green <strong>Import Template From AI</strong> button in the sidebar, paste it in, and click Import.</li>
                 </ol>
                 <p><strong>Template Group Generator</strong> — Creates a full set of templates for a specific job or role.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Enter your job title or area of work — e.g. <em>"Marketing Manager"</em>.</li>
                     <li>Run it through your AI tool. You'll get a whole group of templates covering every common task for that role.</li>
-                    <li>Import the result to get an entire ready-to-use group in one go.</li>
+                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — your whole group appears at once.</li>
                 </ol>
                 <p><strong>Workflow Generator</strong> — Breaks a multi-step goal into a sequence of templates, one per stage.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 0 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Describe your goal — e.g. <em>"Write and publish a blog post."</em></li>
                     <li>The AI generates a chain of templates where the output of each step feeds into the next.</li>
-                    <li>Import the result and work through the stages in order.</li>
+                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — all steps appear ready to run in order.</li>
                 </ol>`
         },
         'help-create-from-scratch': {

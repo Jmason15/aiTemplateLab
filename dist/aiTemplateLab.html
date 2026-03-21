@@ -345,7 +345,7 @@ input[type="text"] {
   position: absolute;
   top: 100%;
   left: 0;
-  min-width: 160px;
+  min-width: 180px;
   background: #2d3748;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0 0 6px 6px;
@@ -385,6 +385,11 @@ input[type="text"] {
 .menu-item-danger:hover {
   background: rgba(239, 68, 68, 0.15) !important;
   color: #fca5a5 !important;
+}
+
+/* Help menu is wider to fit longer item labels */
+.menu-bar-item:last-child .menu-bar-dropdown {
+  min-width: 260px;
 }
 
 .menu-divider {
@@ -476,7 +481,7 @@ input[type="text"] {
 }
 
 .sidebar-footer {
-  padding: 12px 16px 48px;
+  padding: 8px 0 44px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
   background: var(--color-surface);
@@ -484,11 +489,23 @@ input[type="text"] {
 }
 
 .sidebar-actions {
-  margin-bottom: 1.2em;
+  margin-bottom: 0;
 }
 
 .sidebar-actions-bottom {
-  padding-bottom: 2.5em !important;
+  padding-bottom: 0 !important;
+}
+
+/* Import button — green to stand out */
+#import-json-btn {
+  background: var(--color-success-dark) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+#import-json-btn:hover {
+  background: var(--color-success) !important;
+  color: #fff !important;
 }
 
 /* Buttons inside the sidebar need different styling to stand out against the dark bg */
@@ -2052,7 +2069,7 @@ input[type="text"] {
     </div>
     <div class="sidebar-footer">
         <div class="sidebar-actions sidebar-actions-bottom" style="padding:0.6em 0.75em 1em 0.75em; display:flex; gap:0.4rem;">
-            <button class="btn btn-outline" id="import-json-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Import Template From AI</button>
+            <button class="btn btn-success" id="import-json-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Import Template From AI</button>
             <button class="btn btn-success" id="blank-prompt-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">New Blank Template</button>
         </div>
 
@@ -3385,7 +3402,7 @@ window.preloadedPrompts = [
         "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
         "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
         "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.\n\nThe example field must contain a short, plain-English walkthrough showing a realistic sample input and what the AI would return. Write it so a non-technical user immediately understands what the template does and what they will get back.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
-        "example": "Input — Prompt Idea:\n\"I want a prompt that takes a customer support email and writes a professional, empathetic reply that acknowledges the issue, offers a solution, and ends with a positive closing.\"\n\nWhat you get back:\nA ready-made template called \"Customer Support Email Reply\" — complete with all fields filled in and ready to use.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — your new template appears instantly in the sidebar.",
+        "example": "Example idea:\n\"I want a prompt that takes a customer support email and writes a professional, empathetic reply that acknowledges the issue, offers a solution, and ends with a positive closing.\"\n\nWhat you get back:\nA ready-made template called \"Customer Support Email Reply\" — complete with all fields filled in and ready to use.\n\nHow to use this template:\n1. Fill in the input field below with your prompt idea.\n2. Click \"Create Prompt\" — the prompt is automatically copied to your clipboard.\n3. Go to your favorite AI tool and paste the prompt.\n4. Copy the response your AI gives back.\n5. Back in aiTemplateLab, click \"Import Template From AI\" in the sidebar.\n6. Paste the response and click Import — your new template appears instantly in the sidebar.",
         "inputs": [
             {
                 "name": "Prompt Idea",
@@ -3421,7 +3438,7 @@ window.preloadedPrompts = [
         "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
         "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
         "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
-        "example": "Input — Role or Domain: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all templates appear in the sidebar at once, ready to use.",
+        "example": "Example role: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use this template:\n1. Fill in the input fields below with your role or domain.\n2. Click \"Create Prompt\" — the prompt is automatically copied to your clipboard.\n3. Go to your favorite AI tool and paste the prompt.\n4. Copy the response your AI gives back.\n5. Back in aiTemplateLab, click \"Import Template From AI\" in the sidebar.\n6. Paste the response and click Import — all your new templates appear in the sidebar at once, ready to use.",
         "inputs": [
             {
                 "name": "Role or Domain",
@@ -3467,7 +3484,7 @@ window.preloadedPrompts = [
         "objective": "Take a goal or multi-stage process and produce an ordered sequence of prompt templates, one per step, where the output of each step becomes the input to the next.",
         "actor": "You are an AI process designer who breaks complex goals into clear, sequential AI-assisted steps and designs a structured prompt template for each one.",
         "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input for this step and what the AI returns. Write it so any user immediately understands what this step does without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
-        "example": "Input — Workflow Goal: \"Write and publish a blog post\"\n\nWhat you get back:\nA set of step-by-step templates that take you from blank page to published post:\n• Step 1: Blog Idea Generator — brainstorm topics for your audience\n• Step 2: Outline Writer — turn your chosen idea into a structured outline\n• Step 3: Draft Writer — write the full post from the outline\n• Step 4: Editor — tighten, improve, and polish the draft\n• Step 5: SEO Title and Meta Writer — write a click-worthy title and meta description\n\nEach step feeds into the next — you run one at a time in your AI tool and carry the output forward.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all steps appear in the sidebar, ready to run in order.",
+        "example": "Example goal: \"Write and publish a blog post\"\n\nWhat you get back:\nA set of step-by-step templates that take you from blank page to published post:\n• Step 1: Blog Idea Generator — brainstorm topics for your audience\n• Step 2: Outline Writer — turn your chosen idea into a structured outline\n• Step 3: Draft Writer — write the full post from the outline\n• Step 4: Editor — tighten, improve, and polish the draft\n• Step 5: SEO Title and Meta Writer — write a click-worthy title and meta description\n\nEach step feeds into the next — you run one at a time and carry the output forward.\n\nHow to use this template:\n1. Fill in the input fields below with your workflow goal.\n2. Click \"Create Prompt\" — the prompt is automatically copied to your clipboard.\n3. Go to your favorite AI tool and paste the prompt.\n4. Copy the response your AI gives back.\n5. Back in aiTemplateLab, click \"Import Template From AI\" in the sidebar.\n6. Paste the response and click Import — all steps appear in the sidebar, ready to run in order.",
         "inputs": [
             {
                 "name": "Workflow Goal",
@@ -3626,7 +3643,7 @@ window.preloadedWorkspaces = {
                 "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
                 "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
                 "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.\n\nThe example field must contain a short, plain-English walkthrough showing a realistic sample input and what the AI would return. Write it so a non-technical user immediately understands what the template does and what they will get back.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
-                "example": "Input — Prompt Idea:\n\"I want a prompt that takes a customer support email and writes a professional, empathetic reply that acknowledges the issue, offers a solution, and ends with a positive closing.\"\n\nWhat you get back:\nA ready-made template called \"Customer Support Email Reply\" — complete with all fields filled in and ready to use.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — your new template appears instantly in the sidebar.",
+                "example": "Example idea:\n\"I want a prompt that takes a customer support email and writes a professional, empathetic reply that acknowledges the issue, offers a solution, and ends with a positive closing.\"\n\nWhat you get back:\nA ready-made template called \"Customer Support Email Reply\" — complete with all fields filled in and ready to use.\n\nHow to use this template:\n1. Fill in the input field below with your prompt idea.\n2. Click \"Create Prompt\" — the prompt is automatically copied to your clipboard.\n3. Go to your favorite AI tool and paste the prompt.\n4. Copy the response your AI gives back.\n5. Back in aiTemplateLab, click \"Import Template From AI\" in the sidebar.\n6. Paste the response and click Import — your new template appears instantly in the sidebar.",
                 "inputs": [
                     {
                         "name": "Prompt Idea",
@@ -3662,7 +3679,7 @@ window.preloadedWorkspaces = {
                 "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
                 "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
                 "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
-                "example": "Input — Role or Domain: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all templates appear in the sidebar at once, ready to use.",
+                "example": "Example role: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use this template:\n1. Fill in the input fields below with your role or domain.\n2. Click \"Create Prompt\" — the prompt is automatically copied to your clipboard.\n3. Go to your favorite AI tool and paste the prompt.\n4. Copy the response your AI gives back.\n5. Back in aiTemplateLab, click \"Import Template From AI\" in the sidebar.\n6. Paste the response and click Import — all your new templates appear in the sidebar at once, ready to use.",
                 "inputs": [
                     {
                         "name": "Role or Domain",
@@ -3708,7 +3725,7 @@ window.preloadedWorkspaces = {
                 "objective": "Take a goal or multi-stage process and produce an ordered sequence of prompt templates, one per step, where the output of each step becomes the input to the next.",
                 "actor": "You are an AI process designer who breaks complex goals into clear, sequential AI-assisted steps and designs a structured prompt template for each one.",
                 "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input for this step and what the AI returns. Write it so any user immediately understands what this step does without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
-                "example": "Input — Workflow Goal: \"Write and publish a blog post\"\n\nWhat you get back:\nA set of step-by-step templates that take you from blank page to published post:\n• Step 1: Blog Idea Generator — brainstorm topics for your audience\n• Step 2: Outline Writer — turn your chosen idea into a structured outline\n• Step 3: Draft Writer — write the full post from the outline\n• Step 4: Editor — tighten, improve, and polish the draft\n• Step 5: SEO Title and Meta Writer — write a click-worthy title and meta description\n\nEach step feeds into the next — you run one at a time in your AI tool and carry the output forward.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all steps appear in the sidebar, ready to run in order.",
+                "example": "Example goal: \"Write and publish a blog post\"\n\nWhat you get back:\nA set of step-by-step templates that take you from blank page to published post:\n• Step 1: Blog Idea Generator — brainstorm topics for your audience\n• Step 2: Outline Writer — turn your chosen idea into a structured outline\n• Step 3: Draft Writer — write the full post from the outline\n• Step 4: Editor — tighten, improve, and polish the draft\n• Step 5: SEO Title and Meta Writer — write a click-worthy title and meta description\n\nEach step feeds into the next — you run one at a time and carry the output forward.\n\nHow to use this template:\n1. Fill in the input fields below with your workflow goal.\n2. Click \"Create Prompt\" — the prompt is automatically copied to your clipboard.\n3. Go to your favorite AI tool and paste the prompt.\n4. Copy the response your AI gives back.\n5. Back in aiTemplateLab, click \"Import Template From AI\" in the sidebar.\n6. Paste the response and click Import — all steps appear in the sidebar, ready to run in order.",
                 "inputs": [
                     {
                         "name": "Workflow Goal",
@@ -5361,19 +5378,19 @@ function setupMenuBar() {
                     <li>Describe what you want — e.g. <em>"A prompt that turns meeting notes into action items."</em></li>
                     <li>Click <strong>Create Prompt</strong> and copy the result.</li>
                     <li>Paste it into your favorite AI tool. It will return a complete template as JSON.</li>
-                    <li>Copy the JSON it gives you, then use <strong>Templates → Import Template From AI Chat</strong> (or the <em>Import Template</em> button in the sidebar) to paste it in.</li>
+                    <li>Copy the response, then click the green <strong>Import Template From AI</strong> button in the sidebar, paste it in, and click Import.</li>
                 </ol>
                 <p><strong>Template Group Generator</strong> — Creates a full set of templates for a specific job or role.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Enter your job title or area of work — e.g. <em>"Marketing Manager"</em>.</li>
                     <li>Run it through your AI tool. You'll get a whole group of templates covering every common task for that role.</li>
-                    <li>Import the result to get an entire ready-to-use group in one go.</li>
+                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — your whole group appears at once.</li>
                 </ol>
                 <p><strong>Workflow Generator</strong> — Breaks a multi-step goal into a sequence of templates, one per stage.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 0 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Describe your goal — e.g. <em>"Write and publish a blog post."</em></li>
                     <li>The AI generates a chain of templates where the output of each step feeds into the next.</li>
-                    <li>Import the result and work through the stages in order.</li>
+                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — all steps appear ready to run in order.</li>
                 </ol>`
         },
         'help-create-from-scratch': {

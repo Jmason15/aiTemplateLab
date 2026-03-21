@@ -33,7 +33,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  min-width: 160px;
+  min-width: 180px;
   background: #2d3748;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0 0 6px 6px;
@@ -73,6 +73,11 @@
 .menu-item-danger:hover {
   background: rgba(239, 68, 68, 0.15) !important;
   color: #fca5a5 !important;
+}
+
+/* Help menu is wider to fit longer item labels */
+.menu-bar-item:last-child .menu-bar-dropdown {
+  min-width: 260px;
 }
 
 .menu-divider {
@@ -164,7 +169,7 @@
 }
 
 .sidebar-footer {
-  padding: 12px 16px 48px;
+  padding: 8px 0 44px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   flex-shrink: 0;
   background: var(--color-surface);
@@ -172,11 +177,23 @@
 }
 
 .sidebar-actions {
-  margin-bottom: 1.2em;
+  margin-bottom: 0;
 }
 
 .sidebar-actions-bottom {
-  padding-bottom: 2.5em !important;
+  padding-bottom: 0 !important;
+}
+
+/* Import button — green to stand out */
+#import-json-btn {
+  background: var(--color-success-dark) !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+#import-json-btn:hover {
+  background: var(--color-success) !important;
+  color: #fff !important;
 }
 
 /* Buttons inside the sidebar need different styling to stand out against the dark bg */
