@@ -50,6 +50,7 @@ function generateViewPrompt() {
     if (prompt.objective) promptJson.objective = prompt.objective;
     if (prompt.actor) promptJson.actor = prompt.actor;
     if (prompt.context) promptJson.context = prompt.context;
+    if (prompt.example) promptJson.example = prompt.example;
     if (Object.keys(inputs).length > 0) promptJson.input = inputs;
     if (prompt.constraints.length > 0) promptJson.constraints = prompt.constraints;
     promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };

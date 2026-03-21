@@ -26,7 +26,7 @@ function startBlankPrompt() {
 
     const newPromptObj = {
         id: newId, name: 'New Prompt', description: '', objective: '',
-        actor: '', context: '', inputs: [], constraints: [], outputs: [], success: []
+        actor: '', context: '', example: '', inputs: [], constraints: [], outputs: [], success: []
     };
     if (!environment.templateGroups[currentTemplateGroup]) return;
     environment.templateGroups[currentTemplateGroup].push(newPromptObj);
@@ -84,7 +84,8 @@ function savePrompt() {
         const fieldName = el.value.trim();
         const suffix = el.id.split('-')[2];
         const descInput = document.getElementById(`input-desc-${suffix}`);
-        if (fieldName) inputs.push({ name: fieldName, description: descInput ? descInput.value.trim() : '' });
+        const phInput = document.getElementById(`input-placeholder-${suffix}`);
+        if (fieldName) inputs.push({ name: fieldName, description: descInput ? descInput.value.trim() : '', placeholder: phInput ? phInput.value.trim() : '' });
     });
 
     const constraints = [];
@@ -127,6 +128,7 @@ function savePrompt() {
         objective: document.getElementById('objective')?.value || '',
         actor: document.getElementById('actor')?.value || '',
         context: document.getElementById('context')?.value || '',
+        example: document.getElementById('prompt-example')?.value.trim() || '',
         inputs, constraints, outputs, success
     };
 
@@ -269,6 +271,18 @@ function viewPrompt(id) {
     const viewMeta = document.getElementById('view-meta');
     if (viewMeta) viewMeta.innerHTML = meta.join('');
 
+    // Show or hide the example section.
+    const exampleSection = document.getElementById('view-example-section');
+    const exampleContent = document.getElementById('view-example-content');
+    if (exampleSection && exampleContent) {
+        if (prompt.example) {
+            exampleContent.textContent = prompt.example;
+            exampleSection.style.display = '';
+        } else {
+            exampleSection.style.display = 'none';
+        }
+    }
+
     // Render input fields as labelled textareas. Each change regenerates the output JSON.
     const inputsContainer = document.getElementById('view-inputs');
     if (inputsContainer) {
@@ -278,8 +292,9 @@ function viewPrompt(id) {
             inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
                 <div style="margin-bottom: 1rem;">
                     <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                    ${i.description ? `<p class="input-hint">${window.escapeHtml(i.description)}</p>` : ''}
                     <textarea id="input-value-${idx}" class="view-textarea" rows="6"
-                        placeholder="${window.escapeHtml(i.description)}"></textarea>
+                        placeholder="${window.escapeHtml(i.placeholder || i.description || '')}"></textarea>
                 </div>
             `).join('');
             inputsContainer.querySelectorAll('textarea').forEach(ta => {

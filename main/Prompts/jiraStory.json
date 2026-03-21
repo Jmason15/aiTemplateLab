@@ -5,10 +5,12 @@
   "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
   "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
   "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+  "example": "Input — Jira Text:\n\"Users are getting logged out randomly. Seems to happen after about 30 min. Session token might be expiring too early. Need to fix it. Also the logout message is confusing.\"\n\nOutput — User Story:\nAs a logged-in user, I want my session to remain active as long as I am using the app, so that I am not unexpectedly logged out during normal use.\n\nAcceptance Criteria:\nGiven I am logged in and actively using the app\nWhen 30 minutes pass without a session refresh\nThen my session should be renewed automatically\n\nGiven my session has expired\nWhen I am redirected to login\nThen I see a clear message explaining why I was logged out",
   "inputs": [
     {
       "name": "Jira Text",
-      "description": "A freeform block of text copied from a Jira ticket or description field."
+      "description": "Paste the raw text from your Jira ticket — title, description, notes, anything you have. It does not need to be clean or formatted.",
+      "placeholder": "e.g., \"Users are getting logged out randomly after ~30 min. Session token might be expiring too early. Also the logout message is confusing.\""
     }
   ],
   "constraints": [

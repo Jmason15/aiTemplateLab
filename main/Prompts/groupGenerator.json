@@ -1,23 +1,28 @@
 {
   "id": "group-generator",
   "name": "Template Group Generator",
-  "description": "Describe a role or domain and the AI generates a complete set of AI prompt templates for every tool or task that role needs, returned as a JSON array ready to import as a group.",
+  "description": "Tell the AI your job title or area of work and it builds a complete set of ready-to-use templates covering every task you'd regularly need AI help with — all importable in one click.",
   "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
   "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
-  "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
+  "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
+  "example": "Input — Role or Domain: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all templates appear in the sidebar at once, ready to use.",
   "inputs": [
     {
       "name": "Role or Domain",
-      "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like (e.g. 'TikTok creator', 'B2B sales rep', 'Shopify store owner', 'email marketing')."
+      "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like.",
+      "placeholder": "e.g., TikTok creator, B2B sales rep, Shopify store owner, real estate agent"
     },
     {
       "name": "Additional Context",
-      "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates (e.g. 'focused on short-form video', 'sells handmade jewellery', 'works with enterprise clients')."
+      "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates.",
+      "placeholder": "e.g., focused on short-form video, sells handmade jewellery, works with enterprise clients"
     }
   ],
   "constraints": [
     "Return only a valid JSON array of template objects with no text before or after the array.",
-    "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+    "Each template must include all fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
+    "The example field in each template must be a plain-English string showing a realistic sample input and what the AI returns — written so any non-technical user immediately understands the template's value.",
+    "Each input object must include a placeholder field containing a short, realistic example value for that field.",
     "IDs must be lowercase hyphen-separated slugs (e.g. 'caption-writer', 'hashtag-research').",
     "Every template must solve a distinct, real task for the given role — no duplicates or filler.",
     "Generate between 6 and 12 templates unless the role clearly warrants more or fewer.",

@@ -23,15 +23,43 @@
         <div class="main-panel">
 
             <section id="welcome-screen" class="screen active">
-                <div class="empty-state">
-                    <h3>Welcome to Prompt Builder Pro</h3>
-                    <p>Select a prompt from the sidebar or create a new one</p>
+                <div class="welcome-content">
+                    <h2>Welcome to aiTemplateLab</h2>
+                    <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details each time, and paste the result into any AI tool.</p>
+                    <div class="welcome-steps">
+                        <div class="welcome-step">
+                            <div class="welcome-step-number">1</div>
+                            <div>
+                                <strong>Pick a template from the sidebar</strong>
+                                <p>Each template is a structured prompt designed for a specific task — like writing a Jira story, cleaning up code, or generating a workflow.</p>
+                            </div>
+                        </div>
+                        <div class="welcome-step">
+                            <div class="welcome-step-number">2</div>
+                            <div>
+                                <strong>Fill in your details</strong>
+                                <p>Open the <em>Use Template</em> tab and fill in the fields. Every template guides you on exactly what information to provide.</p>
+                            </div>
+                        </div>
+                        <div class="welcome-step">
+                            <div class="welcome-step-number">3</div>
+                            <div>
+                                <strong>Copy to your AI tool</strong>
+                                <p>Click <em>Create Prompt</em> and paste the result into ChatGPT, Claude, or any other AI tool. Get consistent, high-quality results every time.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="welcome-cta">Select a template from the sidebar to get started, or click <strong>+</strong> to create your own.</p>
                 </div>
             </section>
 
             <div id="info-display" class="info-display card card-body" style="margin-bottom: 1.5rem;">
                 <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
                 <p id="view-desc" style="font-size: 1.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Description</p>
+                <details id="view-example-section" style="display:none; margin-bottom: 0.5rem;">
+                    <summary class="example-summary">See an Example</summary>
+                    <div id="view-example-content" class="example-content"></div>
+                </details>
                 <details id="view-meta-details" style="margin-bottom: 0.5rem;">
                     <summary style="cursor:pointer; color: var(--color-primary); font-weight: 500; font-size: 1.05em;">Show Details</summary>
                     <div id="view-meta" style="display: flex; flex-direction: column; gap: 0.7em; padding: 0.7em 0 0 0.2em; line-height: 1.6;"></div>

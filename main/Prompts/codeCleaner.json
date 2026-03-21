@@ -6,14 +6,17 @@
     "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
     "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
     "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
+    "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
     "inputs": [
       {
         "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
-        "description": "String indicating the implementation language (for example, Java, Kotlin, C#, TypeScript) so you can follow its idioms and conventions."
+        "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
+        "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
       },
       {
         "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
-        "description": ""
+        "description": "Enter: performance, readability, or both.",
+        "placeholder": "e.g., readability"
       }
     ],
     "constraints": [

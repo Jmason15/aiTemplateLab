@@ -147,6 +147,112 @@
    Output screen
    ============================== */
 
+/* ==============================
+   Welcome screen
+   ============================== */
+
+.welcome-content {
+  max-width: 640px;
+  margin: 3rem auto;
+  padding: 2rem;
+}
+
+.welcome-content h2 {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+}
+
+.welcome-subtitle {
+  font-size: 1.1em;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.welcome-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.welcome-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--color-shadow);
+}
+
+.welcome-step-number {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1em;
+}
+
+.welcome-step strong {
+  display: block;
+  font-size: 1.05em;
+  margin-bottom: 0.25rem;
+  color: var(--color-text);
+}
+
+.welcome-step p {
+  margin: 0;
+  font-size: 0.95em;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.welcome-cta {
+  font-size: 1em;
+  color: var(--color-text-muted);
+}
+
+/* ==============================
+   Use Template screen — input hints and examples
+   ============================== */
+
+.input-hint {
+  margin: 0.15rem 0 0.4rem 0;
+  font-size: 0.88em;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.example-summary {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 1em;
+  padding: 0.5rem 0;
+}
+
+.example-content {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.95em;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
 #view-output-json.prompt-display {
   min-height: 800px !important;
   height: 800px !important;

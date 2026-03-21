@@ -57,8 +57,12 @@ function editPrompt(id) {
     document.getElementById('actor').value = prompt.actor;
     document.getElementById('context').value = prompt.context;
 
+    // Populate static example field.
+    const exampleEl = document.getElementById('prompt-example');
+    if (exampleEl) exampleEl.value = prompt.example || '';
+
     // Populate dynamic field cards.
-    prompt.inputs.forEach(i => addInput(i.name, i.description));
+    prompt.inputs.forEach(i => addInput(i.name, i.description, i.placeholder || ''));
     prompt.constraints.forEach(c => addConstraint(c));
     // Preloaded prompts use `example`; saved prompts use `description` — accept both.
     prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description || o.example || ''));
@@ -82,7 +86,7 @@ window.editPrompt = editPrompt;
  * @param {string} [name=''] - Pre-fill value for the field name input.
  * @param {string} [description=''] - Pre-fill value for the description textarea.
  */
-window.addInput = function (name = '', description = '') {
+window.addInput = function (name = '', description = '', placeholder = '') {
     window.inputCounter++;
     const container = document.getElementById('inputs-container');
     const id = window.inputCounter;
@@ -114,13 +118,27 @@ window.addInput = function (name = '', description = '') {
     descLabel.className = 'edit-card-label';
     const descInput = document.createElement('textarea');
     descInput.id = `input-desc-${id}`;
-    descInput.placeholder = 'Description (optional)';
+    descInput.placeholder = 'Explain what to put in this field (shown as hint text)';
     descInput.value = description;
     descInput.setAttribute('aria-label', 'Input description');
     descInput.addEventListener('input', regenerateOutput);
     descInput.className = 'large-textarea';
     content.appendChild(descLabel);
     content.appendChild(descInput);
+
+    const placeholderLabel = document.createElement('label');
+    placeholderLabel.setAttribute('for', `input-placeholder-${id}`);
+    placeholderLabel.textContent = 'Placeholder Example';
+    placeholderLabel.className = 'edit-card-label';
+    const placeholderInput = document.createElement('input');
+    placeholderInput.type = 'text';
+    placeholderInput.id = `input-placeholder-${id}`;
+    placeholderInput.placeholder = 'e.g., "The meeting discussed Q3 targets and new hires..."';
+    placeholderInput.value = placeholder;
+    placeholderInput.setAttribute('aria-label', 'Placeholder example');
+    placeholderInput.addEventListener('input', regenerateOutput);
+    content.appendChild(placeholderLabel);
+    content.appendChild(placeholderInput);
 
     div.appendChild(content);
 
@@ -339,12 +357,14 @@ function saveCurrentPrompt() {
     prompt.actor       = document.getElementById('actor')?.value || '';
     prompt.context     = document.getElementById('context')?.value || '';
 
+    prompt.example = document.getElementById('prompt-example')?.value || '';
     prompt.inputs = [];
     for (let i = 1; i <= window.inputCounter; i++) {
         const name = document.getElementById(`input-name-${i}`);
         const desc = document.getElementById(`input-desc-${i}`);
+        const ph = document.getElementById(`input-placeholder-${i}`);
         if (name && name.value.trim()) {
-            prompt.inputs.push({ name: name.value, description: desc ? desc.value : '' });
+            prompt.inputs.push({ name: name.value, description: desc ? desc.value : '', placeholder: ph ? ph.value : '' });
         }
     }
     prompt.constraints = [];

@@ -1551,6 +1551,112 @@ input[type="text"] {
    Output screen
    ============================== */
 
+/* ==============================
+   Welcome screen
+   ============================== */
+
+.welcome-content {
+  max-width: 640px;
+  margin: 3rem auto;
+  padding: 2rem;
+}
+
+.welcome-content h2 {
+  font-size: 1.8em;
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: 0.75rem;
+}
+
+.welcome-subtitle {
+  font-size: 1.1em;
+  color: var(--color-text-muted);
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.welcome-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.welcome-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--color-shadow);
+}
+
+.welcome-step-number {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1em;
+}
+
+.welcome-step strong {
+  display: block;
+  font-size: 1.05em;
+  margin-bottom: 0.25rem;
+  color: var(--color-text);
+}
+
+.welcome-step p {
+  margin: 0;
+  font-size: 0.95em;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.welcome-cta {
+  font-size: 1em;
+  color: var(--color-text-muted);
+}
+
+/* ==============================
+   Use Template screen — input hints and examples
+   ============================== */
+
+.input-hint {
+  margin: 0.15rem 0 0.4rem 0;
+  font-size: 0.88em;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.example-summary {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 1em;
+  padding: 0.5rem 0;
+}
+
+.example-content {
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.95em;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
 #view-output-json.prompt-display {
   min-height: 800px !important;
   height: 800px !important;
@@ -1633,15 +1739,43 @@ input[type="text"] {
         <div class="main-panel">
 
             <section id="welcome-screen" class="screen active">
-                <div class="empty-state">
-                    <h3>Welcome to Prompt Builder Pro</h3>
-                    <p>Select a prompt from the sidebar or create a new one</p>
+                <div class="welcome-content">
+                    <h2>Welcome to aiTemplateLab</h2>
+                    <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details each time, and paste the result into any AI tool.</p>
+                    <div class="welcome-steps">
+                        <div class="welcome-step">
+                            <div class="welcome-step-number">1</div>
+                            <div>
+                                <strong>Pick a template from the sidebar</strong>
+                                <p>Each template is a structured prompt designed for a specific task — like writing a Jira story, cleaning up code, or generating a workflow.</p>
+                            </div>
+                        </div>
+                        <div class="welcome-step">
+                            <div class="welcome-step-number">2</div>
+                            <div>
+                                <strong>Fill in your details</strong>
+                                <p>Open the <em>Use Template</em> tab and fill in the fields. Every template guides you on exactly what information to provide.</p>
+                            </div>
+                        </div>
+                        <div class="welcome-step">
+                            <div class="welcome-step-number">3</div>
+                            <div>
+                                <strong>Copy to your AI tool</strong>
+                                <p>Click <em>Create Prompt</em> and paste the result into ChatGPT, Claude, or any other AI tool. Get consistent, high-quality results every time.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="welcome-cta">Select a template from the sidebar to get started, or click <strong>+</strong> to create your own.</p>
                 </div>
             </section>
 
             <div id="info-display" class="info-display card card-body" style="margin-bottom: 1.5rem;">
                 <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
                 <p id="view-desc" style="font-size: 1.1em; color: var(--color-text-muted); margin-bottom: 0.5rem;">Description</p>
+                <details id="view-example-section" style="display:none; margin-bottom: 0.5rem;">
+                    <summary class="example-summary">See an Example</summary>
+                    <div id="view-example-content" class="example-content"></div>
+                </details>
                 <details id="view-meta-details" style="margin-bottom: 0.5rem;">
                     <summary style="cursor:pointer; color: var(--color-primary); font-weight: 500; font-size: 1.05em;">Show Details</summary>
                     <div id="view-meta" style="display: flex; flex-direction: column; gap: 0.7em; padding: 0.7em 0 0 0.2em; line-height: 1.6;"></div>
@@ -1713,6 +1847,19 @@ input[type="text"] {
                     <input type="text" id="prompt-name" placeholder="e.g., Quarterly Sales Report" aria-required="true">
                     <label for="prompt-desc">Description:</label>
                     <textarea id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true" rows="3"></textarea>
+                </div>
+            </details>
+
+            <details>
+                <summary>Example</summary>
+                <div class="section-hint">
+                    <strong>What is this?</strong> A concrete example showing the template in action — sample inputs and the kind of output it produces.<br>
+                    <strong>Why is it important?</strong> Examples make it immediately obvious how to use the template and what to expect, especially for first-time users.<br>
+                    <strong>Tip:</strong> Show a realistic scenario: paste example input values and a snippet of the output you'd get from an AI tool.
+                </div>
+                <div class="edit-fields">
+                    <label for="prompt-example" class="visually-hidden">Example</label>
+                    <textarea id="prompt-example" placeholder="e.g., Input — Meeting Notes: 'The team agreed to push the Q3 launch to October and hire two more engineers.'&#10;&#10;Output — 'Summary: The Q3 launch has been delayed to October. Two engineering hires are approved.'" rows="6"></textarea>
                 </div>
             </details>
 
@@ -2463,8 +2610,12 @@ function editPrompt(id) {
     document.getElementById('actor').value = prompt.actor;
     document.getElementById('context').value = prompt.context;
 
+    // Populate static example field.
+    const exampleEl = document.getElementById('prompt-example');
+    if (exampleEl) exampleEl.value = prompt.example || '';
+
     // Populate dynamic field cards.
-    prompt.inputs.forEach(i => addInput(i.name, i.description));
+    prompt.inputs.forEach(i => addInput(i.name, i.description, i.placeholder || ''));
     prompt.constraints.forEach(c => addConstraint(c));
     // Preloaded prompts use `example`; saved prompts use `description` — accept both.
     prompt.outputs.forEach(o => addOutput(o.name, o.type, o.description || o.example || ''));
@@ -2488,7 +2639,7 @@ window.editPrompt = editPrompt;
  * @param {string} [name=''] - Pre-fill value for the field name input.
  * @param {string} [description=''] - Pre-fill value for the description textarea.
  */
-window.addInput = function (name = '', description = '') {
+window.addInput = function (name = '', description = '', placeholder = '') {
     window.inputCounter++;
     const container = document.getElementById('inputs-container');
     const id = window.inputCounter;
@@ -2520,13 +2671,27 @@ window.addInput = function (name = '', description = '') {
     descLabel.className = 'edit-card-label';
     const descInput = document.createElement('textarea');
     descInput.id = `input-desc-${id}`;
-    descInput.placeholder = 'Description (optional)';
+    descInput.placeholder = 'Explain what to put in this field (shown as hint text)';
     descInput.value = description;
     descInput.setAttribute('aria-label', 'Input description');
     descInput.addEventListener('input', regenerateOutput);
     descInput.className = 'large-textarea';
     content.appendChild(descLabel);
     content.appendChild(descInput);
+
+    const placeholderLabel = document.createElement('label');
+    placeholderLabel.setAttribute('for', `input-placeholder-${id}`);
+    placeholderLabel.textContent = 'Placeholder Example';
+    placeholderLabel.className = 'edit-card-label';
+    const placeholderInput = document.createElement('input');
+    placeholderInput.type = 'text';
+    placeholderInput.id = `input-placeholder-${id}`;
+    placeholderInput.placeholder = 'e.g., "The meeting discussed Q3 targets and new hires..."';
+    placeholderInput.value = placeholder;
+    placeholderInput.setAttribute('aria-label', 'Placeholder example');
+    placeholderInput.addEventListener('input', regenerateOutput);
+    content.appendChild(placeholderLabel);
+    content.appendChild(placeholderInput);
 
     div.appendChild(content);
 
@@ -2745,12 +2910,14 @@ function saveCurrentPrompt() {
     prompt.actor       = document.getElementById('actor')?.value || '';
     prompt.context     = document.getElementById('context')?.value || '';
 
+    prompt.example = document.getElementById('prompt-example')?.value || '';
     prompt.inputs = [];
     for (let i = 1; i <= window.inputCounter; i++) {
         const name = document.getElementById(`input-name-${i}`);
         const desc = document.getElementById(`input-desc-${i}`);
+        const ph = document.getElementById(`input-placeholder-${i}`);
         if (name && name.value.trim()) {
-            prompt.inputs.push({ name: name.value, description: desc ? desc.value : '' });
+            prompt.inputs.push({ name: name.value, description: desc ? desc.value : '', placeholder: ph ? ph.value : '' });
         }
     }
     prompt.constraints = [];
@@ -2801,34 +2968,142 @@ function attachFieldListeners() {
 
 window.preloadedPrompts = [
     {
+        "id": "jira-story-generator",
+        "name": "Jira Story and Acceptance Criteria Generator",
+        "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
+        "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
+        "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
+        "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+        "example": "Input — Jira Text:\n\"Users are getting logged out randomly. Seems to happen after about 30 min. Session token might be expiring too early. Need to fix it. Also the logout message is confusing.\"\n\nOutput — User Story:\nAs a logged-in user, I want my session to remain active as long as I am using the app, so that I am not unexpectedly logged out during normal use.\n\nAcceptance Criteria:\nGiven I am logged in and actively using the app\nWhen 30 minutes pass without a session refresh\nThen my session should be renewed automatically\n\nGiven my session has expired\nWhen I am redirected to login\nThen I see a clear message explaining why I was logged out",
+        "inputs": [
+            {
+                "name": "Jira Text",
+                "description": "Paste the raw text from your Jira ticket — title, description, notes, anything you have. It does not need to be clean or formatted.",
+                "placeholder": "e.g., \"Users are getting logged out randomly after ~30 min. Session token might be expiring too early. Also the logout message is confusing.\""
+            }
+        ],
+        "constraints": [
+            "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
+            "Keep language clear and concise.",
+            "Preserve meaning and context from the Jira text without adding assumptions."
+        ],
+        "outputs": [
+            {
+                "name": "User Story",
+                "type": "markdown",
+                "example": "```Markdown format"
+            },
+            {
+                "name": "Acceptance Criteria",
+                "type": "markdown",
+                "example": "```Markdown Gherkin format."
+            },
+            {
+                "name": "Estimated Storypoints",
+                "type": "String",
+                "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+            },
+            {
+                "name": "Story point description",
+                "type": "string",
+                "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+            }
+        ],
+        "success": [
+            "The user story accurately reflects the intent of the Jira input.",
+            "Acceptance criteria are testable, unambiguous, and aligned with the story.",
+            "Output is cleanly formatted and ready to paste into Jira or documentation.",
+            "Questions needed to reduce uncertainty are asked in the story point description",
+            "Estimated story points should be exceptionally larger based on uncertainty or complexity."
+        ]
+    },
+    {
+        "id": "improve-function-implementation",
+        "name": "Improve Function Implementation with Risk Analysis",
+        "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
+        "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
+        "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
+        "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
+        "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
+        "inputs": [
+            {
+                "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+                "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
+                "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
+            },
+            {
+                "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
+                "description": "Enter: performance, readability, or both.",
+                "placeholder": "e.g., readability"
+            }
+        ],
+        "constraints": [
+            "Keep the public signature and externally observable behavior of the function unchanged unless context.constraints explicitly allows modifications to the contract.",
+            "Prefer clear, idiomatic code for the specified language, following common conventions for naming, formatting, and control flow.",
+            "Apply the performance_or_readability_priority: if performance, focus on algorithmic and allocation improvements; if readability, emphasize structure, naming, and simplicity; if both, seek a reasonable balance.",
+            "Do not introduce new external dependencies or libraries unless context.constraints explicitly permits them.",
+            "Use comments sparingly to explain non-obvious logic and important assumptions, avoiding over-commenting straightforward code.",
+            "Favor small, single-responsibility helpers and use private/subordinate functions when they improve clarity, while keeping the public function signature unchanged.",
+            "Explicitly look for and call out potential null-pointer and other high-impact issues, describing when they occur and their impact.",
+            "Keep the explanation of changes concise (around 200 words or less) and focused on the most important improvements and trade-offs."
+        ],
+        "outputs": [
+            {
+                "name": "improved_function_source",
+                "type": "string",
+                "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
+            },
+            {
+                "name": "explanation:",
+                "type": "string",
+                "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
+            },
+            {
+                "name": "potential_issues:",
+                "type": "string",
+                "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+            }
+        ],
+        "success": [
+            "improved_function_source parses/compiles in the specified language and preserves the original function’s public behavior and backward compatibility under normal inputs.",
+            "The resulting code follows idiomatic style for the language and is easier for other engineers to read and maintain, especially when readability is prioritized.",
+            "For performance-focused or balanced requests, the explanation clearly calls out the main performance improvements such as reduced allocations, simpler algorithms, or fewer redundant operations.",
+            "potential_issues includes likely null-pointer risks and other high-impact concerns, each with clear triggers, impact, and realistic remediation suggestions aligned with context.constraints.",
+            "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
+        ]
+    },
+    {
         "id": "template-builder",
         "name": "Template Builder",
-        "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
+        "description": "Describe what you want an AI prompt to do and it builds a complete, ready-to-use template for you — just paste the result back here to import it.",
         "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
         "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
-        "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
+        "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.\n\nThe example field must contain a short, plain-English walkthrough showing a realistic sample input and what the AI would return. Write it so a non-technical user immediately understands what the template does and what they will get back.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
+        "example": "Input — Prompt Idea:\n\"I want a prompt that takes a customer support email and writes a professional, empathetic reply that acknowledges the issue, offers a solution, and ends with a positive closing.\"\n\nWhat you get back:\nA ready-made template called \"Customer Support Email Reply\" — complete with all fields filled in and ready to use.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — your new template appears instantly in the sidebar.",
         "inputs": [
             {
                 "name": "Prompt Idea",
-                "description": "A single freeform description of the kind of prompt the user wants to build, including what it should do and for whom."
+                "description": "Describe in plain language what you want the prompt to do and who would use it. Don't worry about structure — just explain the idea.",
+                "placeholder": "e.g., \"A prompt that takes a customer support email and writes a professional, empathetic reply.\""
             }
         ],
         "constraints": [
             "Use clear, concise language for every field.",
             "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
             "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
-            "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+            "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
+            "The example field must be a plain-English string (not JSON) showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value.",
             "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after."
         ],
         "outputs": [
             {
                 "name": "Field Suggestions",
                 "type": "JSON",
-                "example": "{\n  \"id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
+                "example": "{\n  \"id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"example\": \"Input — [Field Name]: '[sample value]'\\n\\nWhat you get back: [plain English description of the output]\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\",\n      \"placeholder\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
             }
         ],
         "success": [
-            "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success, and no additional wrapper properties.",
+            "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success, and no additional wrapper properties.",
             "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
             "All suggested content reflects the user's described prompt idea and is specific, not generic."
         ]
@@ -2836,23 +3111,28 @@ window.preloadedPrompts = [
     {
         "id": "group-generator",
         "name": "Template Group Generator",
-        "description": "Describe a role or domain and the AI generates a complete set of AI prompt templates for every tool or task that role needs, returned as a JSON array ready to import as a group.",
+        "description": "Tell the AI your job title or area of work and it builds a complete set of ready-to-use templates covering every task you'd regularly need AI help with — all importable in one click.",
         "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
         "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
-        "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
+        "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
+        "example": "Input — Role or Domain: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all templates appear in the sidebar at once, ready to use.",
         "inputs": [
             {
                 "name": "Role or Domain",
-                "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like (e.g. 'TikTok creator', 'B2B sales rep', 'Shopify store owner', 'email marketing')."
+                "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like.",
+                "placeholder": "e.g., TikTok creator, B2B sales rep, Shopify store owner, real estate agent"
             },
             {
                 "name": "Additional Context",
-                "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates (e.g. 'focused on short-form video', 'sells handmade jewellery', 'works with enterprise clients')."
+                "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates.",
+                "placeholder": "e.g., focused on short-form video, sells handmade jewellery, works with enterprise clients"
             }
         ],
         "constraints": [
             "Return only a valid JSON array of template objects with no text before or after the array.",
-            "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+            "Each template must include all fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
+            "The example field in each template must be a plain-English string showing a realistic sample input and what the AI returns — written so any non-technical user immediately understands the template's value.",
+            "Each input object must include a placeholder field containing a short, realistic example value for that field.",
             "IDs must be lowercase hyphen-separated slugs (e.g. 'caption-writer', 'hashtag-research').",
             "Every template must solve a distinct, real task for the given role — no duplicates or filler.",
             "Generate between 6 and 12 templates unless the role clearly warrants more or fewer.",
@@ -2877,23 +3157,28 @@ window.preloadedPrompts = [
     {
         "id": "workflow-generator",
         "name": "Workflow Generator",
-        "description": "Describe a goal or process and the AI designs a step-by-step workflow where each step is a complete prompt template. You run each step manually in your AI tool and carry the output into the next step.",
+        "description": "Describe a goal and the AI breaks it into a step-by-step set of templates — one for each stage of the process. Run each step in your AI tool and carry the result into the next, all the way to the finish line.",
         "objective": "Take a goal or multi-stage process and produce an ordered sequence of prompt templates, one per step, where the output of each step becomes the input to the next.",
         "actor": "You are an AI process designer who breaks complex goals into clear, sequential AI-assisted steps and designs a structured prompt template for each one.",
-        "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
+        "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input for this step and what the AI returns. Write it so any user immediately understands what this step does without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
+        "example": "Input — Workflow Goal: \"Write and publish a blog post\"\n\nWhat you get back:\nA set of step-by-step templates that take you from blank page to published post:\n• Step 1: Blog Idea Generator — brainstorm topics for your audience\n• Step 2: Outline Writer — turn your chosen idea into a structured outline\n• Step 3: Draft Writer — write the full post from the outline\n• Step 4: Editor — tighten, improve, and polish the draft\n• Step 5: SEO Title and Meta Writer — write a click-worthy title and meta description\n\nEach step feeds into the next — you run one at a time in your AI tool and carry the output forward.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all steps appear in the sidebar, ready to run in order.",
         "inputs": [
             {
                 "name": "Workflow Goal",
-                "description": "The end-to-end process or goal to design a workflow for (e.g. 'produce and post a TikTok video', 'write a blog post from idea to published', 'respond to a sales lead and close the deal')."
+                "description": "The end-to-end process or goal to design a workflow for.",
+                "placeholder": "e.g., produce and post a TikTok video, write a blog post from idea to published, respond to a sales lead and close the deal"
             },
             {
                 "name": "Additional Context",
-                "description": "Optional. Any constraints, tools, audience, or style preferences that should shape the workflow (e.g. 'videos are under 60 seconds', 'audience is small business owners', 'we use HubSpot')."
+                "description": "Optional. Any constraints, tools, audience, or style preferences that should shape the workflow.",
+                "placeholder": "e.g., videos are under 60 seconds, audience is small business owners, we use HubSpot"
             }
         ],
         "constraints": [
             "Return only a valid JSON array of template objects in workflow order, with no text before or after the array.",
-            "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+            "Each template must include all fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
+            "The example field in each template must be a plain-English string showing a realistic sample input for that step and what the AI returns — written so any non-technical user immediately understands what the step does.",
+            "Each input object must include a placeholder field containing a short, realistic example value for that field.",
             "IDs must follow the pattern 'step-N-readable-slug' (e.g. 'step-1-idea-generator', 'step-2-script-writer').",
             "Names must follow the pattern 'Step N: Step Name' (e.g. 'Step 1: Idea Generator').",
             "Every step after step 1 must have an input field explicitly labelled to receive the previous step's output (e.g. 'Script Draft from Step 1').",
@@ -2921,37 +3206,155 @@ window.preloadedPrompts = [
 ];
 
 window.preloadedWorkspaces = {
+    "Jira": {
+        "templates": [
+            {
+                "id": "jira-story-generator",
+                "name": "Jira Story and Acceptance Criteria Generator",
+                "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
+                "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
+                "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
+                "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+                "example": "Input — Jira Text:\n\"Users are getting logged out randomly. Seems to happen after about 30 min. Session token might be expiring too early. Need to fix it. Also the logout message is confusing.\"\n\nOutput — User Story:\nAs a logged-in user, I want my session to remain active as long as I am using the app, so that I am not unexpectedly logged out during normal use.\n\nAcceptance Criteria:\nGiven I am logged in and actively using the app\nWhen 30 minutes pass without a session refresh\nThen my session should be renewed automatically\n\nGiven my session has expired\nWhen I am redirected to login\nThen I see a clear message explaining why I was logged out",
+                "inputs": [
+                    {
+                        "name": "Jira Text",
+                        "description": "Paste the raw text from your Jira ticket — title, description, notes, anything you have. It does not need to be clean or formatted.",
+                        "placeholder": "e.g., \"Users are getting logged out randomly after ~30 min. Session token might be expiring too early. Also the logout message is confusing.\""
+                    }
+                ],
+                "constraints": [
+                    "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
+                    "Keep language clear and concise.",
+                    "Preserve meaning and context from the Jira text without adding assumptions."
+                ],
+                "outputs": [
+                    {
+                        "name": "User Story",
+                        "type": "markdown",
+                        "example": "```Markdown format"
+                    },
+                    {
+                        "name": "Acceptance Criteria",
+                        "type": "markdown",
+                        "example": "```Markdown Gherkin format."
+                    },
+                    {
+                        "name": "Estimated Storypoints",
+                        "type": "String",
+                        "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+                    },
+                    {
+                        "name": "Story point description",
+                        "type": "string",
+                        "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+                    }
+                ],
+                "success": [
+                    "The user story accurately reflects the intent of the Jira input.",
+                    "Acceptance criteria are testable, unambiguous, and aligned with the story.",
+                    "Output is cleanly formatted and ready to paste into Jira or documentation.",
+                    "Questions needed to reduce uncertainty are asked in the story point description",
+                    "Estimated story points should be exceptionally larger based on uncertainty or complexity."
+                ]
+            }
+        ],
+        "inputHistory": []
+    },
+    "Developer": {
+        "templates": [
+            {
+                "id": "improve-function-implementation",
+                "name": "Improve Function Implementation with Risk Analysis",
+                "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
+                "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
+                "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
+                "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
+                "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
+                "inputs": [
+                    {
+                        "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+                        "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
+                        "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
+                    },
+                    {
+                        "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
+                        "description": "Enter: performance, readability, or both.",
+                        "placeholder": "e.g., readability"
+                    }
+                ],
+                "constraints": [
+                    "Keep the public signature and externally observable behavior of the function unchanged unless context.constraints explicitly allows modifications to the contract.",
+                    "Prefer clear, idiomatic code for the specified language, following common conventions for naming, formatting, and control flow.",
+                    "Apply the performance_or_readability_priority: if performance, focus on algorithmic and allocation improvements; if readability, emphasize structure, naming, and simplicity; if both, seek a reasonable balance.",
+                    "Do not introduce new external dependencies or libraries unless context.constraints explicitly permits them.",
+                    "Use comments sparingly to explain non-obvious logic and important assumptions, avoiding over-commenting straightforward code.",
+                    "Favor small, single-responsibility helpers and use private/subordinate functions when they improve clarity, while keeping the public function signature unchanged.",
+                    "Explicitly look for and call out potential null-pointer and other high-impact issues, describing when they occur and their impact.",
+                    "Keep the explanation of changes concise (around 200 words or less) and focused on the most important improvements and trade-offs."
+                ],
+                "outputs": [
+                    {
+                        "name": "improved_function_source",
+                        "type": "string",
+                        "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
+                    },
+                    {
+                        "name": "explanation:",
+                        "type": "string",
+                        "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
+                    },
+                    {
+                        "name": "potential_issues:",
+                        "type": "string",
+                        "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+                    }
+                ],
+                "success": [
+                    "improved_function_source parses/compiles in the specified language and preserves the original function’s public behavior and backward compatibility under normal inputs.",
+                    "The resulting code follows idiomatic style for the language and is easier for other engineers to read and maintain, especially when readability is prioritized.",
+                    "For performance-focused or balanced requests, the explanation clearly calls out the main performance improvements such as reduced allocations, simpler algorithms, or fewer redundant operations.",
+                    "potential_issues includes likely null-pointer risks and other high-impact concerns, each with clear triggers, impact, and realistic remediation suggestions aligned with context.constraints.",
+                    "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
+                ]
+            }
+        ],
+        "inputHistory": []
+    },
     "Template Lab": {
         "templates": [
             {
                 "id": "template-builder",
                 "name": "Template Builder",
-                "description": "Helps a user design all fields for a prompt JSON entry (name, description, objective, actor, context, inputs, constraints, outputs, success) from one freeform description.",
+                "description": "Describe what you want an AI prompt to do and it builds a complete, ready-to-use template for you — just paste the result back here to import it.",
                 "objective": "Take a single freeform description of what the user wants a prompt to do and guide them to a complete, well-structured JSON spec with all the standard fields used in this system.",
                 "actor": "You are a Prompt Specification Assistant that turns a rough idea for a prompt into a structured JSON definition with clear fields.",
-                "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, inputs, constraints, outputs, success.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
+                "context": "The user provides a single block of text describing the kind of prompt they want to build (e.g., 'a prompt that creates Jira stories' or 'a prompt that summarizes legal contracts').\n\nFrom that one input, you must:\n- Infer the likely purpose, target user, and usage scenario.\n- Ask a few targeted clarification questions only if truly necessary.\n- Propose concrete values for each JSON field: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.\n\nThe example field must contain a short, plain-English walkthrough showing a realistic sample input and what the AI would return. Write it so a non-technical user immediately understands what the template does and what they will get back.\n\nYour goal is to help the user think through and finalize these fields, not just invent them arbitrarily.",
+                "example": "Input — Prompt Idea:\n\"I want a prompt that takes a customer support email and writes a professional, empathetic reply that acknowledges the issue, offers a solution, and ends with a positive closing.\"\n\nWhat you get back:\nA ready-made template called \"Customer Support Email Reply\" — complete with all fields filled in and ready to use.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — your new template appears instantly in the sidebar.",
                 "inputs": [
                     {
                         "name": "Prompt Idea",
-                        "description": "A single freeform description of the kind of prompt the user wants to build, including what it should do and for whom."
+                        "description": "Describe in plain language what you want the prompt to do and who would use it. Don't worry about structure — just explain the idea.",
+                        "placeholder": "e.g., \"A prompt that takes a customer support email and writes a professional, empathetic reply.\""
                     }
                 ],
                 "constraints": [
                     "Use clear, concise language for every field.",
                     "If something is ambiguous, you may ask up to 3 short clarification questions before drafting the fields.",
                     "Limit the number of inputs, constraints, outputs, and success items to what is genuinely useful; avoid filler.",
-                    "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+                    "Return exactly one top-level JSON object that directly contains the fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
+                    "The example field must be a plain-English string (not JSON) showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value.",
                     "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after."
                 ],
                 "outputs": [
                     {
                         "name": "Field Suggestions",
                         "type": "JSON",
-                        "example": "{\n  \"id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"example\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
+                        "example": "{\n  \"id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"example\": \"Input — [Field Name]: '[sample value]'\\n\\nWhat you get back: [plain English description of the output]\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\",\n      \"placeholder\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
                     }
                 ],
                 "success": [
-                    "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success, and no additional wrapper properties.",
+                    "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success, and no additional wrapper properties.",
                     "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",
                     "All suggested content reflects the user's described prompt idea and is specific, not generic."
                 ]
@@ -2959,23 +3362,28 @@ window.preloadedWorkspaces = {
             {
                 "id": "group-generator",
                 "name": "Template Group Generator",
-                "description": "Describe a role or domain and the AI generates a complete set of AI prompt templates for every tool or task that role needs, returned as a JSON array ready to import as a group.",
+                "description": "Tell the AI your job title or area of work and it builds a complete set of ready-to-use templates covering every task you'd regularly need AI help with — all importable in one click.",
                 "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
                 "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
-                "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
+                "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
+                "example": "Input — Role or Domain: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all templates appear in the sidebar at once, ready to use.",
                 "inputs": [
                     {
                         "name": "Role or Domain",
-                        "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like (e.g. 'TikTok creator', 'B2B sales rep', 'Shopify store owner', 'email marketing')."
+                        "description": "The role, job title, or domain to generate templates for. Be as specific or broad as you like.",
+                        "placeholder": "e.g., TikTok creator, B2B sales rep, Shopify store owner, real estate agent"
                     },
                     {
                         "name": "Additional Context",
-                        "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates (e.g. 'focused on short-form video', 'sells handmade jewellery', 'works with enterprise clients')."
+                        "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates.",
+                        "placeholder": "e.g., focused on short-form video, sells handmade jewellery, works with enterprise clients"
                     }
                 ],
                 "constraints": [
                     "Return only a valid JSON array of template objects with no text before or after the array.",
-                    "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+                    "Each template must include all fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
+                    "The example field in each template must be a plain-English string showing a realistic sample input and what the AI returns — written so any non-technical user immediately understands the template's value.",
+                    "Each input object must include a placeholder field containing a short, realistic example value for that field.",
                     "IDs must be lowercase hyphen-separated slugs (e.g. 'caption-writer', 'hashtag-research').",
                     "Every template must solve a distinct, real task for the given role — no duplicates or filler.",
                     "Generate between 6 and 12 templates unless the role clearly warrants more or fewer.",
@@ -3000,23 +3408,28 @@ window.preloadedWorkspaces = {
             {
                 "id": "workflow-generator",
                 "name": "Workflow Generator",
-                "description": "Describe a goal or process and the AI designs a step-by-step workflow where each step is a complete prompt template. You run each step manually in your AI tool and carry the output into the next step.",
+                "description": "Describe a goal and the AI breaks it into a step-by-step set of templates — one for each stage of the process. Run each step in your AI tool and carry the result into the next, all the way to the finish line.",
                 "objective": "Take a goal or multi-stage process and produce an ordered sequence of prompt templates, one per step, where the output of each step becomes the input to the next.",
                 "actor": "You are an AI process designer who breaks complex goals into clear, sequential AI-assisted steps and designs a structured prompt template for each one.",
-                "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
+                "context": "The user will describe a goal or process (e.g. 'produce a TikTok video from idea to posted', 'write and publish a blog post', 'onboard a new client'). Your job is to:\n\n1. Break the goal into a logical sequence of steps where AI can assist at each stage.\n2. Design one complete prompt template per step.\n3. Each step after the first must include an input field that accepts the output from the previous step.\n4. Return all templates as a single JSON array in workflow order.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"step-N-readable-slug\",\n  \"name\": \"Step N: Step Name\",\n  \"description\": \"One sentence describing what this step does.\",\n  \"objective\": \"What this step accomplishes.\",\n  \"actor\": \"The AI persona or role for this step.\",\n  \"context\": \"Background the AI needs. Mention that this is step N of the workflow and what the previous step produced, if applicable.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input for this step and what the AI returns. Write it so any user immediately understands what this step does without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Name\", \"description\": \"What to provide.\", \"placeholder\": \"A short realistic example value for this field.\" } ],\n  \"constraints\": [ \"Rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string | markdown | JSON\", \"description\": \"What comes back and how it feeds into the next step.\" } ],\n  \"success\": [ \"How to evaluate a good response.\" ]\n}\n\nDesign steps that are genuinely distinct — each step should transform or build on what came before. Avoid steps that could be collapsed into one.",
+                "example": "Input — Workflow Goal: \"Write and publish a blog post\"\n\nWhat you get back:\nA set of step-by-step templates that take you from blank page to published post:\n• Step 1: Blog Idea Generator — brainstorm topics for your audience\n• Step 2: Outline Writer — turn your chosen idea into a structured outline\n• Step 3: Draft Writer — write the full post from the outline\n• Step 4: Editor — tighten, improve, and polish the draft\n• Step 5: SEO Title and Meta Writer — write a click-worthy title and meta description\n\nEach step feeds into the next — you run one at a time in your AI tool and carry the output forward.\n\nHow to use the output:\n1. Copy the response from your AI tool.\n2. In aiTemplateLab, open the menu (⋮) and choose Import Templates.\n3. Paste it in and click Import — all steps appear in the sidebar, ready to run in order.",
                 "inputs": [
                     {
                         "name": "Workflow Goal",
-                        "description": "The end-to-end process or goal to design a workflow for (e.g. 'produce and post a TikTok video', 'write a blog post from idea to published', 'respond to a sales lead and close the deal')."
+                        "description": "The end-to-end process or goal to design a workflow for.",
+                        "placeholder": "e.g., produce and post a TikTok video, write a blog post from idea to published, respond to a sales lead and close the deal"
                     },
                     {
                         "name": "Additional Context",
-                        "description": "Optional. Any constraints, tools, audience, or style preferences that should shape the workflow (e.g. 'videos are under 60 seconds', 'audience is small business owners', 'we use HubSpot')."
+                        "description": "Optional. Any constraints, tools, audience, or style preferences that should shape the workflow.",
+                        "placeholder": "e.g., videos are under 60 seconds, audience is small business owners, we use HubSpot"
                     }
                 ],
                 "constraints": [
                     "Return only a valid JSON array of template objects in workflow order, with no text before or after the array.",
-                    "Each template must include all fields: id, name, description, objective, actor, context, inputs, constraints, outputs, success.",
+                    "Each template must include all fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
+                    "The example field in each template must be a plain-English string showing a realistic sample input for that step and what the AI returns — written so any non-technical user immediately understands what the step does.",
+                    "Each input object must include a placeholder field containing a short, realistic example value for that field.",
                     "IDs must follow the pattern 'step-N-readable-slug' (e.g. 'step-1-idea-generator', 'step-2-script-writer').",
                     "Names must follow the pattern 'Step N: Step Name' (e.g. 'Step 1: Idea Generator').",
                     "Every step after step 1 must have an input field explicitly labelled to receive the previous step's output (e.g. 'Script Draft from Step 1').",
@@ -3047,8 +3460,8 @@ window.preloadedWorkspaces = {
 };
 
 window.preloadedConfig = {
-    "defaultWorkspace": "Template Lab",
-    "defaultTemplate": "Template Builder"
+    "defaultWorkspace": "Jira",
+    "defaultTemplate": "Jira Story and Acceptance Criteria Generator"
 };
 
 </script>
@@ -3105,6 +3518,7 @@ function generateViewPrompt() {
     if (prompt.objective) promptJson.objective = prompt.objective;
     if (prompt.actor) promptJson.actor = prompt.actor;
     if (prompt.context) promptJson.context = prompt.context;
+    if (prompt.example) promptJson.example = prompt.example;
     if (Object.keys(inputs).length > 0) promptJson.input = inputs;
     if (prompt.constraints.length > 0) promptJson.constraints = prompt.constraints;
     promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };
@@ -3245,7 +3659,7 @@ function startBlankPrompt() {
 
     const newPromptObj = {
         id: newId, name: 'New Prompt', description: '', objective: '',
-        actor: '', context: '', inputs: [], constraints: [], outputs: [], success: []
+        actor: '', context: '', example: '', inputs: [], constraints: [], outputs: [], success: []
     };
     if (!environment.templateGroups[currentTemplateGroup]) return;
     environment.templateGroups[currentTemplateGroup].push(newPromptObj);
@@ -3303,7 +3717,8 @@ function savePrompt() {
         const fieldName = el.value.trim();
         const suffix = el.id.split('-')[2];
         const descInput = document.getElementById(`input-desc-${suffix}`);
-        if (fieldName) inputs.push({ name: fieldName, description: descInput ? descInput.value.trim() : '' });
+        const phInput = document.getElementById(`input-placeholder-${suffix}`);
+        if (fieldName) inputs.push({ name: fieldName, description: descInput ? descInput.value.trim() : '', placeholder: phInput ? phInput.value.trim() : '' });
     });
 
     const constraints = [];
@@ -3346,6 +3761,7 @@ function savePrompt() {
         objective: document.getElementById('objective')?.value || '',
         actor: document.getElementById('actor')?.value || '',
         context: document.getElementById('context')?.value || '',
+        example: document.getElementById('prompt-example')?.value.trim() || '',
         inputs, constraints, outputs, success
     };
 
@@ -3488,6 +3904,18 @@ function viewPrompt(id) {
     const viewMeta = document.getElementById('view-meta');
     if (viewMeta) viewMeta.innerHTML = meta.join('');
 
+    // Show or hide the example section.
+    const exampleSection = document.getElementById('view-example-section');
+    const exampleContent = document.getElementById('view-example-content');
+    if (exampleSection && exampleContent) {
+        if (prompt.example) {
+            exampleContent.textContent = prompt.example;
+            exampleSection.style.display = '';
+        } else {
+            exampleSection.style.display = 'none';
+        }
+    }
+
     // Render input fields as labelled textareas. Each change regenerates the output JSON.
     const inputsContainer = document.getElementById('view-inputs');
     if (inputsContainer) {
@@ -3497,8 +3925,9 @@ function viewPrompt(id) {
             inputsContainer.innerHTML = prompt.inputs.map((i, idx) => `
                 <div style="margin-bottom: 1rem;">
                     <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
+                    ${i.description ? `<p class="input-hint">${window.escapeHtml(i.description)}</p>` : ''}
                     <textarea id="input-value-${idx}" class="view-textarea" rows="6"
-                        placeholder="${window.escapeHtml(i.description)}"></textarea>
+                        placeholder="${window.escapeHtml(i.placeholder || i.description || '')}"></textarea>
                 </div>
             `).join('');
             inputsContainer.querySelectorAll('textarea').forEach(ta => {
