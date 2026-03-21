@@ -27,12 +27,6 @@ jobs:
       - name: Build
         run: node build.js
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./docs
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
