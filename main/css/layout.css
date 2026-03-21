@@ -189,6 +189,96 @@
 }
 
 /* ==============================
+   Mobile menu panel
+   ============================== */
+
+#mobile-menu-panel {
+  display: none;
+}
+
+#menu-bar {
+  display: flex;
+  align-items: stretch;
+}
+
+#mobile-menu-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #d1d5db;
+  font-size: 1.4em;
+  padding: 0 0.9rem;
+  cursor: pointer;
+  height: 100%;
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+#mobile-menu-btn:hover {
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  #mobile-menu-btn {
+    display: flex;
+    align-items: center;
+  }
+
+  #mobile-menu-panel {
+    position: fixed;
+    top: var(--appbar-height);
+    left: 0;
+    right: 0;
+    background: #2d3748;
+    z-index: 9998;
+    overflow-y: auto;
+    max-height: calc(100vh - var(--appbar-height));
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+
+  #mobile-menu-panel.open {
+    display: block;
+  }
+
+  .mobile-menu-section {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 6px 0;
+  }
+
+  .mobile-menu-label {
+    font-size: 0.72em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #6b7280;
+    padding: 8px 16px 4px;
+  }
+
+  #mobile-menu-panel button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: #d1d5db;
+    font-size: 0.97em;
+    padding: 11px 16px;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  #mobile-menu-panel button:hover {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+  }
+
+  #mobile-menu-panel .menu-item-danger {
+    color: #f87171;
+  }
+}
+
+/* ==============================
    Sidebar overlay (mobile)
    ============================== */
 
@@ -250,19 +340,17 @@
    ============================== */
 
 @media (max-width: 768px) {
-  /* Show hamburger, hide GitHub link label */
+  /* Show hamburger, hide desktop menu bar, show mobile menu button */
   #sidebar-toggle {
     display: flex;
   }
 
-  /* Shrink menu bar items */
-  .menu-bar-btn {
-    font-size: 0.8em !important;
-    padding: 0 0.6rem !important;
+  #menu-bar {
+    display: none;
   }
 
-  /* Hide GitHub link text, keep icon */
-  #github-link span {
+  /* Hide GitHub link entirely on mobile — it's in the mobile menu */
+  #github-link {
     display: none;
   }
 

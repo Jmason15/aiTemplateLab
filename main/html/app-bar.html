@@ -6,7 +6,7 @@
         <img src="__LOGO_SRC__" alt="" style="height:28px; width:28px; object-fit:cover; border-radius:4px; border:1px solid rgba(255,255,255,0.2); flex-shrink:0;">
         aiTemplateLab
     </button>
-    <nav id="menu-bar" style="display:flex; align-items:stretch;">
+    <nav id="menu-bar">
         <div class="menu-bar-item" id="menu-file">
             <button class="menu-bar-btn">File</button>
             <div class="menu-bar-dropdown">
@@ -54,4 +54,42 @@
         <svg height="18" width="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         <span>GitHub</span>
     </a>
+
+    <!-- Mobile overflow menu button — hidden on desktop -->
+    <button id="mobile-menu-btn" aria-label="Menu">⋮</button>
 </header>
+
+<!-- Mobile menu panel — slides down from app bar on small screens -->
+<div id="mobile-menu-panel">
+    <div class="mobile-menu-section">
+        <div class="mobile-menu-label">File</div>
+        <button id="mob-save-workspace">Save Workspace</button>
+        <button id="mob-load-workspace">Load Workspace…</button>
+        <button id="mob-live-site">Try Live Version ↗</button>
+        <button id="mob-download-app">Download Latest Version ↓</button>
+        <button id="mob-clear-storage" class="menu-item-danger">Reset Everything…</button>
+    </div>
+    <div class="mobile-menu-section">
+        <div class="mobile-menu-label">Groups</div>
+        <button id="mob-create-group">New Group…</button>
+        <button id="mob-save-group">Save Group…</button>
+        <button id="mob-load-group">Load Group…</button>
+        <button id="mob-delete-group">Delete Group…</button>
+    </div>
+    <div class="mobile-menu-section">
+        <div class="mobile-menu-label">Templates</div>
+        <button id="mob-new-template">New Blank Template</button>
+        <button id="mob-import-template">Import Template From AI…</button>
+        <button id="mob-export-templates">Export…</button>
+    </div>
+    <div class="mobile-menu-section">
+        <div class="mobile-menu-label">Help</div>
+        <button id="mob-help-what-is-template">What is a Template?</button>
+        <button id="mob-help-what-is-group">What is a Template Group?</button>
+        <button id="mob-help-how-to-use">How to use this app</button>
+        <button id="mob-help-why-important">Why is this app important?</button>
+        <button id="mob-help-template-lab">Using the Template Lab</button>
+        <button id="mob-help-create-from-scratch">Creating a template from scratch</button>
+        <button id="mob-help-edit-screen">What does the Edit screen do?</button>
+    </div>
+</div>

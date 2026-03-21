@@ -270,7 +270,11 @@ function setupWorkspaceHandlers() {
  * Called once during app startup.
  */
 function setupMenuBar() {
-    const closeAll = () => document.querySelectorAll('.menu-bar-dropdown').forEach(d => d.classList.remove('open'));
+    const closeAll = () => {
+        document.querySelectorAll('.menu-bar-dropdown').forEach(d => d.classList.remove('open'));
+        const mobilePanel = document.getElementById('mobile-menu-panel');
+        if (mobilePanel) mobilePanel.classList.remove('open');
+    };
 
     // Toggle on click; switch on hover when any dropdown is already open.
     document.querySelectorAll('.menu-bar-item').forEach(item => {
@@ -466,5 +470,41 @@ function setupMenuBar() {
 
     // Home button — navigate to the welcome/home screen.
     const homeBtn = document.getElementById('home-btn');
-    if (homeBtn) homeBtn.addEventListener('click', () => { currentPromptId = null; showWelcome(); syncWindowState(); });
+    if (homeBtn) homeBtn.addEventListener('click', () => { closeAll(); currentPromptId = null; showWelcome(); syncWindowState(); });
+
+    // Mobile menu toggle.
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobilePanel = document.getElementById('mobile-menu-panel');
+    if (mobileMenuBtn && mobilePanel) {
+        mobileMenuBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            mobilePanel.classList.toggle('open');
+        });
+    }
+
+    // Wire mobile menu buttons — proxy to the same handlers as desktop.
+    const mob = (id, fn) => document.getElementById(id)?.addEventListener('click', () => { closeAll(); fn(); });
+    mob('mob-save-workspace',   () => document.getElementById('save-workspace-btn').click());
+    mob('mob-load-workspace',   () => document.getElementById('load-workspace-btn').click());
+    mob('mob-live-site',        () => window.open('https://jmason15.github.io/aiTemplateLab/', '_blank', 'noopener'));
+    mob('mob-download-app',     () => window.open('https://github.com/Jmason15/aiTemplateLab/releases/latest/download/aiTemplateLab.html', '_blank', 'noopener'));
+    mob('mob-clear-storage',    () => { document.getElementById('clear-storage-modal').style.display = 'flex'; });
+    mob('mob-create-group',     () => openCreateGroupModal());
+    mob('mob-save-group',       () => document.getElementById('save-template-group-btn').click());
+    mob('mob-load-group',       () => document.getElementById('load-template-group-btn').click());
+    mob('mob-delete-group',     () => document.getElementById('menu-delete-template-group').click());
+    mob('mob-new-template',     () => startBlankPrompt());
+    mob('mob-import-template',  () => { if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
+    mob('mob-export-templates', () => { if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
+    mob('mob-help-what-is-template',    () => window.showHelpModal('help-what-is-template'));
+    mob('mob-help-what-is-group',       () => window.showHelpModal('help-what-is-group'));
+    mob('mob-help-how-to-use',          () => window.showHelpModal('help-how-to-use'));
+    mob('mob-help-why-important',       () => window.showHelpModal('help-why-important'));
+    mob('mob-help-template-lab',        () => window.showHelpModal('help-template-lab'));
+    mob('mob-help-create-from-scratch', () => window.showHelpModal('help-create-from-scratch'));
+    mob('mob-help-edit-screen',         () => window.showHelpModal('help-edit-screen'));
+
+    // Hide "Try Live Version" on the live site.
+    const mobLiveSite = document.getElementById('mob-live-site');
+    if (mobLiveSite && window.location.hostname === 'jmason15.github.io') mobLiveSite.style.display = 'none';
 }
