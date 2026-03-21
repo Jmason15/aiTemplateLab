@@ -1,10 +1,13 @@
-<!-- JSON Import Modal -->
+<!-- Import Template From AI Modal -->
 <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
     <div id="new-prompt-modal-content">
-        <h2 class="modal-title">Import Prompt from JSON</h2>
-        <label for="json-import-textarea">Prompt JSON</label>
-        <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..."></textarea>
-        <label for="json-import-group-select" style="margin-top:0.7em;">Import into Group</label>
+        <h2 class="modal-title">Import Template From AI</h2>
+        <p style="margin:0 0 1rem 0; color:#555; font-size:0.97em; line-height:1.6;">
+            Used the <strong>Template Builder</strong> or another generator? Your AI tool will have given you a block of template data to copy. Paste it below and we'll add it to your library automatically.
+        </p>
+        <label for="json-import-textarea">Paste your template here</label>
+        <textarea id="json-import-textarea" placeholder="Paste the template output from your AI tool here…"></textarea>
+        <label for="json-import-group-select" style="margin-top:0.7em;">Add to Group</label>
         <select id="json-import-group-select" style="margin-top:0.3em; margin-bottom:0.5em;"></select>
         <div id="json-import-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.5em;">
             <label for="json-import-new-group-name">New Group Name:</label>

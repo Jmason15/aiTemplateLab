@@ -24,32 +24,98 @@
 
             <section id="welcome-screen" class="screen active">
                 <div class="welcome-content">
-                    <h2>Welcome to aiTemplateLab</h2>
-                    <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details each time, and paste the result into any AI tool.</p>
+
+                    <div class="welcome-hero">
+                        <h1 class="welcome-title">aiTemplateLab</h1>
+                        <p class="welcome-tagline">Build AI prompts once. Reuse them forever.</p>
+                        <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details, and paste a perfect prompt into any AI tool — every time.</p>
+                    </div>
+
                     <div class="welcome-steps">
                         <div class="welcome-step">
                             <div class="welcome-step-number">1</div>
                             <div>
-                                <strong>Pick a template from the sidebar</strong>
-                                <p>Each template is a structured prompt designed for a specific task — like writing a Jira story, cleaning up code, or generating a workflow.</p>
+                                <strong>Pick a template</strong>
+                                <p>Choose from the sidebar. Each one is built for a specific task.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">2</div>
                             <div>
                                 <strong>Fill in your details</strong>
-                                <p>Open the <em>Use Template</em> tab and fill in the fields. Every template guides you on exactly what information to provide.</p>
+                                <p>Open <em>Use Template</em> and fill in the fields.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">3</div>
                             <div>
                                 <strong>Copy to your AI tool</strong>
-                                <p>Click <em>Create Prompt</em> and paste the result into ChatGPT, Claude, or any other AI tool. Get consistent, high-quality results every time.</p>
+                                <p>Click <em>Create Prompt</em> and paste into your favorite AI tool.</p>
                             </div>
                         </div>
                     </div>
-                    <p class="welcome-cta">Select a template from the sidebar to get started, or click <strong>+</strong> to create your own.</p>
+
+                    <div class="home-accordions">
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">🧰 Build your own template library</summary>
+                            <div class="home-accordion-body">
+                                <p>The <strong>Template Lab</strong> group comes pre-loaded with three tools for building your own AI prompt library — just run them in your AI tool and import the result.</p>
+                                <ul>
+                                    <li><strong>Template Builder</strong> — Describe what you want a prompt to do and the AI designs a complete, ready-to-import template for you.</li>
+                                    <li><strong>Template Group Generator</strong> — Tell the AI your job title or area of work and it generates a full set of templates covering every task you'd regularly need AI help with.</li>
+                                    <li><strong>Workflow Generator</strong> — Describe a goal and the AI breaks it into a step-by-step sequence of templates, one per stage, where each step feeds into the next.</li>
+                                </ul>
+                                <p>Switch to the <strong>Template Lab</strong> group in the sidebar to get started.</p>
+                                <div class="home-help-chips">
+                                    <button class="home-help-chip" data-help="help-template-lab">Using the Template Lab</button>
+                                    <button class="home-help-chip" data-help="help-what-is-template">What is a Template?</button>
+                                    <button class="home-help-chip" data-help="help-what-is-group">What is a Template Group?</button>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">💻 No installation needed</summary>
+                            <div class="home-accordion-body">
+                                <p>aiTemplateLab is a single HTML file. There is nothing to install, no account to create, and no internet connection required after you have the file.</p>
+                                <p>You can run it directly from your desktop, a USB drive, a shared network folder, or a company intranet. Just open it in any modern browser — Chrome, Edge, Firefox, or Safari — and it works immediately.</p>
+                                <p>This also means you can share it with a colleague by simply sending them the file.</p>
+                            </div>
+                        </details>
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">💾 How and where your work is saved</summary>
+                            <div class="home-accordion-body">
+                                <p>Your templates and history are <strong>automatically saved to your browser's local storage</strong> as you work — no manual saving needed. They survive page refreshes and browser restarts on the same device.</p>
+                                <p>However, local storage is tied to the specific browser and computer you are using. If you open the app in a different browser or on a different machine, your templates will not be there.</p>
+                                <p>This is why exporting your workspace regularly is important — see below.</p>
+                            </div>
+                        </details>
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">⚠️ Why saving your workspace matters</summary>
+                            <div class="home-accordion-body">
+                                <p>Browser local storage can be wiped if you clear your browser data, switch browsers, or use a different computer. When that happens, <strong>all your templates and history are gone</strong> with no way to recover them.</p>
+                                <p>Saving your workspace exports everything — all your groups and templates — into a single file you can back up, share with colleagues, or load on another machine.</p>
+                                <p>Use <strong>File → Save</strong> in the top menu. It takes seconds and protects everything you have built.</p>
+                            </div>
+                        </details>
+
+                        <div class="home-help-footer">
+                            <p class="home-help-footer-label">More help</p>
+                            <div class="home-help-chips">
+                                <button class="home-help-chip" data-help="help-what-is-template">What is a Template?</button>
+                                <button class="home-help-chip" data-help="help-what-is-group">What is a Template Group?</button>
+                                <button class="home-help-chip" data-help="help-how-to-use">How to use this app</button>
+                                <button class="home-help-chip" data-help="help-why-important">Why is this app important?</button>
+                                <button class="home-help-chip" data-help="help-template-lab">Using the Template Lab</button>
+                                <button class="home-help-chip" data-help="help-create-from-scratch">Creating a template from scratch</button>
+                                <button class="home-help-chip" data-help="help-edit-screen">What does the Edit screen do?</button>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </section>
 

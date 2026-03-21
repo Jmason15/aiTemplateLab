@@ -45,13 +45,9 @@ function init() {
         }
     }
 
-    if (currentPromptId) {
-        viewPrompt(currentPromptId);
-        setTabActive('Use Template');
-        showView();
-    } else {
-        showWelcome();
-    }
+    // Always start on the home screen with no template selected.
+    currentPromptId = null;
+    showWelcome();
 
     syncWindowState();
     renderPromptsList();

@@ -1703,23 +1703,47 @@ input[type="text"] {
    ============================== */
 
 .welcome-content {
-  max-width: 640px;
-  margin: 3rem auto;
+  max-width: 600px;
+  margin: 2.5rem auto;
   padding: 2rem;
 }
 
-.welcome-content h2 {
-  font-size: 1.8em;
-  font-weight: 700;
+.welcome-hero {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.welcome-title {
+  font-size: 2.2em;
+  font-weight: 800;
   color: var(--color-primary);
-  margin-bottom: 0.75rem;
+  margin: 0 0 0.3rem 0;
+  letter-spacing: -0.02em;
+}
+
+.welcome-tagline {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 0.75rem 0;
 }
 
 .welcome-subtitle {
-  font-size: 1.1em;
+  font-size: 1em;
   color: var(--color-text-muted);
-  margin-bottom: 2rem;
+  margin: 0;
   line-height: 1.6;
+}
+
+.welcome-actions {
+  margin-top: 1.5rem;
+}
+
+.welcome-help-hint {
+  font-size: 0.9em;
+  color: var(--color-text-muted);
+  margin: 0.4rem 0 0 0;
 }
 
 .welcome-steps {
@@ -1804,6 +1828,112 @@ input[type="text"] {
   line-height: 1.6;
 }
 
+/* ==============================
+   Home screen accordions
+   ============================== */
+
+.home-accordions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.home-accordion {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--color-shadow);
+  padding: 0;
+  overflow: hidden;
+}
+
+.home-accordion-header {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1em;
+  color: var(--color-text);
+  padding: 0.9rem 1.25rem;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.home-accordion-header::-webkit-details-marker {
+  display: none;
+}
+
+.home-accordion[open] .home-accordion-header {
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-primary);
+}
+
+.home-accordion-body {
+  padding: 1rem 1.25rem;
+  font-size: 0.95em;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+}
+
+.home-accordion-body p {
+  margin: 0 0 0.75rem 0;
+}
+
+.home-accordion-body p:last-child {
+  margin-bottom: 0;
+}
+
+.home-accordion-body ul {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.home-accordion-body strong {
+  color: var(--color-text);
+}
+
+.home-help-footer {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.home-help-footer-label {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.6rem 0;
+}
+
+.home-help-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.home-help-chip {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 20px;
+  padding: 0.3em 0.9em;
+  font-size: 0.88em;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.home-help-chip:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
 #view-output-json.prompt-display {
   min-height: 800px !important;
   height: 800px !important;
@@ -1823,7 +1953,7 @@ input[type="text"] {
 
 <div id="container">
     <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:var(--appbar-height); background:#232a36; color:#fff; display:flex; align-items:stretch; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.35);">
-    <div style="padding:0 1.25rem; font-size:1.05em; font-weight:700; letter-spacing:0.02em; display:flex; align-items:center; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.1);">aiTemplateLab</div>
+    <button id="home-btn" style="padding:0 1.25rem; font-size:1.05em; font-weight:700; letter-spacing:0.02em; display:flex; align-items:center; flex-shrink:0; border-right:1px solid rgba(255,255,255,0.1); background:none; border-top:none; border-bottom:none; border-left:none; color:#fff; cursor:pointer; height:100%; transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='none'">aiTemplateLab</button>
     <nav id="menu-bar" style="display:flex; align-items:stretch;">
         <div class="menu-bar-item">
             <button class="menu-bar-btn">File</button>
@@ -1847,8 +1977,21 @@ input[type="text"] {
             <button class="menu-bar-btn">Templates</button>
             <div class="menu-bar-dropdown">
                 <button id="menu-new-template">New</button>
-                <button id="menu-import-templates">Import…</button>
+                <button id="menu-import-templates">Import Template From AI Chat…</button>
                 <button id="menu-export-templates">Export…</button>
+            </div>
+        </div>
+        <div class="menu-bar-item">
+            <button class="menu-bar-btn">Help</button>
+            <div class="menu-bar-dropdown">
+                <button id="help-what-is-template">What is a Template?</button>
+                <button id="help-what-is-group">What is a Template Group?</button>
+                <button id="help-how-to-use">How to use this app</button>
+                <button id="help-why-important">Why is this app important?</button>
+                <div class="menu-divider"></div>
+                <button id="help-template-lab">Using the Template Lab</button>
+                <button id="help-create-from-scratch">Creating a template from scratch</button>
+                <button id="help-edit-screen">What does the Edit screen do?</button>
             </div>
         </div>
     </nav>
@@ -1869,7 +2012,7 @@ input[type="text"] {
     </div>
     <div class="sidebar-footer">
         <div class="sidebar-actions sidebar-actions-bottom" style="padding:0.6em 0.75em 1em 0.75em; display:flex; gap:0.4rem;">
-            <button class="btn btn-outline" id="import-json-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Import Template</button>
+            <button class="btn btn-outline" id="import-json-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Import Template From AI</button>
             <button class="btn btn-success" id="blank-prompt-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">New Blank Template</button>
         </div>
 
@@ -1888,32 +2031,98 @@ input[type="text"] {
 
             <section id="welcome-screen" class="screen active">
                 <div class="welcome-content">
-                    <h2>Welcome to aiTemplateLab</h2>
-                    <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details each time, and paste the result into any AI tool.</p>
+
+                    <div class="welcome-hero">
+                        <h1 class="welcome-title">aiTemplateLab</h1>
+                        <p class="welcome-tagline">Build AI prompts once. Reuse them forever.</p>
+                        <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details, and paste a perfect prompt into any AI tool — every time.</p>
+                    </div>
+
                     <div class="welcome-steps">
                         <div class="welcome-step">
                             <div class="welcome-step-number">1</div>
                             <div>
-                                <strong>Pick a template from the sidebar</strong>
-                                <p>Each template is a structured prompt designed for a specific task — like writing a Jira story, cleaning up code, or generating a workflow.</p>
+                                <strong>Pick a template</strong>
+                                <p>Choose from the sidebar. Each one is built for a specific task.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">2</div>
                             <div>
                                 <strong>Fill in your details</strong>
-                                <p>Open the <em>Use Template</em> tab and fill in the fields. Every template guides you on exactly what information to provide.</p>
+                                <p>Open <em>Use Template</em> and fill in the fields.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">3</div>
                             <div>
                                 <strong>Copy to your AI tool</strong>
-                                <p>Click <em>Create Prompt</em> and paste the result into ChatGPT, Claude, or any other AI tool. Get consistent, high-quality results every time.</p>
+                                <p>Click <em>Create Prompt</em> and paste into your favorite AI tool.</p>
                             </div>
                         </div>
                     </div>
-                    <p class="welcome-cta">Select a template from the sidebar to get started, or click <strong>+</strong> to create your own.</p>
+
+                    <div class="home-accordions">
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">🧰 Build your own template library</summary>
+                            <div class="home-accordion-body">
+                                <p>The <strong>Template Lab</strong> group comes pre-loaded with three tools for building your own AI prompt library — just run them in your AI tool and import the result.</p>
+                                <ul>
+                                    <li><strong>Template Builder</strong> — Describe what you want a prompt to do and the AI designs a complete, ready-to-import template for you.</li>
+                                    <li><strong>Template Group Generator</strong> — Tell the AI your job title or area of work and it generates a full set of templates covering every task you'd regularly need AI help with.</li>
+                                    <li><strong>Workflow Generator</strong> — Describe a goal and the AI breaks it into a step-by-step sequence of templates, one per stage, where each step feeds into the next.</li>
+                                </ul>
+                                <p>Switch to the <strong>Template Lab</strong> group in the sidebar to get started.</p>
+                                <div class="home-help-chips">
+                                    <button class="home-help-chip" data-help="help-template-lab">Using the Template Lab</button>
+                                    <button class="home-help-chip" data-help="help-what-is-template">What is a Template?</button>
+                                    <button class="home-help-chip" data-help="help-what-is-group">What is a Template Group?</button>
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">💻 No installation needed</summary>
+                            <div class="home-accordion-body">
+                                <p>aiTemplateLab is a single HTML file. There is nothing to install, no account to create, and no internet connection required after you have the file.</p>
+                                <p>You can run it directly from your desktop, a USB drive, a shared network folder, or a company intranet. Just open it in any modern browser — Chrome, Edge, Firefox, or Safari — and it works immediately.</p>
+                                <p>This also means you can share it with a colleague by simply sending them the file.</p>
+                            </div>
+                        </details>
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">💾 How and where your work is saved</summary>
+                            <div class="home-accordion-body">
+                                <p>Your templates and history are <strong>automatically saved to your browser's local storage</strong> as you work — no manual saving needed. They survive page refreshes and browser restarts on the same device.</p>
+                                <p>However, local storage is tied to the specific browser and computer you are using. If you open the app in a different browser or on a different machine, your templates will not be there.</p>
+                                <p>This is why exporting your workspace regularly is important — see below.</p>
+                            </div>
+                        </details>
+
+                        <details class="home-accordion">
+                            <summary class="home-accordion-header">⚠️ Why saving your workspace matters</summary>
+                            <div class="home-accordion-body">
+                                <p>Browser local storage can be wiped if you clear your browser data, switch browsers, or use a different computer. When that happens, <strong>all your templates and history are gone</strong> with no way to recover them.</p>
+                                <p>Saving your workspace exports everything — all your groups and templates — into a single file you can back up, share with colleagues, or load on another machine.</p>
+                                <p>Use <strong>File → Save</strong> in the top menu. It takes seconds and protects everything you have built.</p>
+                            </div>
+                        </details>
+
+                        <div class="home-help-footer">
+                            <p class="home-help-footer-label">More help</p>
+                            <div class="home-help-chips">
+                                <button class="home-help-chip" data-help="help-what-is-template">What is a Template?</button>
+                                <button class="home-help-chip" data-help="help-what-is-group">What is a Template Group?</button>
+                                <button class="home-help-chip" data-help="help-how-to-use">How to use this app</button>
+                                <button class="home-help-chip" data-help="help-why-important">Why is this app important?</button>
+                                <button class="home-help-chip" data-help="help-template-lab">Using the Template Lab</button>
+                                <button class="home-help-chip" data-help="help-create-from-scratch">Creating a template from scratch</button>
+                                <button class="home-help-chip" data-help="help-edit-screen">What does the Edit screen do?</button>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </section>
 
@@ -2134,13 +2343,16 @@ input[type="text"] {
 
         </div>
 
-        <!-- JSON Import Modal -->
+        <!-- Import Template From AI Modal -->
 <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
     <div id="new-prompt-modal-content">
-        <h2 class="modal-title">Import Prompt from JSON</h2>
-        <label for="json-import-textarea">Prompt JSON</label>
-        <textarea id="json-import-textarea" placeholder="Paste prompt JSON here..."></textarea>
-        <label for="json-import-group-select" style="margin-top:0.7em;">Import into Group</label>
+        <h2 class="modal-title">Import Template From AI</h2>
+        <p style="margin:0 0 1rem 0; color:#555; font-size:0.97em; line-height:1.6;">
+            Used the <strong>Template Builder</strong> or another generator? Your AI tool will have given you a block of template data to copy. Paste it below and we'll add it to your library automatically.
+        </p>
+        <label for="json-import-textarea">Paste your template here</label>
+        <textarea id="json-import-textarea" placeholder="Paste the template output from your AI tool here…"></textarea>
+        <label for="json-import-group-select" style="margin-top:0.7em;">Add to Group</label>
         <select id="json-import-group-select" style="margin-top:0.3em; margin-bottom:0.5em;"></select>
         <div id="json-import-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.5em;">
             <label for="json-import-new-group-name">New Group Name:</label>
@@ -2219,6 +2431,17 @@ input[type="text"] {
         <span>Warning: Your data is stored in your browser and may be lost if you clear your cache or use a different device.</span>
     </div>
 </footer>
+
+<!-- Help Modal -->
+<div id="help-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
+    <div style="background:#fff; border-radius:12px; padding:2rem; max-width:560px; width:100%; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.25);">
+        <h2 id="help-modal-title" style="margin:0 0 1rem 0; color:#2563eb; font-size:1.4em;"></h2>
+        <div id="help-modal-content" style="color:#374151; line-height:1.7; font-size:1em; overflow-y:auto;"></div>
+        <div style="margin-top:1.5rem; display:flex; justify-content:flex-end;">
+            <button class="btn btn-primary" id="help-modal-close">Got it</button>
+        </div>
+    </div>
+</div>
 
 <!-- Save Workspace Modal -->
 <div id="save-workspace-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
@@ -5032,6 +5255,136 @@ function setupMenuBar() {
     if (clearConfirm) clearConfirm.addEventListener('click', () => { localStorage.clear(); location.reload(); });
     if (clearCancel) clearCancel.addEventListener('click', () => { clearModal.style.display = 'none'; });
     if (clearModal) clearModal.addEventListener('click', e => { if (e.target === clearModal) clearModal.style.display = 'none'; });
+
+    // Help menu.
+    const helpContent = {
+        'help-what-is-template': {
+            title: 'What is a Template?',
+            content: `<p>A <strong>template</strong> is a pre-built AI prompt designed for a specific task.</p>
+                <p>Instead of figuring out what to say to an AI from scratch every time, a template does the hard work for you. It knows the right structure, the right instructions, and the right questions to ask — you just fill in your specific details.</p>
+                <p><strong>Example:</strong> The "Jira Story Generator" template already knows how to turn messy ticket notes into a clean user story with acceptance criteria. You paste in your notes, click Create Prompt, and paste the result into your favorite AI tool.</p>
+                <p>Think of templates like smart forms — they turn your raw information into a polished, professional AI prompt every time.</p>`
+        },
+        'help-what-is-group': {
+            title: 'What is a Template Group?',
+            content: `<p>A <strong>template group</strong> is a folder of related templates kept together.</p>
+                <p>As you build up a library of templates, groups keep things organised. You might have a group for your development work, another for writing, and another for customer service — each with its own set of templates tailored to that area.</p>
+                <p><strong>Example:</strong> A marketing team might have a "Social Media" group with templates for captions, hashtags, and post ideas — and a separate "Email" group for subject lines and newsletters.</p>
+                <p>You can switch between groups from the sidebar, and save or share a whole group as a single file.</p>`
+        },
+        'help-how-to-use': {
+            title: 'How to use this app',
+            content: `<ol style="padding-left:1.25rem; margin:0; display:flex; flex-direction:column; gap:0.75rem;">
+                <li><strong>Pick a template from the sidebar.</strong> Each template is built for a specific task. If you don't see one you need, use the Template Builder to create one.</li>
+                <li><strong>Fill in the fields under "Use Template".</strong> Each field tells you exactly what to provide — just type in your information.</li>
+                <li><strong>Click "Create Prompt".</strong> The app assembles everything into a complete, structured AI prompt.</li>
+                <li><strong>Copy and paste into your AI tool.</strong> Paste the result into your favorite AI tool and get a high-quality response.</li>
+                <li><strong>Come back and reuse it.</strong> Next time you need the same kind of result, your template is already here waiting.</li>
+            </ol>`
+        },
+        'help-why-important': {
+            title: 'Why is this app important?',
+            content: `<p>Most people type a quick message to an AI and hope for the best — then wonder why the results are inconsistent or off-target.</p>
+                <p>The truth is, <strong>the quality of your AI output is only as good as the quality of your prompt.</strong> A vague question gets a vague answer. A well-structured prompt gets a precise, useful result.</p>
+                <p>aiTemplateLab solves this by letting you:</p>
+                <ul style="padding-left:1.25rem; margin:0.5rem 0; display:flex; flex-direction:column; gap:0.4rem;">
+                    <li><strong>Build prompts once</strong> and reuse them forever.</li>
+                    <li><strong>Get consistent results</strong> every time, not just when you happen to phrase things well.</li>
+                    <li><strong>Share your best prompts</strong> with your team so everyone benefits.</li>
+                    <li><strong>Stop starting from scratch</strong> — your prompt library grows with you.</li>
+                </ul>
+                <p style="margin-top:0.75rem;">Whether you use AI daily or occasionally, having the right template means less frustration and better results — every single time.</p>`
+        },
+        'help-template-lab': {
+            title: 'Using the Template Lab',
+            content: `<p>The <strong>Template Lab</strong> group contains three tools that let you build new templates using an AI. Switch to the Template Lab group in the sidebar to get started.</p>
+                <p><strong>Template Builder</strong> — Creates a single new template from a plain-English idea.</p>
+                <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
+                    <li>Pick <em>Template Builder</em> from the sidebar and open <em>Use Template</em>.</li>
+                    <li>Describe what you want — e.g. <em>"A prompt that turns meeting notes into action items."</em></li>
+                    <li>Click <strong>Create Prompt</strong> and copy the result.</li>
+                    <li>Paste it into your favorite AI tool. It will return a complete template as JSON.</li>
+                    <li>Copy the JSON it gives you, then use <strong>Templates → Import Template From AI Chat</strong> (or the <em>Import Template</em> button in the sidebar) to paste it in.</li>
+                </ol>
+                <p><strong>Template Group Generator</strong> — Creates a full set of templates for a specific job or role.</p>
+                <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
+                    <li>Enter your job title or area of work — e.g. <em>"Marketing Manager"</em>.</li>
+                    <li>Run it through your AI tool. You'll get a whole group of templates covering every common task for that role.</li>
+                    <li>Import the result to get an entire ready-to-use group in one go.</li>
+                </ol>
+                <p><strong>Workflow Generator</strong> — Breaks a multi-step goal into a sequence of templates, one per stage.</p>
+                <ol style="padding-left:1.25rem; margin:0.5rem 0 0 0; display:flex; flex-direction:column; gap:0.4rem;">
+                    <li>Describe your goal — e.g. <em>"Write and publish a blog post."</em></li>
+                    <li>The AI generates a chain of templates where the output of each step feeds into the next.</li>
+                    <li>Import the result and work through the stages in order.</li>
+                </ol>`
+        },
+        'help-create-from-scratch': {
+            title: 'Creating a template from scratch',
+            content: `<p>You can build a template entirely by hand — no AI needed — using the blank template editor.</p>
+                <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.5rem;">
+                    <li><strong>Open a blank template.</strong> Click <em>New Blank Template</em> in the sidebar, or go to <em>Templates → New</em> in the menu bar.</li>
+                    <li><strong>Give it a name and description.</strong> The name appears in the sidebar; the description helps you remember what the template is for.</li>
+                    <li><strong>Fill in the sections.</strong> Work through Objective, Actor, Context, and the rest at your own pace. You don't need to fill in every section — just what's useful for your task.</li>
+                    <li><strong>Add inputs.</strong> Inputs are the fields you fill in each time you use the template. Click <em>Add Input</em>, give each one a clear label, and optionally add a placeholder example so you remember what to type.</li>
+                    <li><strong>Click Save.</strong> Your template appears in the sidebar immediately, ready to use.</li>
+                </ol>
+                <p><strong>Tip:</strong> If you're not sure what to write, open the <em>See an Example</em> section on any existing template to see how it's structured — then model yours on that.</p>`
+        },
+        'help-edit-screen': {
+            title: 'What does the Edit screen do?',
+            content: `<p>The <strong>Edit Template</strong> tab lets you modify any template. Click it while a template is selected to open the editor.</p>
+                <p><strong>Sections you can edit:</strong></p>
+                <ul style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.5rem;">
+                    <li><strong>Name &amp; Description</strong> — What appears in the sidebar and at the top of the template view.</li>
+                    <li><strong>Example</strong> — An optional plain-English walkthrough that appears in the "See an Example" section when using the template. Great for helping others understand what the template is for.</li>
+                    <li><strong>Objective</strong> — What the prompt is trying to achieve.</li>
+                    <li><strong>Actor</strong> — The role or persona the AI should take on (e.g. "a senior software engineer").</li>
+                    <li><strong>Context</strong> — Background information the AI needs to know before it starts.</li>
+                    <li><strong>Inputs</strong> — The fields you fill in each time you use the template. Each input has a label, a description, and an optional placeholder example. Use the <em>Add Input</em> button to add more.</li>
+                    <li><strong>Constraints</strong> — Rules the AI must follow (e.g. "Keep the response under 200 words"). Use <em>Add Constraint</em> to add more.</li>
+                    <li><strong>Outputs</strong> — What the AI should return, and in what format. Use <em>Add Output</em> to add more.</li>
+                    <li><strong>Success Criteria</strong> — How you know the result is good. Use <em>Add Success Criterion</em> to add more.</li>
+                </ul>
+                <p><strong>Auto-save:</strong> Changes are saved automatically as you type — no need to click Save unless you want to force a save immediately.</p>`
+        }
+    };
+
+    const helpModal = document.getElementById('help-modal');
+    const helpTitle = document.getElementById('help-modal-title');
+    const helpBody = document.getElementById('help-modal-content');
+    const helpClose = document.getElementById('help-modal-close');
+
+    // Expose globally so home screen chips can open the modal by key.
+    window.showHelpModal = function(key) {
+        const data = helpContent[key];
+        if (!data || !helpModal) return;
+        helpTitle.textContent = data.title;
+        helpBody.innerHTML = data.content;
+        helpModal.style.display = 'flex';
+    };
+
+    Object.entries(helpContent).forEach(([id, data]) => {
+        document.getElementById(id)?.addEventListener('click', () => {
+            closeAll();
+            window.showHelpModal(id);
+        });
+    });
+
+    // Wire home screen help chips (delegated, chips may not exist yet).
+    document.addEventListener('click', e => {
+        const chip = e.target.closest('.home-help-chip');
+        if (chip && chip.dataset.help) {
+            window.showHelpModal(chip.dataset.help);
+        }
+    });
+
+    if (helpClose) helpClose.addEventListener('click', () => { helpModal.style.display = 'none'; });
+    if (helpModal) helpModal.addEventListener('click', e => { if (e.target === helpModal) helpModal.style.display = 'none'; });
+
+    // Home button — navigate to the welcome/home screen.
+    const homeBtn = document.getElementById('home-btn');
+    if (homeBtn) homeBtn.addEventListener('click', () => { currentPromptId = null; showWelcome(); syncWindowState(); });
 }
 
 </script>
@@ -5083,13 +5436,9 @@ function init() {
         }
     }
 
-    if (currentPromptId) {
-        viewPrompt(currentPromptId);
-        setTabActive('Use Template');
-        showView();
-    } else {
-        showWelcome();
-    }
+    // Always start on the home screen with no template selected.
+    currentPromptId = null;
+    showWelcome();
 
     syncWindowState();
     renderPromptsList();
