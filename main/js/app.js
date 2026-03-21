@@ -3,7 +3,7 @@
  *
  * Startup sequence:
  *   1. loadTemplateGroupsFromStorage() — restore saved data (or load preloaded defaults)
- *   2. Open the default workspace and prompt defined in config/workspaces.json
+ *   2. Show the home screen
  *   3. Wire every button, tab, and modal to its handler
  *
  * This file depends on every other script being already loaded.
@@ -11,44 +11,19 @@
  */
 
 /**
- * Initializes the app state and opens the starting prompt.
- * Falls back gracefully if the configured default workspace or template
- * does not exist in storage.
+ * Initializes the app state and shows the home screen.
  */
 function init() {
     loadTemplateGroupsFromStorage();
 
-    // Use the group and prompt restored from localStorage if valid.
-    // Only fall back to the config defaults on a first run (nothing in storage).
-    const hasStoredGroup = !!localStorage.getItem('currentTemplateGroup');
-
-    if (!hasStoredGroup) {
-        // First run — open the defaults from config/workspaces.json.
-        const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
-        const defaultTemplateName = window.preloadedConfig?.defaultTemplate || '';
-        if (environment.templateGroups[defaultGroup]) {
-            currentTemplateGroup = defaultGroup;
-        }
-        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
-        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
-        currentPromptId = (defaultPrompt || prompts[0])?.id || null;
-    } else {
-        // Returning user — restore the last active group and prompt.
-        // Ensure the saved group still exists (may have been deleted).
-        if (!environment.templateGroups[currentTemplateGroup]) {
-            currentTemplateGroup = Object.keys(environment.templateGroups)[0] || 'Default';
-        }
-        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
-        // Ensure the saved prompt still exists in this group.
-        if (!prompts.find(p => p.id === currentPromptId)) {
-            currentPromptId = prompts[0]?.id || null;
-        }
+    // Ensure the stored active group still exists (may have been deleted).
+    if (!environment.templateGroups[currentTemplateGroup]) {
+        currentTemplateGroup = Object.keys(environment.templateGroups)[0] || '';
     }
+    prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
 
-    // Always start on the home screen with no template selected.
     currentPromptId = null;
     showWelcome();
-
     syncWindowState();
     renderPromptsList();
 }
@@ -149,6 +124,10 @@ function startApp() {
     if (addOutputBtn) addOutputBtn.addEventListener('click', () => { if (window.addOutput) window.addOutput(); });
     const addSuccessBtn = document.getElementById('add-success');
     if (addSuccessBtn) addSuccessBtn.addEventListener('click', () => { if (window.addSuccess) window.addSuccess(); });
+
+    // Sidebar search — re-render list on every keystroke.
+    const sidebarSearch = document.getElementById('sidebar-search');
+    if (sidebarSearch) sidebarSearch.addEventListener('input', renderPromptsList);
 
     // Sidebar action buttons.
     const importJsonBtn = document.getElementById('import-json-btn');

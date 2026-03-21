@@ -430,6 +430,43 @@ input[type="text"] {
   z-index: 2;
 }
 
+/* ==============================
+   Sidebar search
+   ============================== */
+
+.sidebar-search-wrap {
+  padding: 10px 12px 6px;
+  flex-shrink: 0;
+}
+
+#sidebar-search {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  color: #e5e7eb;
+  font-size: 0.88em;
+  padding: 0.45em 0.75em;
+  outline: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+#sidebar-search::placeholder {
+  color: #9ca3af;
+}
+
+#sidebar-search:focus {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+/* Style the native clear (×) button */
+#sidebar-search::-webkit-search-cancel-button {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+
 .templates-container {
   flex: 1;
   overflow-y: auto;
@@ -2005,6 +2042,9 @@ input[type="text"] {
 </div>
 
 <div id="sidebar" class="sidebar">
+    <div class="sidebar-search-wrap">
+        <input type="search" id="sidebar-search" placeholder="Search templates…" autocomplete="off">
+    </div>
     <div class="templates-container template-list-card">
         <div id="prompts-list">
             <!-- Prompt tiles rendered by JS -->
@@ -3339,111 +3379,6 @@ function attachFieldListeners() {
 
 window.preloadedPrompts = [
     {
-        "id": "jira-story-generator",
-        "name": "Jira Story and Acceptance Criteria Generator",
-        "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
-        "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
-        "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
-        "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
-        "example": "Input — Jira Text:\n\"Users are getting logged out randomly. Seems to happen after about 30 min. Session token might be expiring too early. Need to fix it. Also the logout message is confusing.\"\n\nOutput — User Story:\nAs a logged-in user, I want my session to remain active as long as I am using the app, so that I am not unexpectedly logged out during normal use.\n\nAcceptance Criteria:\nGiven I am logged in and actively using the app\nWhen 30 minutes pass without a session refresh\nThen my session should be renewed automatically\n\nGiven my session has expired\nWhen I am redirected to login\nThen I see a clear message explaining why I was logged out",
-        "inputs": [
-            {
-                "name": "Jira Text",
-                "description": "Paste the raw text from your Jira ticket — title, description, notes, anything you have. It does not need to be clean or formatted.",
-                "placeholder": "e.g., \"Users are getting logged out randomly after ~30 min. Session token might be expiring too early. Also the logout message is confusing.\""
-            }
-        ],
-        "constraints": [
-            "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
-            "Keep language clear and concise.",
-            "Preserve meaning and context from the Jira text without adding assumptions."
-        ],
-        "outputs": [
-            {
-                "name": "User Story",
-                "type": "markdown",
-                "example": "```Markdown format"
-            },
-            {
-                "name": "Acceptance Criteria",
-                "type": "markdown",
-                "example": "```Markdown Gherkin format."
-            },
-            {
-                "name": "Estimated Storypoints",
-                "type": "String",
-                "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
-            },
-            {
-                "name": "Story point description",
-                "type": "string",
-                "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
-            }
-        ],
-        "success": [
-            "The user story accurately reflects the intent of the Jira input.",
-            "Acceptance criteria are testable, unambiguous, and aligned with the story.",
-            "Output is cleanly formatted and ready to paste into Jira or documentation.",
-            "Questions needed to reduce uncertainty are asked in the story point description",
-            "Estimated story points should be exceptionally larger based on uncertainty or complexity."
-        ]
-    },
-    {
-        "id": "improve-function-implementation",
-        "name": "Improve Function Implementation with Risk Analysis",
-        "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
-        "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
-        "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
-        "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
-        "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
-        "inputs": [
-            {
-                "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
-                "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
-                "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
-            },
-            {
-                "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
-                "description": "Enter: performance, readability, or both.",
-                "placeholder": "e.g., readability"
-            }
-        ],
-        "constraints": [
-            "Keep the public signature and externally observable behavior of the function unchanged unless context.constraints explicitly allows modifications to the contract.",
-            "Prefer clear, idiomatic code for the specified language, following common conventions for naming, formatting, and control flow.",
-            "Apply the performance_or_readability_priority: if performance, focus on algorithmic and allocation improvements; if readability, emphasize structure, naming, and simplicity; if both, seek a reasonable balance.",
-            "Do not introduce new external dependencies or libraries unless context.constraints explicitly permits them.",
-            "Use comments sparingly to explain non-obvious logic and important assumptions, avoiding over-commenting straightforward code.",
-            "Favor small, single-responsibility helpers and use private/subordinate functions when they improve clarity, while keeping the public function signature unchanged.",
-            "Explicitly look for and call out potential null-pointer and other high-impact issues, describing when they occur and their impact.",
-            "Keep the explanation of changes concise (around 200 words or less) and focused on the most important improvements and trade-offs."
-        ],
-        "outputs": [
-            {
-                "name": "improved_function_source",
-                "type": "string",
-                "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
-            },
-            {
-                "name": "explanation:",
-                "type": "string",
-                "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
-            },
-            {
-                "name": "potential_issues:",
-                "type": "string",
-                "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
-            }
-        ],
-        "success": [
-            "improved_function_source parses/compiles in the specified language and preserves the original function’s public behavior and backward compatibility under normal inputs.",
-            "The resulting code follows idiomatic style for the language and is easier for other engineers to read and maintain, especially when readability is prioritized.",
-            "For performance-focused or balanced requests, the explanation clearly calls out the main performance improvements such as reduced allocations, simpler algorithms, or fewer redundant operations.",
-            "potential_issues includes likely null-pointer risks and other high-impact concerns, each with clear triggers, impact, and realistic remediation suggestions aligned with context.constraints.",
-            "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
-        ]
-    },
-    {
         "id": "template-builder",
         "name": "Template Builder",
         "description": "Describe what you want an AI prompt to do and it builds a complete, ready-to-use template for you — just paste the result back here to import it.",
@@ -3573,125 +3508,115 @@ window.preloadedPrompts = [
             "Running the steps in sequence would take a user from the starting point to the stated goal with no gaps.",
             "A person doing this workflow would find every step genuinely useful and non-redundant."
         ]
+    },
+    {
+        "id": "jira-story-generator",
+        "name": "Jira Story and Acceptance Criteria Generator",
+        "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
+        "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
+        "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
+        "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+        "example": "Input — Jira Text:\n\"Users are getting logged out randomly. Seems to happen after about 30 min. Session token might be expiring too early. Need to fix it. Also the logout message is confusing.\"\n\nOutput — User Story:\nAs a logged-in user, I want my session to remain active as long as I am using the app, so that I am not unexpectedly logged out during normal use.\n\nAcceptance Criteria:\nGiven I am logged in and actively using the app\nWhen 30 minutes pass without a session refresh\nThen my session should be renewed automatically\n\nGiven my session has expired\nWhen I am redirected to login\nThen I see a clear message explaining why I was logged out",
+        "inputs": [
+            {
+                "name": "Jira Text",
+                "description": "Paste the raw text from your Jira ticket — title, description, notes, anything you have. It does not need to be clean or formatted.",
+                "placeholder": "e.g., \"Users are getting logged out randomly after ~30 min. Session token might be expiring too early. Also the logout message is confusing.\""
+            }
+        ],
+        "constraints": [
+            "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
+            "Keep language clear and concise.",
+            "Preserve meaning and context from the Jira text without adding assumptions."
+        ],
+        "outputs": [
+            {
+                "name": "User Story",
+                "type": "markdown",
+                "example": "```Markdown format"
+            },
+            {
+                "name": "Acceptance Criteria",
+                "type": "markdown",
+                "example": "```Markdown Gherkin format."
+            },
+            {
+                "name": "Estimated Storypoints",
+                "type": "String",
+                "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+            },
+            {
+                "name": "Story point description",
+                "type": "string",
+                "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+            }
+        ],
+        "success": [
+            "The user story accurately reflects the intent of the Jira input.",
+            "Acceptance criteria are testable, unambiguous, and aligned with the story.",
+            "Output is cleanly formatted and ready to paste into Jira or documentation.",
+            "Questions needed to reduce uncertainty are asked in the story point description",
+            "Estimated story points should be exceptionally larger based on uncertainty or complexity."
+        ]
+    },
+    {
+        "id": "improve-function-implementation",
+        "name": "Improve Function Implementation with Risk Analysis",
+        "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
+        "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
+        "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
+        "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
+        "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
+        "inputs": [
+            {
+                "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+                "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
+                "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
+            },
+            {
+                "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
+                "description": "Enter: performance, readability, or both.",
+                "placeholder": "e.g., readability"
+            }
+        ],
+        "constraints": [
+            "Keep the public signature and externally observable behavior of the function unchanged unless context.constraints explicitly allows modifications to the contract.",
+            "Prefer clear, idiomatic code for the specified language, following common conventions for naming, formatting, and control flow.",
+            "Apply the performance_or_readability_priority: if performance, focus on algorithmic and allocation improvements; if readability, emphasize structure, naming, and simplicity; if both, seek a reasonable balance.",
+            "Do not introduce new external dependencies or libraries unless context.constraints explicitly permits them.",
+            "Use comments sparingly to explain non-obvious logic and important assumptions, avoiding over-commenting straightforward code.",
+            "Favor small, single-responsibility helpers and use private/subordinate functions when they improve clarity, while keeping the public function signature unchanged.",
+            "Explicitly look for and call out potential null-pointer and other high-impact issues, describing when they occur and their impact.",
+            "Keep the explanation of changes concise (around 200 words or less) and focused on the most important improvements and trade-offs."
+        ],
+        "outputs": [
+            {
+                "name": "improved_function_source",
+                "type": "string",
+                "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
+            },
+            {
+                "name": "explanation:",
+                "type": "string",
+                "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
+            },
+            {
+                "name": "potential_issues:",
+                "type": "string",
+                "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+            }
+        ],
+        "success": [
+            "improved_function_source parses/compiles in the specified language and preserves the original function’s public behavior and backward compatibility under normal inputs.",
+            "The resulting code follows idiomatic style for the language and is easier for other engineers to read and maintain, especially when readability is prioritized.",
+            "For performance-focused or balanced requests, the explanation clearly calls out the main performance improvements such as reduced allocations, simpler algorithms, or fewer redundant operations.",
+            "potential_issues includes likely null-pointer risks and other high-impact concerns, each with clear triggers, impact, and realistic remediation suggestions aligned with context.constraints.",
+            "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
+        ]
     }
 ];
 
 window.preloadedWorkspaces = {
-    "Jira": {
-        "templates": [
-            {
-                "id": "jira-story-generator",
-                "name": "Jira Story and Acceptance Criteria Generator",
-                "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
-                "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
-                "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
-                "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
-                "example": "Input — Jira Text:\n\"Users are getting logged out randomly. Seems to happen after about 30 min. Session token might be expiring too early. Need to fix it. Also the logout message is confusing.\"\n\nOutput — User Story:\nAs a logged-in user, I want my session to remain active as long as I am using the app, so that I am not unexpectedly logged out during normal use.\n\nAcceptance Criteria:\nGiven I am logged in and actively using the app\nWhen 30 minutes pass without a session refresh\nThen my session should be renewed automatically\n\nGiven my session has expired\nWhen I am redirected to login\nThen I see a clear message explaining why I was logged out",
-                "inputs": [
-                    {
-                        "name": "Jira Text",
-                        "description": "Paste the raw text from your Jira ticket — title, description, notes, anything you have. It does not need to be clean or formatted.",
-                        "placeholder": "e.g., \"Users are getting logged out randomly after ~30 min. Session token might be expiring too early. Also the logout message is confusing.\""
-                    }
-                ],
-                "constraints": [
-                    "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
-                    "Keep language clear and concise.",
-                    "Preserve meaning and context from the Jira text without adding assumptions."
-                ],
-                "outputs": [
-                    {
-                        "name": "User Story",
-                        "type": "markdown",
-                        "example": "```Markdown format"
-                    },
-                    {
-                        "name": "Acceptance Criteria",
-                        "type": "markdown",
-                        "example": "```Markdown Gherkin format."
-                    },
-                    {
-                        "name": "Estimated Storypoints",
-                        "type": "String",
-                        "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
-                    },
-                    {
-                        "name": "Story point description",
-                        "type": "string",
-                        "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
-                    }
-                ],
-                "success": [
-                    "The user story accurately reflects the intent of the Jira input.",
-                    "Acceptance criteria are testable, unambiguous, and aligned with the story.",
-                    "Output is cleanly formatted and ready to paste into Jira or documentation.",
-                    "Questions needed to reduce uncertainty are asked in the story point description",
-                    "Estimated story points should be exceptionally larger based on uncertainty or complexity."
-                ]
-            }
-        ],
-        "inputHistory": []
-    },
-    "Developer": {
-        "templates": [
-            {
-                "id": "improve-function-implementation",
-                "name": "Improve Function Implementation with Risk Analysis",
-                "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
-                "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
-                "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
-                "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
-                "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
-                "inputs": [
-                    {
-                        "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
-                        "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
-                        "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
-                    },
-                    {
-                        "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
-                        "description": "Enter: performance, readability, or both.",
-                        "placeholder": "e.g., readability"
-                    }
-                ],
-                "constraints": [
-                    "Keep the public signature and externally observable behavior of the function unchanged unless context.constraints explicitly allows modifications to the contract.",
-                    "Prefer clear, idiomatic code for the specified language, following common conventions for naming, formatting, and control flow.",
-                    "Apply the performance_or_readability_priority: if performance, focus on algorithmic and allocation improvements; if readability, emphasize structure, naming, and simplicity; if both, seek a reasonable balance.",
-                    "Do not introduce new external dependencies or libraries unless context.constraints explicitly permits them.",
-                    "Use comments sparingly to explain non-obvious logic and important assumptions, avoiding over-commenting straightforward code.",
-                    "Favor small, single-responsibility helpers and use private/subordinate functions when they improve clarity, while keeping the public function signature unchanged.",
-                    "Explicitly look for and call out potential null-pointer and other high-impact issues, describing when they occur and their impact.",
-                    "Keep the explanation of changes concise (around 200 words or less) and focused on the most important improvements and trade-offs."
-                ],
-                "outputs": [
-                    {
-                        "name": "improved_function_source",
-                        "type": "string",
-                        "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
-                    },
-                    {
-                        "name": "explanation:",
-                        "type": "string",
-                        "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
-                    },
-                    {
-                        "name": "potential_issues:",
-                        "type": "string",
-                        "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
-                    }
-                ],
-                "success": [
-                    "improved_function_source parses/compiles in the specified language and preserves the original function’s public behavior and backward compatibility under normal inputs.",
-                    "The resulting code follows idiomatic style for the language and is easier for other engineers to read and maintain, especially when readability is prioritized.",
-                    "For performance-focused or balanced requests, the explanation clearly calls out the main performance improvements such as reduced allocations, simpler algorithms, or fewer redundant operations.",
-                    "potential_issues includes likely null-pointer risks and other high-impact concerns, each with clear triggers, impact, and realistic remediation suggestions aligned with context.constraints.",
-                    "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
-                ]
-            }
-        ],
-        "inputHistory": []
-    },
     "Template Lab": {
         "templates": [
             {
@@ -3827,13 +3752,120 @@ window.preloadedWorkspaces = {
             }
         ],
         "inputHistory": []
+    },
+    "Example Templates": {
+        "templates": [
+            {
+                "id": "jira-story-generator",
+                "name": "Jira Story and Acceptance Criteria Generator",
+                "description": "Transforms unstructured Jira ticket text into a clear Markdown-formatted user story and separate Gherkin-style acceptance criteria block for better readability and team alignment.",
+                "objective": "Convert raw Jira ticket details or copied descriptions into a standardized user story template (“As a... I want... so that...”) with accompanying acceptance criteria formatted in Gherkin syntax.",
+                "actor": "You are an AI assistant that analyzes Jira ticket text and produces a structured, Markdown-formatted output combining a user story and acceptance criteria.",
+                "context": "Product managers, scrum masters, or developers often copy messy Jira descriptions into prompts. The assistant parses key information to produce a clean, developer-friendly story format to speed up backlog grooming and sprint planning.",
+                "example": "Input — Jira Text:\n\"Users are getting logged out randomly. Seems to happen after about 30 min. Session token might be expiring too early. Need to fix it. Also the logout message is confusing.\"\n\nOutput — User Story:\nAs a logged-in user, I want my session to remain active as long as I am using the app, so that I am not unexpectedly logged out during normal use.\n\nAcceptance Criteria:\nGiven I am logged in and actively using the app\nWhen 30 minutes pass without a session refresh\nThen my session should be renewed automatically\n\nGiven my session has expired\nWhen I am redirected to login\nThen I see a clear message explaining why I was logged out",
+                "inputs": [
+                    {
+                        "name": "Jira Text",
+                        "description": "Paste the raw text from your Jira ticket — title, description, notes, anything you have. It does not need to be clean or formatted.",
+                        "placeholder": "e.g., \"Users are getting logged out randomly after ~30 min. Session token might be expiring too early. Also the logout message is confusing.\""
+                    }
+                ],
+                "constraints": [
+                    "Always output two clearly labeled Markdown blocks:\n\nUser Story block in “As a..., I want..., so that...” format.\n\nAcceptance Criteria block in Gherkin (Given/When/Then) syntax.",
+                    "Keep language clear and concise.",
+                    "Preserve meaning and context from the Jira text without adding assumptions."
+                ],
+                "outputs": [
+                    {
+                        "name": "User Story",
+                        "type": "markdown",
+                        "example": "```Markdown format"
+                    },
+                    {
+                        "name": "Acceptance Criteria",
+                        "type": "markdown",
+                        "example": "```Markdown Gherkin format."
+                    },
+                    {
+                        "name": "Estimated Storypoints",
+                        "type": "String",
+                        "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+                    },
+                    {
+                        "name": "Story point description",
+                        "type": "string",
+                        "example": "When explaining estimated story points:\n\nProvide a brief, clear justification for the estimate.\n\nRefer to scope, complexity, uncertainty, and dependencies as the key factors influencing the estimate.\n\nKeep sentences short and action-oriented (1–2 sentences per idea).\n\nIf the estimate is high, identify specific reasons (e.g., unclear acceptance criteria, external dependencies, unknown integrations).\n\nThen, suggest concrete ways to reduce the estimate, such as:\n\nSplitting the story into smaller deliverables\n\nClarifying requirements or assumptions\n\nRemoving unnecessary scope\n\nResolving dependencies early\n\nDo not restate the full scale. Instead, focus on why the story fits that level and how it could move to a smaller category.\nKeep tone professional, objective, and concise — aim for clarity, not detail overload.\n\nQuestions should be in a list most important first."
+                    }
+                ],
+                "success": [
+                    "The user story accurately reflects the intent of the Jira input.",
+                    "Acceptance criteria are testable, unambiguous, and aligned with the story.",
+                    "Output is cleanly formatted and ready to paste into Jira or documentation.",
+                    "Questions needed to reduce uncertainty are asked in the story point description",
+                    "Estimated story points should be exceptionally larger based on uncertainty or complexity."
+                ]
+            },
+            {
+                "id": "improve-function-implementation",
+                "name": "Improve Function Implementation with Risk Analysis",
+                "description": "A prompt that takes a single self-contained function plus high-level module context, then refactors the function for readability or performance (as specified) while preserving its public behavior and producing a structured risk analysis of potential issues such as null-pointer bugs, correctness problems, and security risks",
+                "objective": "Enable a senior-level code assistant to improve an existing function implementation in a specified language, balancing readability and performance according to the caller’s priority, while also returning a concise explanation of key changes and a structured list of potential issues with concrete remediation suggestions\n",
+                "actor": "You are a senior software engineer who refactors code, applies idiomatic style for the given language, and performs a focused risk review that identifies likely defects and edge cases without changing the function’s external contract unless explicitly allowed.",
+                "context": "The caller supplies the implementation of a single function along with metadata about the surrounding module, the priority between performance and readability, and any constraints such as backward compatibility or dependency limits. Your task is to produce an improved version of that function, explain the main changes and trade-offs, and enumerate potential issues (e.g., null-pointer risks, performance hotspots, correctness concerns) with clear locations and suggested fixes.",
+                "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
+                "inputs": [
+                    {
+                        "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+                        "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
+                        "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
+                    },
+                    {
+                        "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
+                        "description": "Enter: performance, readability, or both.",
+                        "placeholder": "e.g., readability"
+                    }
+                ],
+                "constraints": [
+                    "Keep the public signature and externally observable behavior of the function unchanged unless context.constraints explicitly allows modifications to the contract.",
+                    "Prefer clear, idiomatic code for the specified language, following common conventions for naming, formatting, and control flow.",
+                    "Apply the performance_or_readability_priority: if performance, focus on algorithmic and allocation improvements; if readability, emphasize structure, naming, and simplicity; if both, seek a reasonable balance.",
+                    "Do not introduce new external dependencies or libraries unless context.constraints explicitly permits them.",
+                    "Use comments sparingly to explain non-obvious logic and important assumptions, avoiding over-commenting straightforward code.",
+                    "Favor small, single-responsibility helpers and use private/subordinate functions when they improve clarity, while keeping the public function signature unchanged.",
+                    "Explicitly look for and call out potential null-pointer and other high-impact issues, describing when they occur and their impact.",
+                    "Keep the explanation of changes concise (around 200 words or less) and focused on the most important improvements and trade-offs."
+                ],
+                "outputs": [
+                    {
+                        "name": "improved_function_source",
+                        "type": "string",
+                        "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
+                    },
+                    {
+                        "name": "explanation:",
+                        "type": "string",
+                        "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
+                    },
+                    {
+                        "name": "potential_issues:",
+                        "type": "string",
+                        "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+                    }
+                ],
+                "success": [
+                    "improved_function_source parses/compiles in the specified language and preserves the original function’s public behavior and backward compatibility under normal inputs.",
+                    "The resulting code follows idiomatic style for the language and is easier for other engineers to read and maintain, especially when readability is prioritized.",
+                    "For performance-focused or balanced requests, the explanation clearly calls out the main performance improvements such as reduced allocations, simpler algorithms, or fewer redundant operations.",
+                    "potential_issues includes likely null-pointer risks and other high-impact concerns, each with clear triggers, impact, and realistic remediation suggestions aligned with context.constraints.",
+                    "Any refactoring into helpers improves clarity without altering the function’s public contract or breaking existing callers, and obvious edge cases are handled defensively without introducing new undefined behaviors."
+                ]
+            }
+        ],
+        "inputHistory": []
     }
 };
 
-window.preloadedConfig = {
-    "defaultWorkspace": "Jira",
-    "defaultTemplate": "Jira Story and Acceptance Criteria Generator"
-};
+window.preloadedConfig = {};
 
 </script>
 <script>
@@ -4191,23 +4223,48 @@ function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
 
+    const searchEl = document.getElementById('sidebar-search');
+    const query = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
     const groups = Object.entries(environment.templateGroups);
 
-    container.innerHTML = groups.map(([groupName, templates]) => {
-        const isActive = groupName === currentTemplateGroup;
-        const tilesHtml = templates.length === 0
-            ? `<div class="group-empty">No templates yet</div>`
-            : templates.map((p, idx) =>
-                `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
+    if (query) {
+        // Search mode: show all groups that have matches, all sections open.
+        let anyMatch = false;
+        const html = groups.map(([groupName, templates]) => {
+            const matched = templates.filter(p => p.name.toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
+            if (matched.length === 0) return '';
+            anyMatch = true;
+            const tilesHtml = matched.map((p, idx) =>
+                `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="false" data-index="${idx}">
                     <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
                     <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
                 </div>`
             ).join('');
-        return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
-            <summary class="group-header">${window.escapeHtml(groupName)}</summary>
-            <div class="group-templates">${tilesHtml}</div>
-        </details>`;
-    }).join('');
+            return `<details class="group-section" open data-group="${window.escapeHtml(groupName)}">
+                <summary class="group-header">${window.escapeHtml(groupName)}</summary>
+                <div class="group-templates">${tilesHtml}</div>
+            </details>`;
+        }).join('');
+        container.innerHTML = anyMatch ? html : `<div class="group-empty" style="padding:1rem 0.75rem; color:#aaa;">No templates match "${window.escapeHtml(query)}"</div>`;
+    } else {
+        // Normal mode: all groups, active group open.
+        container.innerHTML = groups.map(([groupName, templates]) => {
+            const isActive = groupName === currentTemplateGroup;
+            const tilesHtml = templates.length === 0
+                ? `<div class="group-empty">No templates yet</div>`
+                : templates.map((p, idx) =>
+                    `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
+                        <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
+                        <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
+                    </div>`
+                ).join('');
+            return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
+                <summary class="group-header">${window.escapeHtml(groupName)}</summary>
+                <div class="group-templates">${tilesHtml}</div>
+            </details>`;
+        }).join('');
+    }
 
     // Tile clicks — switch active group if needed, then open the prompt.
     container.querySelectorAll('.prompt-tile').forEach(item => {
@@ -5394,7 +5451,7 @@ function setupMenuBar() {
  *
  * Startup sequence:
  *   1. loadTemplateGroupsFromStorage() — restore saved data (or load preloaded defaults)
- *   2. Open the default workspace and prompt defined in config/workspaces.json
+ *   2. Show the home screen
  *   3. Wire every button, tab, and modal to its handler
  *
  * This file depends on every other script being already loaded.
@@ -5402,44 +5459,19 @@ function setupMenuBar() {
  */
 
 /**
- * Initializes the app state and opens the starting prompt.
- * Falls back gracefully if the configured default workspace or template
- * does not exist in storage.
+ * Initializes the app state and shows the home screen.
  */
 function init() {
     loadTemplateGroupsFromStorage();
 
-    // Use the group and prompt restored from localStorage if valid.
-    // Only fall back to the config defaults on a first run (nothing in storage).
-    const hasStoredGroup = !!localStorage.getItem('currentTemplateGroup');
-
-    if (!hasStoredGroup) {
-        // First run — open the defaults from config/workspaces.json.
-        const defaultGroup = window.preloadedConfig?.defaultWorkspace || 'Default';
-        const defaultTemplateName = window.preloadedConfig?.defaultTemplate || '';
-        if (environment.templateGroups[defaultGroup]) {
-            currentTemplateGroup = defaultGroup;
-        }
-        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
-        const defaultPrompt = prompts.find(p => p.name === defaultTemplateName);
-        currentPromptId = (defaultPrompt || prompts[0])?.id || null;
-    } else {
-        // Returning user — restore the last active group and prompt.
-        // Ensure the saved group still exists (may have been deleted).
-        if (!environment.templateGroups[currentTemplateGroup]) {
-            currentTemplateGroup = Object.keys(environment.templateGroups)[0] || 'Default';
-        }
-        prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
-        // Ensure the saved prompt still exists in this group.
-        if (!prompts.find(p => p.id === currentPromptId)) {
-            currentPromptId = prompts[0]?.id || null;
-        }
+    // Ensure the stored active group still exists (may have been deleted).
+    if (!environment.templateGroups[currentTemplateGroup]) {
+        currentTemplateGroup = Object.keys(environment.templateGroups)[0] || '';
     }
+    prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
 
-    // Always start on the home screen with no template selected.
     currentPromptId = null;
     showWelcome();
-
     syncWindowState();
     renderPromptsList();
 }
@@ -5540,6 +5572,10 @@ function startApp() {
     if (addOutputBtn) addOutputBtn.addEventListener('click', () => { if (window.addOutput) window.addOutput(); });
     const addSuccessBtn = document.getElementById('add-success');
     if (addSuccessBtn) addSuccessBtn.addEventListener('click', () => { if (window.addSuccess) window.addSuccess(); });
+
+    // Sidebar search — re-render list on every keystroke.
+    const sidebarSearch = document.getElementById('sidebar-search');
+    if (sidebarSearch) sidebarSearch.addEventListener('input', renderPromptsList);
 
     // Sidebar action buttons.
     const importJsonBtn = document.getElementById('import-json-btn');

@@ -187,23 +187,48 @@ function renderPromptsList() {
     const container = document.getElementById('prompts-list');
     if (!container) return;
 
+    const searchEl = document.getElementById('sidebar-search');
+    const query = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
     const groups = Object.entries(environment.templateGroups);
 
-    container.innerHTML = groups.map(([groupName, templates]) => {
-        const isActive = groupName === currentTemplateGroup;
-        const tilesHtml = templates.length === 0
-            ? `<div class="group-empty">No templates yet</div>`
-            : templates.map((p, idx) =>
-                `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
+    if (query) {
+        // Search mode: show all groups that have matches, all sections open.
+        let anyMatch = false;
+        const html = groups.map(([groupName, templates]) => {
+            const matched = templates.filter(p => p.name.toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
+            if (matched.length === 0) return '';
+            anyMatch = true;
+            const tilesHtml = matched.map((p, idx) =>
+                `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="false" data-index="${idx}">
                     <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
                     <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
                 </div>`
             ).join('');
-        return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
-            <summary class="group-header">${window.escapeHtml(groupName)}</summary>
-            <div class="group-templates">${tilesHtml}</div>
-        </details>`;
-    }).join('');
+            return `<details class="group-section" open data-group="${window.escapeHtml(groupName)}">
+                <summary class="group-header">${window.escapeHtml(groupName)}</summary>
+                <div class="group-templates">${tilesHtml}</div>
+            </details>`;
+        }).join('');
+        container.innerHTML = anyMatch ? html : `<div class="group-empty" style="padding:1rem 0.75rem; color:#aaa;">No templates match "${window.escapeHtml(query)}"</div>`;
+    } else {
+        // Normal mode: all groups, active group open.
+        container.innerHTML = groups.map(([groupName, templates]) => {
+            const isActive = groupName === currentTemplateGroup;
+            const tilesHtml = templates.length === 0
+                ? `<div class="group-empty">No templates yet</div>`
+                : templates.map((p, idx) =>
+                    `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
+                        <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
+                        <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
+                    </div>`
+                ).join('');
+            return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
+                <summary class="group-header">${window.escapeHtml(groupName)}</summary>
+                <div class="group-templates">${tilesHtml}</div>
+            </details>`;
+        }).join('');
+    }
 
     // Tile clicks — switch active group if needed, then open the prompt.
     container.querySelectorAll('.prompt-tile').forEach(item => {
