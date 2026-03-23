@@ -151,8 +151,8 @@ function renderHistoryList(promptId) {
             // Match each saved field value back to its textarea by label text.
             Object.entries(selected).forEach(([k, v]) => {
                 const input = Array.from(document.querySelectorAll('[id^="input-value-"]')).find(el => {
-                    const label = el.previousElementSibling;
-                    return label && label.textContent.replace(':', '') === k;
+                    const label = el.closest('div')?.querySelector('label');
+                    return label && label.textContent.replace(':', '').trim() === k;
                 });
                 if (input) input.value = v;
             });
