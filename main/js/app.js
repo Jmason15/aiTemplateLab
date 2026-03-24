@@ -17,14 +17,13 @@ function init() {
     loadTemplateGroupsFromStorage();
 
     // Ensure the stored active group still exists (may have been deleted).
-    if (!environment.templateGroups[currentTemplateGroup]) {
-        currentTemplateGroup = Object.keys(environment.templateGroups)[0] || '';
+    if (!state.environment.templateGroups[state.currentTemplateGroup]) {
+        state.setCurrentTemplateGroup(Object.keys(state.environment.templateGroups)[0] || '');
     }
-    prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+    state.setPrompts((state.environment.templateGroups[state.currentTemplateGroup] || []).map(normalizePrompt));
 
-    currentPromptId = null;
+    state.setCurrentPromptId(null);
     showWelcome();
-    syncWindowState();
     renderPromptsList();
 }
 
@@ -38,7 +37,7 @@ function setupTabListeners() {
     if (editTabBtn) {
         editTabBtn.addEventListener('click', function () {
             // Open the current prompt in edit mode, or show a blank form if none is selected.
-            if (currentPromptId) editPrompt(currentPromptId);
+            if (state.currentPromptId) editPrompt(state.currentPromptId);
             else { clearForm(); showEdit(); }
         });
     }
@@ -62,11 +61,11 @@ function startApp() {
     // Main tab buttons (Use Template / Template History / Output).
     // Edit Template is handled by setupTabListeners above.
     const viewTabBtn = document.getElementById('tab-view');
-    if (viewTabBtn) viewTabBtn.addEventListener('click', () => { if (currentPromptId) showView(); });
+    if (viewTabBtn) viewTabBtn.addEventListener('click', () => { if (state.currentPromptId) showView(); });
     const historyTabBtn = document.getElementById('tab-history');
-    if (historyTabBtn) historyTabBtn.addEventListener('click', () => { if (currentPromptId) showHistory(); });
+    if (historyTabBtn) historyTabBtn.addEventListener('click', () => { if (state.currentPromptId) showHistory(); });
     const outputTabBtn = document.getElementById('tab-output');
-    if (outputTabBtn) outputTabBtn.addEventListener('click', () => { if (currentPromptId) showPromptOutput(); });
+    if (outputTabBtn) outputTabBtn.addEventListener('click', () => { if (state.currentPromptId) showPromptOutput(); });
 
     // Delete prompt — confirmation modal before destructive action.
     const deleteBtn = document.getElementById('delete-prompt');
@@ -75,15 +74,14 @@ function startApp() {
     const cancelDeleteBtn = document.getElementById('cancel-delete-prompt');
     if (deleteBtn && deleteModal && confirmDeleteBtn && cancelDeleteBtn) {
         deleteBtn.addEventListener('click', () => { deleteModal.style.display = 'flex'; });
-        cancelDeleteBtn.addEventListener('click', () => { deleteModal.style.display = 'none'; });
+        wireModalDismiss(deleteModal, cancelDeleteBtn);
         confirmDeleteBtn.addEventListener('click', () => {
             deleteModal.style.display = 'none';
             // tileMenuTargetId is set when delete is triggered from the sidebar ⋮ menu;
             // fall back to currentPromptId when triggered from the action bar button.
-            const idToDelete = window.tileMenuTargetId || currentPromptId;
+            const idToDelete = window.tileMenuTargetId || state.currentPromptId;
             if (idToDelete != null) deletePrompt(idToDelete);
         });
-        deleteModal.addEventListener('click', e => { if (e.target === deleteModal) deleteModal.style.display = 'none'; });
     }
 
     // Copy button — saves current inputs to history, copies JSON to clipboard,
@@ -91,7 +89,7 @@ function startApp() {
     const copyBtn = document.getElementById('copy-view-output');
     if (copyBtn) {
         copyBtn.addEventListener('click', () => {
-            const prompt = prompts.find(p => p.id === currentPromptId);
+            const prompt = state.prompts.find(p => p.id === state.currentPromptId);
             if (!prompt) return;
             // Collect current input values to record in history.
             const inputs = {};
@@ -112,8 +110,7 @@ function startApp() {
     // Copy confirmation modal.
     const closeCopyModal = document.getElementById('close-copy-modal');
     const copyModal = document.getElementById('copy-modal');
-    if (closeCopyModal) closeCopyModal.addEventListener('click', () => { if (copyModal) copyModal.style.display = 'none'; });
-    if (copyModal) copyModal.addEventListener('click', e => { if (e.target === copyModal) copyModal.style.display = 'none'; });
+    if (copyModal) wireModalDismiss(copyModal, closeCopyModal);
 
     // Add field buttons in the edit form (inputs / constraints / outputs / success).
     const addInputBtn = document.getElementById('add-input');
@@ -156,7 +153,7 @@ function startApp() {
     const toast = document.getElementById('toast-warning');
     const toastClose = document.getElementById('toast-close');
     if (toast) {
-        if (sessionStorage.getItem('toastDismissed')) {
+        if (sessionStorage.getItem(STORAGE_KEYS.TOAST_DISMISSED)) {
             toast.classList.add('hidden');
         } else {
             document.body.classList.add('toast-visible');
@@ -165,11 +162,12 @@ function startApp() {
             toastClose.addEventListener('click', () => {
                 toast.classList.add('hidden');
                 document.body.classList.remove('toast-visible');
-                sessionStorage.setItem('toastDismissed', '1');
+                sessionStorage.setItem(STORAGE_KEYS.TOAST_DISMISSED, '1');
             });
         }
     }
 
+    setupEditScreenListener();
     setupNewPromptModal();
     setupTileContextMenu();
     setupWorkspaceHandlers();

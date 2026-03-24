@@ -8,7 +8,7 @@
  * @param {string} text - Raw user-supplied string.
  * @returns {string} HTML-escaped string.
  */
-function escapeHtml(text) {
+export function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
@@ -51,6 +51,19 @@ export function slugify(text) {
         .replace(/^-+|-+$/g, '')
         || 'untitled';
 }
+
+/**
+ * Wires the standard dismiss behaviour for a modal:
+ *   - clicking cancelBtn hides the modal
+ *   - clicking the modal backdrop (the modal element itself) hides the modal
+ * @param {HTMLElement} modal - The modal overlay element.
+ * @param {HTMLElement|null} cancelBtn - Optional cancel/close button inside the modal.
+ */
+export function wireModalDismiss(modal, cancelBtn) {
+    if (cancelBtn) cancelBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+    modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
+}
+window.wireModalDismiss = wireModalDismiss;
 
 /**
  * Renders a list of items as labelled checkboxes (all checked by default)

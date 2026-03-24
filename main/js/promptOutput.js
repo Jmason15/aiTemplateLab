@@ -27,7 +27,7 @@
  * }
  */
 function generateViewPrompt() {
-    const prompt = prompts.find(p => p.id === currentPromptId);
+    const prompt = state.prompts.find(p => p.id === state.currentPromptId);
     if (!prompt) return;
 
     // Collect current values from the dynamic input textareas.
@@ -78,7 +78,7 @@ window.generateViewPrompt = generateViewPrompt;
  * @returns {Array}
  */
 function getPromptInputHistoryAll() {
-    const raw = localStorage.getItem('promptInputHistory');
+    const raw = localStorage.getItem(STORAGE_KEYS.PROMPT_INPUT_HISTORY);
     if (!raw) return [];
     try { return JSON.parse(raw); } catch { return []; }
 }
@@ -95,7 +95,7 @@ function savePromptInputHistory(templateId, inputObj) {
     if (Object.values(inputObj).every(v => !v)) return;
     let history = getPromptInputHistoryAll();
     history.unshift({ templateId, inputValues: inputObj });
-    localStorage.setItem('promptInputHistory', JSON.stringify(history.slice(0, 50)));
+    localStorage.setItem(STORAGE_KEYS.PROMPT_INPUT_HISTORY, JSON.stringify(history.slice(0, 50)));
 }
 
 /**

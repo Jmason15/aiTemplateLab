@@ -3,11 +3,11 @@
  * and drag-and-drop reordering for the edit form.
  *
  * Data model note: prompts are stored in two places simultaneously:
- *   - `prompts[]`  — the flat working array for the current group
- *   - `environment.templateGroups[currentTemplateGroup][]` — the authoritative
- *     source that gets persisted to localStorage
+ *   - state.prompts[]  — the flat working array for the current group
+ *   - state.environment.templateGroups[state.currentTemplateGroup][] — the
+ *     authoritative source that gets persisted to localStorage
  * Both must be kept in sync; every mutation writes to both then calls
- * savePromptsToLocalStorage() and syncWindowState().
+ * savePromptsToLocalStorage().
  *
  * Load order: depends on state.js, screens.js, and promptOutput.js.
  */
@@ -19,7 +19,7 @@
 function startBlankPrompt() {
     // Generate a collision-free slug for the initial "New Prompt" name.
     const base = slugify('New Prompt');
-    const existingIds = new Set(prompts.map(p => p.id));
+    const existingIds = new Set(state.prompts.map(p => p.id));
     let newId = base;
     let i = 2;
     while (existingIds.has(newId)) newId = `${base}-${i++}`;
@@ -28,41 +28,39 @@ function startBlankPrompt() {
         id: newId, name: 'New Prompt', description: '', objective: '',
         actor: '', context: '', example: '', inputs: [], constraints: [], outputs: [], success: []
     };
-    if (!environment.templateGroups[currentTemplateGroup]) return;
-    environment.templateGroups[currentTemplateGroup].push(newPromptObj);
-    prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
+    if (!state.environment.templateGroups[state.currentTemplateGroup]) return;
+    state.environment.templateGroups[state.currentTemplateGroup].push(newPromptObj);
+    state.setPrompts(state.environment.templateGroups[state.currentTemplateGroup].map(normalizePrompt));
     window.savePromptsToLocalStorage();
-    currentPromptId = newId;
+    state.setCurrentPromptId(newId);
     editPrompt(newId); // defined in editPrompt.js
     setTabActive('Edit');
     renderPromptsList();
-    syncWindowState();
 }
 window.startBlankPrompt = startBlankPrompt;
 
 /**
  * Removes a prompt from the current template group by ID.
  * After deletion, opens the first remaining prompt or the welcome screen.
- * @param {number} id - The prompt's id.
+ * @param {string} id - The prompt's id.
  */
 function deletePrompt(id) {
-    if (environment.templateGroups[currentTemplateGroup]) {
-        environment.templateGroups[currentTemplateGroup] =
-            environment.templateGroups[currentTemplateGroup].filter(p => p.id !== id);
-        prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
+    if (state.environment.templateGroups[state.currentTemplateGroup]) {
+        state.environment.templateGroups[state.currentTemplateGroup] =
+            state.environment.templateGroups[state.currentTemplateGroup].filter(p => p.id !== id);
+        state.setPrompts(state.environment.templateGroups[state.currentTemplateGroup].map(normalizePrompt));
     } else {
-        prompts = prompts.filter(p => p.id !== id);
+        state.setPrompts(state.prompts.filter(p => p.id !== id));
     }
     window.savePromptsToLocalStorage();
     renderPromptsList();
-    if (prompts.length > 0) {
-        currentPromptId = prompts[0].id;
-        viewPrompt(currentPromptId);
+    if (state.prompts.length > 0) {
+        state.setCurrentPromptId(state.prompts[0].id);
+        viewPrompt(state.currentPromptId);
     } else {
-        currentPromptId = null;
+        state.setCurrentPromptId(null);
         showWelcome();
     }
-    syncWindowState();
 }
 
 /**
@@ -116,7 +114,7 @@ function savePrompt() {
     // uses that slug (excluding the current one), append -2, -3, etc.
     const name = nameEl.value.trim();
     const slugBase = slugify(name);
-    const otherIds = new Set(prompts.filter(p => p.id !== currentPromptId).map(p => p.id));
+    const otherIds = new Set(state.prompts.filter(p => p.id !== state.currentPromptId).map(p => p.id));
     let newId = slugBase;
     let suffix = 2;
     while (otherIds.has(newId)) newId = `${slugBase}-${suffix++}`;
@@ -134,26 +132,25 @@ function savePrompt() {
 
     // Update both the flat prompts array and the authoritative templateGroups entry.
     // Also update currentPromptId in case the slug changed (name was edited).
-    const idx = prompts.findIndex(p => p.id === currentPromptId);
+    const idx = state.prompts.findIndex(p => p.id === state.currentPromptId);
     if (idx !== -1) {
-        prompts[idx] = promptData;
-        const group = environment.templateGroups[currentTemplateGroup];
+        state.prompts[idx] = promptData;
+        const group = state.environment.templateGroups[state.currentTemplateGroup];
         if (group) {
-            const gIdx = group.findIndex(p => p.id === currentPromptId);
+            const gIdx = group.findIndex(p => p.id === state.currentPromptId);
             if (gIdx !== -1) group[gIdx] = promptData;
         }
-        currentPromptId = newId;
+        state.setCurrentPromptId(newId);
     } else {
         // New prompt not yet in the array (edge case).
-        prompts.push(promptData);
-        currentPromptId = promptData.id;
-        if (environment.templateGroups[currentTemplateGroup]) {
-            environment.templateGroups[currentTemplateGroup].push(promptData);
+        state.prompts.push(promptData);
+        state.setCurrentPromptId(promptData.id);
+        if (state.environment.templateGroups[state.currentTemplateGroup]) {
+            state.environment.templateGroups[state.currentTemplateGroup].push(promptData);
         }
     }
     window.savePromptsToLocalStorage();
     renderPromptsList();
-    syncWindowState();
 }
 window.savePrompt = savePrompt;
 
@@ -173,7 +170,7 @@ window.regenerateOutput = function () {
  * If no prompt was previously open, falls back to the welcome screen.
  */
 function cancelEdit() {
-    if (currentPromptId != null) viewPrompt(currentPromptId);
+    if (state.currentPromptId != null) viewPrompt(state.currentPromptId);
     else showWelcome();
 }
 window.cancelEdit = cancelEdit;
@@ -190,7 +187,7 @@ function renderPromptsList() {
     const searchEl = document.getElementById('sidebar-search');
     const query = searchEl ? searchEl.value.trim().toLowerCase() : '';
 
-    const groups = Object.entries(environment.templateGroups);
+    const groups = Object.entries(state.environment.templateGroups);
 
     if (query) {
         // Search mode: show all groups that have matches, all sections open.
@@ -200,7 +197,7 @@ function renderPromptsList() {
             if (matched.length === 0) return '';
             anyMatch = true;
             const tilesHtml = matched.map((p, idx) =>
-                `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="false" data-index="${idx}">
+                `<div class="prompt-tile${state.currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="false" data-index="${idx}">
                     <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
                     <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
                 </div>`
@@ -214,11 +211,11 @@ function renderPromptsList() {
     } else {
         // Normal mode: all groups, active group open.
         container.innerHTML = groups.map(([groupName, templates]) => {
-            const isActive = groupName === currentTemplateGroup;
+            const isActive = groupName === state.currentTemplateGroup;
             const tilesHtml = templates.length === 0
                 ? `<div class="group-empty">No templates yet</div>`
                 : templates.map((p, idx) =>
-                    `<div class="prompt-tile${currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
+                    `<div class="prompt-tile${state.currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
                         <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
                         <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
                     </div>`
@@ -235,11 +232,10 @@ function renderPromptsList() {
         item.addEventListener('click', e => {
             if (e.target.closest('.prompt-tile-move-btn')) return;
             const group = item.getAttribute('data-group');
-            if (group !== currentTemplateGroup) {
-                currentTemplateGroup = group;
-                prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+            if (group !== state.currentTemplateGroup) {
+                state.setCurrentTemplateGroup(group);
+                state.setPrompts((state.environment.templateGroups[state.currentTemplateGroup] || []).map(normalizePrompt));
                 window.savePromptsToLocalStorage();
-                syncWindowState();
             }
             viewPrompt(item.getAttribute('data-id'));
         });
@@ -250,11 +246,10 @@ function renderPromptsList() {
         btn.addEventListener('click', e => {
             e.stopPropagation();
             const group = btn.getAttribute('data-group');
-            if (group !== currentTemplateGroup) {
-                currentTemplateGroup = group;
-                prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+            if (group !== state.currentTemplateGroup) {
+                state.setCurrentTemplateGroup(group);
+                state.setPrompts((state.environment.templateGroups[state.currentTemplateGroup] || []).map(normalizePrompt));
                 window.savePromptsToLocalStorage();
-                syncWindowState();
             }
             openTileMenu(btn.getAttribute('data-id'), btn);
         });
@@ -278,14 +273,15 @@ function renderPromptsList() {
                 item.classList.remove('drag-over');
                 const targetIdx = parseInt(item.getAttribute('data-index'));
                 if (draggedIdx !== null && draggedIdx !== targetIdx) {
-                    const group = environment.templateGroups[groupName];
+                    const group = state.environment.templateGroups[groupName];
                     if (group) {
                         const moved = group.splice(draggedIdx, 1)[0];
                         group.splice(targetIdx, 0, moved);
-                        if (groupName === currentTemplateGroup) prompts = group.map(normalizePrompt);
+                        if (groupName === state.currentTemplateGroup) {
+                            state.setPrompts(group.map(normalizePrompt));
+                        }
                         window.savePromptsToLocalStorage();
                         renderPromptsList();
-                        syncWindowState();
                     }
                 }
             });
@@ -297,12 +293,12 @@ window.renderPromptsList = renderPromptsList;
 /**
  * Populates the view screen with a prompt's data and regenerates its output JSON.
  * Also updates the sidebar selection highlight.
- * @param {number} id - The prompt's id.
+ * @param {string} id - The prompt's id.
  */
 function viewPrompt(id) {
-    const prompt = prompts.find(p => p.id === id);
+    const prompt = state.prompts.find(p => p.id === id);
     if (!prompt) return;
-    currentPromptId = id;
+    state.setCurrentPromptId(id);
 
     showView();
     // Hide the welcome screen in case it was showing.
@@ -356,7 +352,6 @@ function viewPrompt(id) {
 
     generateViewPrompt();
     renderPromptsList();
-    syncWindowState();
 }
 
 /**
@@ -441,27 +436,26 @@ function closeTileMenu() {
  * @param {string} targetGroup - Name of the destination group.
  */
 function moveTemplateToGroup(templateId, targetGroup) {
-    const sourceGroup = environment.templateGroups[currentTemplateGroup];
+    const sourceGroup = state.environment.templateGroups[state.currentTemplateGroup];
     const templateIdx = sourceGroup.findIndex(p => p.id === templateId);
-    if (templateIdx === -1 || !environment.templateGroups[targetGroup]) return;
+    if (templateIdx === -1 || !state.environment.templateGroups[targetGroup]) return;
 
     const [template] = sourceGroup.splice(templateIdx, 1);
-    environment.templateGroups[targetGroup].push(template);
-    prompts = environment.templateGroups[currentTemplateGroup].map(normalizePrompt);
+    state.environment.templateGroups[targetGroup].push(template);
+    state.setPrompts(state.environment.templateGroups[state.currentTemplateGroup].map(normalizePrompt));
 
-    if (currentPromptId === templateId) {
-        if (prompts.length > 0) {
-            currentPromptId = prompts[0].id;
-            viewPrompt(currentPromptId);
+    if (state.currentPromptId === templateId) {
+        if (state.prompts.length > 0) {
+            state.setCurrentPromptId(state.prompts[0].id);
+            viewPrompt(state.currentPromptId);
         } else {
-            currentPromptId = null;
+            state.setCurrentPromptId(null);
             showWelcome();
         }
     }
 
     window.savePromptsToLocalStorage();
     renderPromptsList();
-    syncWindowState();
 }
 
 /**
@@ -471,20 +465,20 @@ function moveTemplateToGroup(templateId, targetGroup) {
  */
 function renameTemplate(templateId, newName) {
     const slugBase = slugify(newName);
-    const otherIds = new Set(prompts.filter(p => p.id !== templateId).map(p => p.id));
+    const otherIds = new Set(state.prompts.filter(p => p.id !== templateId).map(p => p.id));
     let newId = slugBase;
     let suffix = 2;
     while (otherIds.has(newId)) newId = `${slugBase}-${suffix++}`;
 
-    const group = environment.templateGroups[currentTemplateGroup];
+    const group = state.environment.templateGroups[state.currentTemplateGroup];
     const gIdx = group ? group.findIndex(p => p.id === templateId) : -1;
     if (gIdx === -1) return;
 
     group[gIdx] = { ...group[gIdx], id: newId, name: newName };
-    prompts = group.map(normalizePrompt);
+    state.setPrompts(group.map(normalizePrompt));
 
-    if (currentPromptId === templateId) {
-        currentPromptId = newId;
+    if (state.currentPromptId === templateId) {
+        state.setCurrentPromptId(newId);
         // Update the visible name in the view header without a full viewPrompt reload.
         const viewName = document.getElementById('view-name');
         if (viewName) viewName.textContent = newName;
@@ -492,7 +486,6 @@ function renameTemplate(templateId, newName) {
 
     window.savePromptsToLocalStorage();
     renderPromptsList();
-    syncWindowState();
 }
 
 /**
@@ -518,9 +511,9 @@ function setupTileContextMenu() {
             const select = document.getElementById('move-template-group-select');
             const nameEl = document.getElementById('move-template-name');
             if (!modal || !select) return;
-            const template = prompts.find(p => p.id === templateId);
+            const template = state.prompts.find(p => p.id === templateId);
             if (!template) return;
-            const otherGroups = Object.keys(environment.templateGroups).filter(g => g !== currentTemplateGroup);
+            const otherGroups = Object.keys(state.environment.templateGroups).filter(g => g !== state.currentTemplateGroup);
             if (nameEl) nameEl.textContent = template.name;
             select.innerHTML = otherGroups.map(g => `<option value="${g}">${window.escapeHtml(g)}</option>`).join('');
             select.innerHTML += `<option value="__new__">New Group...</option>`;
@@ -566,14 +559,14 @@ function setupTileContextMenu() {
                     errorDiv.style.display = 'block';
                     return;
                 }
-                if (environment.templateGroups[newName]) {
+                if (state.environment.templateGroups[newName]) {
                     errorDiv.textContent = 'A group with that name already exists.';
                     errorDiv.style.display = 'block';
                     return;
                 }
                 // Create the new group then move into it.
-                environment.templateGroups[newName] = [];
-                environment.history[newName] = [];
+                state.environment.templateGroups[newName] = [];
+                state.environment.history[newName] = [];
                 if (typeof updateTemplateGroupDropdown === 'function') updateTemplateGroupDropdown();
                 targetGroup = newName;
             }
@@ -595,7 +588,7 @@ function setupTileContextMenu() {
             const input = document.getElementById('rename-template-input');
             const errorDiv = document.getElementById('rename-template-error');
             if (!modal || !input) return;
-            const template = prompts.find(p => p.id === templateId);
+            const template = state.prompts.find(p => p.id === templateId);
             if (!template) return;
             input.value = template.name;
             errorDiv.style.display = 'none';

@@ -77,7 +77,7 @@ function showHistory() {
     setTabActive('Template History');
     switchToScreen('history-screen');
     showChrome(true);
-    renderHistoryList(currentPromptId); // defined in promptOutput.js
+    renderHistoryList(state.currentPromptId); // defined in promptOutput.js
 }
 window.showHistory = showHistory;
 
@@ -116,6 +116,5 @@ function clearForm() {
         const el = document.getElementById(id);
         if (el) el.innerHTML = '';
     });
-    inputCounter = constraintCounter = outputCounter = successCounter = 0;
-    syncWindowState();
+    state.resetCounters();
 }

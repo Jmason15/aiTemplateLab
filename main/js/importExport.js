@@ -15,7 +15,7 @@
  * prompts to export.
  */
 window.exportPrompts = function () {
-    if (prompts.length === 0) { alert('No prompts to export'); return; }
+    if (state.prompts.length === 0) { alert('No prompts to export'); return; }
     showExportModal();
 };
 
@@ -31,13 +31,13 @@ function showExportModal() {
     const fileNameInput = document.getElementById('export-file-name');
     if (!modal || !grid || !fileNameInput) return;
 
-    renderCheckboxGrid(grid, prompts, 'export-tpl');
+    renderCheckboxGrid(grid, state.prompts, 'export-tpl');
     fileNameInput.value = `prompts-${Date.now()}.json`;
     modal.style.display = 'flex';
 
     document.getElementById('export-modal-download').onclick = function () {
         const checkedIds = Array.from(grid.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
-        const selected = prompts.filter(p => checkedIds.includes(String(p.id)));
+        const selected = state.prompts.filter(p => checkedIds.includes(String(p.id)));
         if (selected.length === 0) { alert('Please select at least one template to export.'); return; }
         let fileName = fileNameInput.value.trim() || `prompts-${Date.now()}.json`;
         if (!fileName.endsWith('.json')) fileName += '.json';
@@ -68,7 +68,7 @@ function handleImport(event) {
             const loaded = JSON.parse(e.target.result);
             // Accept either a single object or an array.
             const allTemplates = Array.isArray(loaded) ? loaded : [loaded];
-            const existingIds = new Set(prompts.map(p => p.id));
+            const existingIds = new Set(state.prompts.map(p => p.id));
             const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
             if (uniqueTemplates.length === 0) {
                 alert('No new templates to import (all IDs already exist or invalid).');
@@ -97,7 +97,7 @@ function showImportModal(templates, allTemplates) {
     if (!modal || !grid || !alreadyGrid || !errorDiv) return;
 
     errorDiv.style.display = 'none';
-    const existingIds = new Set(prompts.map(p => p.id));
+    const existingIds = new Set(state.prompts.map(p => p.id));
     const duplicates = (allTemplates || []).filter(t => t.id && existingIds.has(t.id));
     alreadyGrid.innerHTML = duplicates.length > 0
         ? `<strong>Already imported:</strong><ul style="margin:0.3em 0 0.7em 1.2em;">${duplicates.map(t => `<li>${window.escapeHtml(t.name)}</li>`).join('')}</ul>`
@@ -121,23 +121,22 @@ function showImportModal(templates, allTemplates) {
         }
         const targetGroup = resolveImportGroup('import-group-select', 'import-new-group-name', errorDiv);
         if (!targetGroup) return;
-        const groupExistingIds = new Set((environment.templateGroups[targetGroup] || []).map(p => p.id));
+        const groupExistingIds = new Set((state.environment.templateGroups[targetGroup] || []).map(p => p.id));
         const newTemplates = selected.filter(t => !groupExistingIds.has(t.id));
         if (newTemplates.length === 0) {
             errorDiv.textContent = 'No new templates to import (all IDs already exist in that group).';
             errorDiv.style.display = 'block';
             return;
         }
-        environment.templateGroups[targetGroup] = (environment.templateGroups[targetGroup] || []).concat(newTemplates);
-        if (targetGroup === currentTemplateGroup) {
-            prompts = environment.templateGroups[targetGroup].map(normalizePrompt);
+        state.environment.templateGroups[targetGroup] = (state.environment.templateGroups[targetGroup] || []).concat(newTemplates);
+        if (targetGroup === state.currentTemplateGroup) {
+            state.setPrompts(state.environment.templateGroups[targetGroup].map(normalizePrompt));
         }
         window.savePromptsToLocalStorage();
         renderPromptsList();
         modal.style.display = 'none';
         errorDiv.style.display = 'none';
         alert(`Imported ${newTemplates.length} template(s) into "${targetGroup}" successfully!`);
-        syncWindowState();
     };
     document.getElementById('import-modal-cancel').onclick = function () {
         modal.style.display = 'none';
@@ -154,8 +153,8 @@ function showImportModal(templates, allTemplates) {
 function populateImportGroupSelect(selectId) {
     const select = document.getElementById(selectId);
     if (!select) return;
-    select.innerHTML = Object.keys(environment.templateGroups)
-        .map(g => `<option value="${g}"${g === currentTemplateGroup ? ' selected' : ''}>${window.escapeHtml(g)}</option>`)
+    select.innerHTML = Object.keys(state.environment.templateGroups)
+        .map(g => `<option value="${g}"${g === state.currentTemplateGroup ? ' selected' : ''}>${window.escapeHtml(g)}</option>`)
         .join('');
     select.innerHTML += `<option value="__new__">New Group...</option>`;
 }
@@ -190,7 +189,7 @@ function wireNewGroupToggle(selectId, rowId, inputId) {
  */
 function resolveImportGroup(selectId, inputId, errorDiv) {
     const select = document.getElementById(selectId);
-    if (!select) return currentTemplateGroup;
+    if (!select) return state.currentTemplateGroup;
 
     if (select.value !== '__new__') return select.value;
 
@@ -200,13 +199,13 @@ function resolveImportGroup(selectId, inputId, errorDiv) {
         errorDiv.style.display = 'block';
         return null;
     }
-    if (environment.templateGroups[newName]) {
+    if (state.environment.templateGroups[newName]) {
         errorDiv.textContent = 'A group with that name already exists.';
         errorDiv.style.display = 'block';
         return null;
     }
-    environment.templateGroups[newName] = [];
-    environment.history[newName] = [];
+    state.environment.templateGroups[newName] = [];
+    state.environment.history[newName] = [];
     if (typeof updateTemplateGroupDropdown === 'function') updateTemplateGroupDropdown();
     return newName;
 }
@@ -224,20 +223,19 @@ function importPromptFromJson(json) {
     const targetGroup = resolveImportGroup('json-import-group-select', 'json-import-new-group-name', errorDiv);
     if (!targetGroup) return;
 
-    const existingIds = new Set((environment.templateGroups[targetGroup] || []).map(p => p.id));
+    const existingIds = new Set((state.environment.templateGroups[targetGroup] || []).map(p => p.id));
     const newPrompts = importedPrompts.map(normalizePrompt).filter(p => p.id && !existingIds.has(p.id));
     if (newPrompts.length === 0) { alert('No new prompts to import (all IDs already exist)'); return; }
 
-    environment.templateGroups[targetGroup] = (environment.templateGroups[targetGroup] || []).concat(newPrompts);
+    state.environment.templateGroups[targetGroup] = (state.environment.templateGroups[targetGroup] || []).concat(newPrompts);
     // Refresh the working prompts array only if importing into the active group.
-    if (targetGroup === currentTemplateGroup) {
-        prompts = environment.templateGroups[targetGroup].map(normalizePrompt);
+    if (targetGroup === state.currentTemplateGroup) {
+        state.setPrompts(state.environment.templateGroups[targetGroup].map(normalizePrompt));
     }
     window.savePromptsToLocalStorage();
     renderPromptsList();
     closeNewPromptModal();
     alert(`Imported ${newPrompts.length} prompt(s) into "${targetGroup}" successfully!`);
-    syncWindowState();
 }
 window.importPromptFromJson = importPromptFromJson;
 

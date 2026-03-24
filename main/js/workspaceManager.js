@@ -11,16 +11,16 @@
  */
 
 /**
- * Rebuilds the template group <select> dropdown from environment.templateGroups
+ * Rebuilds the template group <select> dropdown from state.environment.templateGroups
  * and ensures the currently active group is selected.
  */
 function updateTemplateGroupDropdown() {
     const dropdown = document.getElementById('template-group-dropdown');
     if (!dropdown) return;
-    dropdown.innerHTML = Object.keys(environment.templateGroups).map(name =>
-        `<option value="${name}"${name === currentTemplateGroup ? ' selected' : ''}>${name}</option>`
+    dropdown.innerHTML = Object.keys(state.environment.templateGroups).map(name =>
+        `<option value="${name}"${name === state.currentTemplateGroup ? ' selected' : ''}>${name}</option>`
     ).join('');
-    dropdown.value = currentTemplateGroup;
+    dropdown.value = state.currentTemplateGroup;
     dropdown.disabled = false;
 }
 
@@ -49,19 +49,18 @@ function setupTemplateGroupHandlers() {
     const dropdown = document.getElementById('template-group-dropdown');
     if (dropdown) {
         dropdown.addEventListener('change', function () {
-            currentTemplateGroup = dropdown.value;
-            prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+            state.setCurrentTemplateGroup(dropdown.value);
+            state.setPrompts((state.environment.templateGroups[state.currentTemplateGroup] || []).map(normalizePrompt));
             renderPromptsList();
             const infoDisplay = document.getElementById('info-display');
-            if (prompts.length > 0) {
-                currentPromptId = prompts[0].id;
-                viewPrompt(currentPromptId);
+            if (state.prompts.length > 0) {
+                state.setCurrentPromptId(state.prompts[0].id);
+                viewPrompt(state.currentPromptId);
                 if (infoDisplay) infoDisplay.style.display = '';
             } else {
-                currentPromptId = null;
+                state.setCurrentPromptId(null);
                 showWelcome();
             }
-            syncWindowState();
         });
     }
 
@@ -73,9 +72,9 @@ function setupTemplateGroupHandlers() {
             const select = document.getElementById('save-template-group-select');
             const filenameInput = document.getElementById('save-template-group-filename');
             if (!modal || !select || !filenameInput) return;
-            select.innerHTML = Object.keys(environment.templateGroups).map(name =>
+            select.innerHTML = Object.keys(state.environment.templateGroups).map(name =>
                 `<option value="${name}">${name}</option>`).join('');
-            select.value = currentTemplateGroup;
+            select.value = state.currentTemplateGroup;
             filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0, 10)}.json`;
             // Update suggested filename when the group selection changes.
             select.onchange = () => { filenameInput.value = `${select.value}-template-group-${new Date().toISOString().slice(0, 10)}.json`; };
@@ -91,7 +90,7 @@ function setupTemplateGroupHandlers() {
             const groupName = select.value;
             let fileName = filenameInput.value.trim() || `${groupName}-template-group-${new Date().toISOString().slice(0, 10)}.json`;
             if (!fileName.endsWith('.json')) fileName += '.json';
-            downloadJson({ name: groupName, templates: environment.templateGroups[groupName], history: environment.history[groupName] || [] }, fileName);
+            downloadJson({ name: groupName, templates: state.environment.templateGroups[groupName], history: state.environment.history[groupName] || [] }, fileName);
             document.getElementById('save-template-group-modal').style.display = 'none';
         });
     }
@@ -110,9 +109,9 @@ function setupTemplateGroupHandlers() {
                 try {
                     const loaded = JSON.parse(e.target.result);
                     if (!loaded || !loaded.name || !Array.isArray(loaded.templates)) { alert('Invalid template group file'); return; }
-                    if (environment.templateGroups[loaded.name]) { alert('Template group with this name already exists.'); return; }
-                    environment.templateGroups[loaded.name] = loaded.templates;
-                    environment.history[loaded.name] = loaded.history || [];
+                    if (state.environment.templateGroups[loaded.name]) { alert('Template group with this name already exists.'); return; }
+                    state.environment.templateGroups[loaded.name] = loaded.templates;
+                    state.environment.history[loaded.name] = loaded.history || [];
                     updateTemplateGroupDropdown();
                     renderPromptsList();
                     alert(`Template group '${loaded.name}' imported successfully!`);
@@ -134,18 +133,17 @@ function setupTemplateGroupHandlers() {
             const errorDiv = document.getElementById('create-template-group-error');
             const groupName = nameInput.value.trim();
             if (!groupName) { errorDiv.textContent = 'Please enter a name.'; errorDiv.style.display = 'block'; return; }
-            if (environment.templateGroups[groupName]) { errorDiv.textContent = 'A group with this name already exists.'; errorDiv.style.display = 'block'; return; }
-            environment.templateGroups[groupName] = [];
-            environment.history[groupName] = [];
-            currentTemplateGroup = groupName;
-            currentPromptId = null;
+            if (state.environment.templateGroups[groupName]) { errorDiv.textContent = 'A group with this name already exists.'; errorDiv.style.display = 'block'; return; }
+            state.environment.templateGroups[groupName] = [];
+            state.environment.history[groupName] = [];
+            state.setCurrentTemplateGroup(groupName);
+            state.setCurrentPromptId(null);
             updateTemplateGroupDropdown();
             renderPromptsList();
             showWelcome();
             document.getElementById('create-template-group-modal').style.display = 'none';
             errorDiv.style.display = 'none';
             alert(`Template group '${groupName}' created successfully!`);
-            syncWindowState();
         });
     }
     if (createCancel) {
@@ -164,10 +162,10 @@ function setupTemplateGroupHandlers() {
             const select = document.getElementById('delete-template-group-select');
             const errorDiv = document.getElementById('delete-template-group-error');
             const groupName = select.value;
-            if (Object.keys(environment.templateGroups).length <= 1) { errorDiv.textContent = 'At least one group must remain.'; errorDiv.style.display = 'block'; return; }
-            if (groupName === currentTemplateGroup) { errorDiv.textContent = 'Cannot delete the currently selected group.'; errorDiv.style.display = 'block'; return; }
-            delete environment.templateGroups[groupName];
-            delete environment.history[groupName];
+            if (Object.keys(state.environment.templateGroups).length <= 1) { errorDiv.textContent = 'At least one group must remain.'; errorDiv.style.display = 'block'; return; }
+            if (groupName === state.currentTemplateGroup) { errorDiv.textContent = 'Cannot delete the currently selected group.'; errorDiv.style.display = 'block'; return; }
+            delete state.environment.templateGroups[groupName];
+            delete state.environment.history[groupName];
             document.getElementById('delete-template-group-modal').style.display = 'none';
             updateTemplateGroupDropdown();
             renderPromptsList();
@@ -208,7 +206,7 @@ function setupWorkspaceHandlers() {
             let fileName = filenameInput.value.trim() || `workspace-${new Date().toISOString().slice(0, 10)}.json`;
             if (!fileName.endsWith('.json')) fileName += '.json';
             // Include currentTemplateGroup so the workspace reopens on the same group.
-            downloadJson({ templateGroups: environment.templateGroups, history: environment.history, currentTemplateGroup }, fileName);
+            downloadJson({ templateGroups: state.environment.templateGroups, history: state.environment.history, currentTemplateGroup: state.currentTemplateGroup }, fileName);
             document.getElementById('save-workspace-modal').style.display = 'none';
         });
     }
@@ -245,16 +243,20 @@ function setupWorkspaceHandlers() {
                 try {
                     const loaded = JSON.parse(e.target.result);
                     if (!loaded || !loaded.templateGroups) { alert('Invalid workspace file: missing templateGroups'); return; }
-                    environment.templateGroups = loaded.templateGroups;
-                    environment.history = loaded.history || {};
-                    currentTemplateGroup = loaded.currentTemplateGroup || Object.keys(environment.templateGroups)[0] || 'Default';
-                    prompts = (environment.templateGroups[currentTemplateGroup] || []).map(normalizePrompt);
+                    state.environment.templateGroups = loaded.templateGroups;
+                    state.environment.history = loaded.history || {};
+                    state.setCurrentTemplateGroup(loaded.currentTemplateGroup || Object.keys(state.environment.templateGroups)[0] || 'Default');
+                    state.setPrompts((state.environment.templateGroups[state.currentTemplateGroup] || []).map(normalizePrompt));
                     updateTemplateGroupDropdown();
                     renderPromptsList();
-                    if (prompts.length > 0) { currentPromptId = prompts[0].id; viewPrompt(currentPromptId); }
-                    else { currentPromptId = null; showWelcome(); }
+                    if (state.prompts.length > 0) {
+                        state.setCurrentPromptId(state.prompts[0].id);
+                        viewPrompt(state.currentPromptId);
+                    } else {
+                        state.setCurrentPromptId(null);
+                        showWelcome();
+                    }
                     alert('Workspace loaded successfully!');
-                    syncWindowState();
                 } catch (err) { alert('Error loading workspace: ' + err.message); }
             };
             reader.readAsText(file);
@@ -329,7 +331,7 @@ function setupMenuBar() {
         const select = document.getElementById('delete-template-group-select');
         const errorDiv = document.getElementById('delete-template-group-error');
         if (!modal || !select || !errorDiv) return;
-        select.innerHTML = Object.keys(environment.templateGroups).map(name => `<option value="${window.escapeHtml(name)}">${window.escapeHtml(name)}</option>`).join('');
+        select.innerHTML = Object.keys(state.environment.templateGroups).map(name => `<option value="${window.escapeHtml(name)}">${window.escapeHtml(name)}</option>`).join('');
         errorDiv.style.display = 'none';
         modal.style.display = 'flex';
     });
@@ -470,7 +472,7 @@ function setupMenuBar() {
 
     // Home button — navigate to the welcome/home screen.
     const homeBtn = document.getElementById('home-btn');
-    if (homeBtn) homeBtn.addEventListener('click', () => { closeAll(); currentPromptId = null; showWelcome(); syncWindowState(); });
+    if (homeBtn) homeBtn.addEventListener('click', () => { closeAll(); state.setCurrentPromptId(null); showWelcome(); });
 
     // Mobile menu toggle.
     const mobileMenuBtn = document.getElementById('mobile-menu-btn');

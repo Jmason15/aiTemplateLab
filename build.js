@@ -2,11 +2,16 @@
  * build.js
  * Usage: node build.js
  *
- * Produces a single self-contained HTML file at dist/aiTemplateLab.html by:
- *   1. Generating prompt data from main/Prompts/*.json + main/config/workspaces.json
- *   2. Resolving <!-- #include "..." --> HTML partial directives
- *   3. Inlining all CSS files into one <style> block
- *   4. Inlining all JS files as individual <script> blocks
+ * Produces two outputs:
+ *
+ *   dist/aiTemplateLab.html   — single self-contained file for offline use / GitHub Release
+ *                               Everything (CSS, JS, images) is inlined; no external deps.
+ *
+ *   docs/                     — multi-file build for GitHub Pages
+ *                               HTML shell + docs/assets/app.css + docs/assets/app.js +
+ *                               docs/aiTemplateLab.png. Assets are served separately so the
+ *                               browser can cache CSS/JS and avoid re-downloading the 2.5MB
+ *                               logo on every visit.
  *
  * To add a prompt:    create a JSON file in main/Prompts/ and reference it in workspaces.json.
  * To add a CSS file:  add it to CSS_FILES_ORDERED and to the <link> tags in index.html.
@@ -42,6 +47,7 @@ const CSS_FILES_ORDERED = [
 // JS load order — must match the <script> tags in index.html.
 // Each file depends on the ones above it; do not reorder without checking deps.
 const JS_FILES_ORDERED = [
+    'constants.js',       // STORAGE_KEYS, FIELD_PREFIXES — must be first
     'utils.js',           // escapeHtml, downloadJson, renderCheckboxGrid
     'state.js',           // shared variables, syncWindowState, normalizePrompt
     'storage.js',         // localStorage read/write/reset
@@ -58,26 +64,33 @@ const JS_FILES_ORDERED = [
 if (!fs.existsSync(distDir)) fs.mkdirSync(distDir);
 if (!fs.existsSync(docsDir)) fs.mkdirSync(docsDir);
 
-// Prevent GitHub Pages from running Jekyll (which would ignore index.html and serve README instead).
+// Prevent GitHub Pages from running Jekyll.
 fs.writeFileSync(path.join(docsDir, '.nojekyll'), '');
 
-// Encode full logo as base64 for the app bar (large image is fine there).
+// =========================
+// Images
+// =========================
+
+// Logo: base64 for dist (self-contained), relative URL for docs (cached separately).
 let logoDataUri = '';
 if (fs.existsSync(logoSrcPath)) {
     const logoBase64 = fs.readFileSync(logoSrcPath).toString('base64');
     logoDataUri = `data:image/png;base64,${logoBase64}`;
-    // Copy to docs/ so the OG image URL resolves on GitHub Pages.
+    // Copy to docs/ root — referenced by the OG meta tag and by the docs HTML shell.
     fs.copyFileSync(logoSrcPath, path.join(docsDir, 'aiTemplateLab.png'));
 } else {
     console.warn('Warning: images/aiTemplateLab.png not found — app bar logo will be missing.');
 }
 
-// Favicon uses a small dedicated image (must be under ~100KB for browsers to accept it as a data URI).
-// If images/favicon.png exists use it; otherwise fall back to the GitHub Pages URL.
-let faviconSrc = 'https://jmason15.github.io/aiTemplateLab/favicon.png';
+// Favicon: base64 for dist, relative URL for docs.
+// Must be under ~100KB for browsers to accept a data: URI.
+const FAVICON_FALLBACK_URL = 'https://jmason15.github.io/aiTemplateLab/favicon.png';
+let faviconDataUri = FAVICON_FALLBACK_URL;
+let faviconRelativeUrl = FAVICON_FALLBACK_URL;
 if (fs.existsSync(faviconSrcPath)) {
     const faviconBase64 = fs.readFileSync(faviconSrcPath).toString('base64');
-    faviconSrc = `data:image/png;base64,${faviconBase64}`;
+    faviconDataUri = `data:image/png;base64,${faviconBase64}`;
+    faviconRelativeUrl = 'favicon.png';
     fs.copyFileSync(faviconSrcPath, path.join(docsDir, 'favicon.png'));
     console.log('Favicon: embedded from images/favicon.png');
 } else {
@@ -139,65 +152,105 @@ console.log(`Loaded ${allPrompts.length} prompt(s) across ${Object.keys(preloade
 // Step 2: Resolve HTML partials
 // =========================
 
-let html = fs.readFileSync(htmlSrcPath, 'utf8');
-
-// Replace <!-- #include "path/to/partial.html" --> with the file's contents.
-html = html.replace(/<!--\s*#include\s+"([^"]+)"\s*-->/g, (match, includePath) => {
-    const fullPath = path.join(srcDir, includePath);
-    if (!fs.existsSync(fullPath)) {
-        console.warn(`Warning: HTML partial not found: ${includePath}`);
-        return `<!-- missing: ${includePath} -->`;
+// htmlResolved is the base for both dist and docs outputs.
+const htmlResolved = fs.readFileSync(htmlSrcPath, 'utf8').replace(
+    /<!--\s*#include\s+"([^"]+)"\s*-->/g,
+    (match, includePath) => {
+        const fullPath = path.join(srcDir, includePath);
+        if (!fs.existsSync(fullPath)) {
+            console.warn(`Warning: HTML partial not found: ${includePath}`);
+            return `<!-- missing: ${includePath} -->`;
+        }
+        return fs.readFileSync(fullPath, 'utf8');
     }
-    return fs.readFileSync(fullPath, 'utf8');
-});
+);
 
 // =========================
-// Step 3: Inline CSS
+// Step 3: Build combined CSS and JS strings (shared by both outputs)
 // =========================
 
 const cssChunks = [];
 for (const cssFile of CSS_FILES_ORDERED) {
     const fullPath = path.join(cssSrcDir, cssFile);
-    if (!fs.existsSync(fullPath)) {
-        console.warn(`Warning: ${cssFile} not found, skipping`);
-        continue;
-    }
+    if (!fs.existsSync(fullPath)) { console.warn(`Warning: ${cssFile} not found, skipping`); continue; }
     // Section markers make it easy to find a file's rules in browser DevTools.
     cssChunks.push(`/* === ${cssFile} === */\n${fs.readFileSync(fullPath, 'utf8')}`);
 }
 const combinedCss = cssChunks.join('\n\n');
 
-// Replace all <link rel="stylesheet"> tags with a single <style> block.
-html = html.replace(
-    /(\s*<link rel="stylesheet" href="css\/[^"]+">)+/,
-    `\n    <style>\n${combinedCss}\n    </style>`
-);
-
-// =========================
-// Step 4: Inline JavaScript
-// =========================
-
+// jsContents[file] = stripped source content ready for browser use.
+const jsContents = {};
 for (const jsFile of JS_FILES_ORDERED) {
-    const jsPath = path.join('js', jsFile).replace(/\\/g, '/');
-    // preloadedPrompts.js is generated in memory (Step 1) — no file on disk.
-    const jsContent = jsFile === 'preloadedPrompts.js'
+    const raw = jsFile === 'preloadedPrompts.js'
         ? generatedPreloaded
         : fs.existsSync(path.join(jsSrcDir, jsFile))
             ? fs.readFileSync(path.join(jsSrcDir, jsFile), 'utf8')
             : null;
-    if (!jsContent) { console.warn(`Warning: ${jsFile} not found, skipping`); continue; }
+    if (!raw) { console.warn(`Warning: ${jsFile} not found, skipping`); continue; }
     // Strip ES module `export` keywords — source files use them for Vitest imports,
-    // but the browser build inlines everything into plain <script> tags (not modules).
-    const strippedContent = jsContent.replace(/^export\s+/gm, '');
+    // but the browser build uses plain <script> tags (not modules).
+    jsContents[jsFile] = raw.replace(/^export\s+/gm, '');
+}
+const combinedJs = JS_FILES_ORDERED
+    .filter(f => jsContents[f])
+    .map(f => `/* === ${f} === */\n${jsContents[f]}`)
+    .join('\n\n');
+
+// =========================
+// Step 4: Write dist — single self-contained HTML file
+// =========================
+
+let distHtml = htmlResolved;
+
+// Inline CSS.
+distHtml = distHtml.replace(
+    /(\s*<link rel="stylesheet" href="css\/[^"]+">)+/,
+    `\n    <style>\n${combinedCss}\n    </style>`
+);
+
+// Inline each JS file as its own <script> block (preserves source-level stack traces).
+for (const jsFile of JS_FILES_ORDERED) {
+    if (!jsContents[jsFile]) continue;
+    const jsPath = `js/${jsFile}`;
     const scriptRegex = new RegExp(`<script src=["']${jsPath}["']><\\/script>`, 'i');
-    html = html.replace(scriptRegex, `<script>\n${strippedContent}\n</script>`);
+    distHtml = distHtml.replace(scriptRegex, `<script>\n${jsContents[jsFile]}\n</script>`);
 }
 
-// Inject logo and favicon placeholders.
-if (logoDataUri) html = html.replace(/__LOGO_SRC__/g, logoDataUri);
-html = html.replace(/__FAVICON_SRC__/g, faviconSrc);
+// Inject logo and favicon as base64 data URIs so the file works offline.
+if (logoDataUri) distHtml = distHtml.replace(/__LOGO_SRC__/g, logoDataUri);
+distHtml = distHtml.replace(/__FAVICON_SRC__/g, faviconDataUri);
 
-fs.writeFileSync(htmlDistPath, html, 'utf8');
-fs.writeFileSync(htmlDocsPath, html, 'utf8');
+fs.writeFileSync(htmlDistPath, distHtml, 'utf8');
 console.log(`Build complete: ${htmlDistPath}`);
+
+// =========================
+// Step 5: Write docs — multi-file build for GitHub Pages
+// =========================
+
+const docsAssetsDir = path.join(docsDir, 'assets');
+if (!fs.existsSync(docsAssetsDir)) fs.mkdirSync(docsAssetsDir, { recursive: true });
+
+// Write standalone CSS and JS asset files.
+fs.writeFileSync(path.join(docsAssetsDir, 'app.css'), combinedCss, 'utf8');
+fs.writeFileSync(path.join(docsAssetsDir, 'app.js'), combinedJs, 'utf8');
+
+let docsHtml = htmlResolved;
+
+// Replace <link> stylesheet tags with a single reference to the asset file.
+docsHtml = docsHtml.replace(
+    /(\s*<link rel="stylesheet" href="css\/[^"]+">)+/,
+    '\n    <link rel="stylesheet" href="assets/app.css">'
+);
+
+// Replace all JS <script src="js/..."> tags with a single bundled reference.
+docsHtml = docsHtml.replace(
+    /(\s*<script src="js\/[^"]+"><\/script>)+/,
+    '\n    <script src="assets/app.js"></script>'
+);
+
+// Inject logo and favicon as URLs — the browser caches these separately.
+docsHtml = docsHtml.replace(/__LOGO_SRC__/g, logoDataUri ? 'aiTemplateLab.png' : '');
+docsHtml = docsHtml.replace(/__FAVICON_SRC__/g, faviconRelativeUrl);
+
+fs.writeFileSync(htmlDocsPath, docsHtml, 'utf8');
 console.log(`GitHub Pages:  ${htmlDocsPath}`);
