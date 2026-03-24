@@ -385,24 +385,22 @@ body.toast-visible #container {
     border-radius: 8px;
   }
 
-  /* Tabs scroll horizontally */
+  /* Tabs wrap into a 2×2 grid */
   #tabs {
-    padding: 0 12px;
-    gap: 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  #tabs::-webkit-scrollbar {
-    display: none;
+    padding: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-height: unset;
   }
 
   #tabs button {
-    padding: 10px 16px;
-    font-size: 0.9em;
-    white-space: nowrap;
-    flex-shrink: 0;
+    flex: 1 1 calc(50% - 3px);
+    padding: 10px 8px;
+    font-size: 0.85em;
+    white-space: normal;
+    text-align: center;
+    border-radius: 6px;
+    margin-bottom: 0;
   }
 
   /* Info display padding */

@@ -104,6 +104,27 @@
   background: var(--color-bg-subtle);
 }
 
+@media (max-width: 768px) {
+  .history-row .jira-text-cell {
+    min-width: 0;
+  }
+
+  .history-panel {
+    padding: 1rem;
+    margin: 12px auto;
+  }
+
+  /* Let wide history tables scroll horizontally rather than overflow */
+  #history-list {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .history-grid {
+    min-width: max-content;
+  }
+}
+
 .history-header {
   background: #f3f6fa;
   font-weight: 600;
@@ -394,4 +415,11 @@
   resize: vertical;
   background: var(--color-bg-subtle);
   color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+  #view-output-json.prompt-display {
+    min-height: 300px !important;
+    height: 300px !important;
+  }
 }

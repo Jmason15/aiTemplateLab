@@ -505,24 +505,22 @@ body.toast-visible #container {
     border-radius: 8px;
   }
 
-  /* Tabs scroll horizontally */
+  /* Tabs wrap into a 2×2 grid */
   #tabs {
-    padding: 0 12px;
-    gap: 4px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  #tabs::-webkit-scrollbar {
-    display: none;
+    padding: 8px;
+    gap: 6px;
+    flex-wrap: wrap;
+    min-height: unset;
   }
 
   #tabs button {
-    padding: 10px 16px;
-    font-size: 0.9em;
-    white-space: nowrap;
-    flex-shrink: 0;
+    flex: 1 1 calc(50% - 3px);
+    padding: 10px 8px;
+    font-size: 0.85em;
+    white-space: normal;
+    text-align: center;
+    border-radius: 6px;
+    margin-bottom: 0;
   }
 
   /* Info display padding */
@@ -1698,6 +1696,35 @@ body.toast-visible #container {
   font-weight: 500;
 }
 
+@media (max-width: 768px) {
+  .edit-fields textarea {
+    min-height: 90px;
+    font-size: 1em;
+    padding: 12px 10px;
+  }
+
+  .edit-card.constraint-item textarea,
+  .edit-card.success-item textarea,
+  .constraint-textarea {
+    min-height: 80px;
+    font-size: 1em;
+    padding: 10px;
+  }
+
+  .edit-footer {
+    padding: 10px 0 0 0;
+  }
+
+  .edit-btn-group {
+    gap: 8px;
+  }
+
+  .edit-btn-group .btn {
+    flex: 1;
+    text-align: center;
+  }
+}
+
 
 /* === modals.css === */
 /* ==============================
@@ -1963,6 +1990,27 @@ body.toast-visible #container {
   word-break: break-word;
   white-space: pre-wrap;
   background: var(--color-bg-subtle);
+}
+
+@media (max-width: 768px) {
+  .history-row .jira-text-cell {
+    min-width: 0;
+  }
+
+  .history-panel {
+    padding: 1rem;
+    margin: 12px auto;
+  }
+
+  /* Let wide history tables scroll horizontally rather than overflow */
+  #history-list {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .history-grid {
+    min-width: max-content;
+  }
 }
 
 .history-header {
@@ -2255,6 +2303,13 @@ body.toast-visible #container {
   resize: vertical;
   background: var(--color-bg-subtle);
   color: var(--color-text);
+}
+
+@media (max-width: 768px) {
+  #view-output-json.prompt-display {
+    min-height: 300px !important;
+    height: 300px !important;
+  }
 }
 
     </style>
