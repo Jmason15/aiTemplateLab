@@ -319,6 +319,7 @@ function setupMenuBar() {
     // Templates menu.
     document.getElementById('menu-new-template')?.addEventListener('click', () => { closeAll(); startBlankPrompt(); });
     document.getElementById('menu-import-templates')?.addEventListener('click', () => { closeAll(); if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
+    document.getElementById('menu-import-from-file')?.addEventListener('click', () => { closeAll(); if (typeof window.importPrompts === 'function') window.importPrompts(); });
     document.getElementById('menu-export-templates')?.addEventListener('click', () => { closeAll(); if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
 
     // Groups menu.
@@ -497,6 +498,7 @@ function setupMenuBar() {
     mob('mob-delete-group',     () => document.getElementById('menu-delete-template-group').click());
     mob('mob-new-template',     () => startBlankPrompt());
     mob('mob-import-template',  () => { if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
+    mob('mob-import-from-file', () => { if (typeof window.importPrompts === 'function') window.importPrompts(); });
     mob('mob-export-templates', () => { if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
     mob('mob-help-what-is-template',    () => window.showHelpModal('help-what-is-template'));
     mob('mob-help-what-is-group',       () => window.showHelpModal('help-what-is-group'));
