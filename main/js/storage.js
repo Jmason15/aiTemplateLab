@@ -49,6 +49,7 @@ function saveTemplateGroupsToStorage() {
     localStorage.setItem(STORAGE_KEYS.TEMPLATE_GROUP_HISTORY, JSON.stringify(state.environment.history));
     localStorage.setItem(STORAGE_KEYS.CURRENT_TEMPLATE_GROUP, state.currentTemplateGroup);
     if (state.currentPromptId != null) localStorage.setItem(STORAGE_KEYS.CURRENT_PROMPT_ID, state.currentPromptId);
+    updateStorageMeter();
 }
 
 /**

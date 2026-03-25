@@ -97,6 +97,36 @@ function wireModalDismiss(modal, cancelBtn) {
 window.wireModalDismiss = wireModalDismiss;
 
 /**
+ * Measures the bytes used by the app's own localStorage keys and updates the
+ * storage meter bar and label in the sidebar.
+ *
+ * localStorage stores strings as UTF-16, so each character costs 2 bytes.
+ * The standard browser quota is 5 MB per origin.
+ */
+function updateStorageMeter() {
+    const QUOTA_BYTES = 5 * 1024 * 1024; // 5 MB
+    const usedBytes = Object.values(STORAGE_KEYS).reduce((total, key) => {
+        const val = localStorage.getItem(key);
+        return total + (val ? val.length * 2 : 0);
+    }, 0);
+
+    const pct = Math.min((usedBytes / QUOTA_BYTES) * 100, 100);
+
+    const bar = document.getElementById('storage-meter-bar');
+    const label = document.getElementById('storage-meter-label');
+    if (!bar || !label) return;
+
+    bar.style.width = pct.toFixed(1) + '%';
+    bar.classList.toggle('warn',   pct >= 60 && pct < 85);
+    bar.classList.toggle('danger', pct >= 85);
+
+    const usedKb  = (usedBytes / 1024).toFixed(1);
+    const quotaMb = (QUOTA_BYTES / (1024 * 1024)).toFixed(0);
+    label.textContent = `Storage: ${usedKb} KB / ${quotaMb} MB`;
+}
+window.updateStorageMeter = updateStorageMeter;
+
+/**
  * Renders a list of items as labelled checkboxes (all checked by default)
  * into a container element. Used by the import and export modals.
  * @param {HTMLElement} container - The element to render into.
@@ -341,6 +371,7 @@ function saveTemplateGroupsToStorage() {
     localStorage.setItem(STORAGE_KEYS.TEMPLATE_GROUP_HISTORY, JSON.stringify(state.environment.history));
     localStorage.setItem(STORAGE_KEYS.CURRENT_TEMPLATE_GROUP, state.currentTemplateGroup);
     if (state.currentPromptId != null) localStorage.setItem(STORAGE_KEYS.CURRENT_PROMPT_ID, state.currentPromptId);
+    updateStorageMeter();
 }
 
 /**
@@ -1492,6 +1523,7 @@ function savePromptInputHistory(templateId, inputObj) {
     let history = getPromptInputHistoryAll();
     history.unshift({ templateId, inputValues: inputObj });
     localStorage.setItem(STORAGE_KEYS.PROMPT_INPUT_HISTORY, JSON.stringify(history.slice(0, 50)));
+    updateStorageMeter();
 }
 
 /**
@@ -3188,6 +3220,7 @@ function startApp() {
     setupWorkspaceHandlers();
     setupTemplateGroupHandlers();
     setupMenuBar();
+    updateStorageMeter();
 }
 
 startApp();

@@ -173,6 +173,7 @@ function startApp() {
     setupWorkspaceHandlers();
     setupTemplateGroupHandlers();
     setupMenuBar();
+    updateStorageMeter();
 }
 
 startApp();

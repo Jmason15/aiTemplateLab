@@ -96,6 +96,7 @@ function savePromptInputHistory(templateId, inputObj) {
     let history = getPromptInputHistoryAll();
     history.unshift({ templateId, inputValues: inputObj });
     localStorage.setItem(STORAGE_KEYS.PROMPT_INPUT_HISTORY, JSON.stringify(history.slice(0, 50)));
+    updateStorageMeter();
 }
 
 /**
