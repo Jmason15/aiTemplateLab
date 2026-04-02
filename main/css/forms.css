@@ -231,6 +231,436 @@
 }
 
 /* ==============================
+   Edit view — top bar & name/desc header
+   ============================== */
+
+.edit-top-bar {
+  margin-bottom: 0.75rem;
+}
+
+.edit-back-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-primary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  transition: opacity 0.15s;
+}
+
+.edit-back-btn:hover { opacity: 0.7; }
+
+.edit-name-row {
+  margin-bottom: 0.6rem;
+}
+
+.edit-name-input {
+  width: 100%;
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--color-primary);
+  border: none;
+  border-bottom: 2px solid var(--color-border);
+  border-radius: 0;
+  padding: 0.2em 0;
+  background: transparent;
+  box-sizing: border-box;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.edit-name-input:focus {
+  border-bottom-color: var(--color-primary);
+}
+
+.edit-desc-row {
+  margin-bottom: 1.5rem;
+}
+
+.edit-desc-input {
+  width: 100%;
+  font-size: 0.95em;
+  font-family: inherit;
+  color: var(--color-text-muted);
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  padding: 0.3em 0;
+  background: transparent;
+  box-sizing: border-box;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.edit-desc-input:focus {
+  border-bottom-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+/* ==============================
+   Edit view — accordion sections
+   ============================== */
+
+.edit-accordion {
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  margin-bottom: 0.6rem;
+  overflow: hidden;
+}
+
+.edit-accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.85rem;
+  cursor: pointer;
+  user-select: none;
+  background: var(--color-bg-subtle);
+  transition: background 0.15s;
+}
+
+.edit-accordion-header:hover {
+  background: #eef2f8;
+}
+
+.edit-accordion-title {
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.edit-accordion-count {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-radius: 10px;
+  padding: 0 0.5em;
+  line-height: 1.6;
+  min-width: 1.5em;
+  text-align: center;
+  display: inline-block;
+}
+
+.edit-accordion-count:empty { display: none; }
+
+.edit-accordion-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-accordion-chevron {
+  font-size: 0.65em;
+  color: var(--color-text-muted);
+  transition: transform 0.2s;
+  line-height: 1;
+}
+
+.edit-accordion.open .edit-accordion-chevron {
+  transform: rotate(90deg);
+}
+
+.edit-accordion-body {
+  display: none;
+  padding: 0.75rem 0.85rem 0.85rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.edit-accordion.open .edit-accordion-body {
+  display: block;
+}
+
+/* ==============================
+   Edit view — grid sections (legacy, kept for compatibility)
+   ============================== */
+
+.edit-grid-section {
+  margin-bottom: 1.5rem;
+}
+
+.edit-grid-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.edit-grid-title {
+  font-size: 0.75em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+}
+
+.grid-add-btn {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary);
+  border-radius: 5px;
+  padding: 0.2em 0.75em;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.grid-add-btn:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* ==============================
+   Edit view — compact item cards (Inputs, Outputs)
+   ============================== */
+
+.input-item,
+.output-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.5rem;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  padding: 0.65rem 0.75rem;
+  margin-bottom: 0.4rem;
+  box-shadow: none;
+}
+
+.input-item .edit-card-content,
+.output-item .edit-card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Hide labels — placeholders carry the meaning */
+.input-item label,
+.output-item label {
+  display: none;
+}
+
+/* Hide output type — defaults to 'string' */
+[id^="output-type-"] { display: none; }
+
+/* Name field — prominent */
+.input-item input[id^="input-name-"],
+.output-item input[id^="output-name-"] {
+  width: 100%;
+  font-size: 0.95em;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px solid var(--color-border);
+  border-radius: 0;
+  padding: 0.15em 0;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.input-item input[id^="input-name-"]:focus,
+.output-item input[id^="output-name-"]:focus {
+  border-bottom-color: var(--color-primary);
+}
+
+/* Description textarea — small, muted */
+.input-item textarea[id^="input-desc-"],
+.output-item textarea[id^="output-desc-"] {
+  width: 100%;
+  font-size: 0.83em;
+  font-family: inherit;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  padding: 0.1em 0;
+  min-height: 24px;
+  max-height: 80px;
+  resize: none;
+  box-sizing: border-box;
+  outline: none;
+  line-height: 1.4;
+}
+
+.input-item textarea[id^="input-desc-"]:focus,
+.output-item textarea[id^="output-desc-"]:focus {
+  color: var(--color-text);
+}
+
+/* Placeholder field — small, italic, de-emphasised */
+.input-item input[id^="input-placeholder-"] {
+  width: 100%;
+  font-size: 0.8em;
+  font-family: inherit;
+  font-style: italic;
+  color: var(--color-text-muted);
+  background: transparent;
+  border: none;
+  border-top: 1px dashed var(--color-border);
+  border-radius: 0;
+  padding: 0.2em 0;
+  box-sizing: border-box;
+  outline: none;
+}
+
+/* Delete button alignment */
+.input-item .delete-btn,
+.output-item .delete-btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 2px;
+}
+
+/* ==============================
+   Edit view — thin rows (Constraints, Success)
+   ============================== */
+
+.constraint-item,
+.success-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.3rem 0;
+  margin-bottom: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.constraint-item:last-child,
+.success-item:last-child {
+  border-bottom: none;
+}
+
+.constraint-item textarea,
+.success-item textarea {
+  flex: 1;
+  font-size: 0.9em;
+  font-family: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  padding: 0.25em 0;
+  min-height: 28px;
+  max-height: 100px;
+  resize: none;
+  box-sizing: border-box;
+  outline: none;
+  line-height: 1.5;
+}
+
+.constraint-item .delete-btn,
+.success-item .delete-btn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 2px;
+}
+
+.edit-details-body {
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.edit-detail-field { display: flex; flex-direction: column; gap: 0.3rem; }
+
+/* ==============================
+   Edit view — hint toggles (inside Template Details)
+   ============================== */
+
+.edit-field-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.edit-field-label {
+  font-size: 0.88em;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.edit-field-optional {
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+
+.edit-field-required {
+  color: var(--color-danger);
+  font-weight: 700;
+}
+
+.edit-hint-btn {
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: var(--color-bg-subtle);
+  color: var(--color-text-muted);
+  font-size: 0.7em;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
+  line-height: 1;
+}
+
+.edit-hint-btn:hover,
+.edit-hint-btn.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.edit-hint-body {
+  display: none;
+  font-size: 0.83em;
+  color: var(--color-text-muted);
+  background: var(--color-bg-subtle);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.8rem;
+  line-height: 1.5;
+}
+
+.edit-hint-body strong { color: var(--color-text); }
+.edit-hint-body.open { display: block; }
+
+.edit-detail-field .edit-fields { margin: 0; }
+
+.edit-detail-field .edit-name-input,
+.edit-detail-field .edit-desc-input {
+  width: 100%;
+}
+
+
+/* ==============================
    Edit footer (sticky save bar)
    ============================== */
 

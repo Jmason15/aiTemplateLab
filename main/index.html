@@ -38,29 +38,54 @@
                     <div class="welcome-hero">
                         <h1 class="welcome-title">aiTemplateLab</h1>
                         <p class="welcome-tagline">Build AI prompts once. Reuse them forever.</p>
-                        <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details, and paste a perfect prompt into any AI tool — every time.</p>
+                        <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template, fill in your details, and get a perfect AI prompt every time.</p>
+                    </div>
+
+                    <div class="home-videos">
+
+                        <div class="home-video-card">
+                            <div class="home-video-info">
+                                <span class="home-video-label">Using a Template</span>
+                                <p class="home-video-caption">Pick a template from the sidebar, fill in your details, and copy a perfect AI prompt in seconds.</p>
+                            </div>
+                            <video class="home-video-img" controls playsinline>
+                                <source src="__USING_TEMPLATE_SRC__" type="video/mp4">
+                            </video>
+                        </div>
+
+                        <div class="home-video-card">
+                            <div class="home-video-info">
+                                <span class="home-video-label">Creating a Template</span>
+                                <p class="home-video-caption">Describe what you need and let the AI design a reusable template for you in seconds.</p>
+                            </div>
+                            <video class="home-video-img" controls playsinline>
+                                <source src="__CREATE_TEMPLATE_SRC__" type="video/mp4">
+                            </video>
+                        </div>
+
                     </div>
 
                     <div class="welcome-steps">
+                        <p class="welcome-steps-label">How it works</p>
                         <div class="welcome-step">
                             <div class="welcome-step-number">1</div>
                             <div>
                                 <strong>Pick a template</strong>
-                                <p>Choose from the sidebar. Each one is built for a specific task.</p>
+                                <p>Choose from the sidebar, or use the green <em>Build a New Template</em> button to create your own.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">2</div>
                             <div>
                                 <strong>Fill in your details</strong>
-                                <p>Open <em>Use Template</em> and fill in the fields.</p>
+                                <p>Each field tells you exactly what to provide — just type in your information.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">3</div>
                             <div>
                                 <strong>Copy to your AI tool</strong>
-                                <p>Click <em>Create Prompt</em> and paste into your favorite AI tool.</p>
+                                <p>Click <em>Copy Prompt</em> and paste into Claude, ChatGPT, or any AI tool.</p>
                             </div>
                         </div>
                     </div>
@@ -70,13 +95,13 @@
                         <details class="home-accordion">
                             <summary class="home-accordion-header">🧰 Build your own template library</summary>
                             <div class="home-accordion-body">
-                                <p>The <strong>Template Lab</strong> group comes pre-loaded with three tools for building your own AI prompt library — just run them in your AI tool and import the result.</p>
+                                <p>The <strong>Template Lab</strong> group comes pre-loaded with three tools for building your own AI prompt library — just run them in your AI tool and paste the result back.</p>
                                 <ul>
-                                    <li><strong>Template Builder</strong> — Describe what you want a prompt to do and the AI designs a complete, ready-to-import template for you.</li>
-                                    <li><strong>Template Group Generator</strong> — Tell the AI your job title or area of work and it generates a full set of templates covering every task you'd regularly need AI help with.</li>
-                                    <li><strong>Workflow Generator</strong> — Describe a goal and the AI breaks it into a step-by-step sequence of templates, one per stage, where each step feeds into the next.</li>
+                                    <li><strong>Template Builder</strong> — Describe what you want a prompt to do and the AI designs a complete, ready-to-use template.</li>
+                                    <li><strong>Template Group Generator</strong> — Tell the AI your job title and it generates a full set of templates for every task you'd regularly need help with.</li>
+                                    <li><strong>Workflow Generator</strong> — Describe a multi-step goal and the AI breaks it into a sequence of templates, one per stage.</li>
                                 </ul>
-                                <p>Switch to the <strong>Template Lab</strong> group in the sidebar to get started.</p>
+                                <p>Click the green <strong>Build a New Template</strong> button in the sidebar to get started.</p>
                                 <div class="home-help-chips">
                                     <button class="home-help-chip" data-help="help-template-lab">Using the Template Lab</button>
                                     <button class="home-help-chip" data-help="help-what-is-template">What is a Template?</button>
@@ -86,29 +111,19 @@
                         </details>
 
                         <details class="home-accordion">
-                            <summary class="home-accordion-header">💻 No installation needed</summary>
+                            <summary class="home-accordion-header">💾 How your work is saved</summary>
                             <div class="home-accordion-body">
-                                <p>aiTemplateLab is a single HTML file. There is nothing to install, no account to create, and no internet connection required after you have the file.</p>
-                                <p>You can run it directly from your desktop, a USB drive, a shared network folder, or a company intranet. Just open it in any modern browser — Chrome, Edge, Firefox, or Safari — and it works immediately.</p>
-                                <p>This also means you can share it with a colleague by simply sending them the file.</p>
+                                <p>Your templates save automatically to your browser as you work — no account or internet needed. They persist across page refreshes and restarts on the same device and browser.</p>
+                                <p>To back up or share your templates, use <strong>Export / Share</strong> in the sidebar. This lets you download or share individual templates, a whole group, or your entire workspace as a JSON file.</p>
+                                <p>To restore on another device, click <strong>Import</strong> and drop the file in.</p>
                             </div>
                         </details>
 
                         <details class="home-accordion">
-                            <summary class="home-accordion-header">💾 How and where your work is saved</summary>
+                            <summary class="home-accordion-header">⚠️ Don't lose your templates</summary>
                             <div class="home-accordion-body">
-                                <p>Your templates and history are <strong>automatically saved to your browser's local storage</strong> as you work — no manual saving needed. They survive page refreshes and browser restarts on the same device.</p>
-                                <p>However, local storage is tied to the specific browser and computer you are using. If you open the app in a different browser or on a different machine, your templates will not be there.</p>
-                                <p>This is why exporting your workspace regularly is important — see below.</p>
-                            </div>
-                        </details>
-
-                        <details class="home-accordion">
-                            <summary class="home-accordion-header">⚠️ Why saving your workspace matters</summary>
-                            <div class="home-accordion-body">
-                                <p>Browser local storage can be wiped if you clear your browser data, switch browsers, or use a different computer. When that happens, <strong>all your templates and history are gone</strong> with no way to recover them.</p>
-                                <p>Saving your workspace exports everything — all your groups and templates — into a single file you can back up, share with colleagues, or load on another machine.</p>
-                                <p>Use <strong>File → Save</strong> in the top menu. It takes seconds and protects everything you have built.</p>
+                                <p>Browser storage can be wiped when you clear browser data, switch browsers, or use a different computer. <strong>Export your workspace regularly</strong> so you always have a backup.</p>
+                                <p>Use <strong>Export / Share → Everything</strong> in the sidebar, or <strong>File → Save Workspace</strong> in the menu bar. It takes seconds and protects everything you have built.</p>
                             </div>
                         </details>
 
@@ -128,6 +143,139 @@
                     </div>
                 </div>
             </section>
+
+            <section id="builder-screen" class="screen">
+                <div class="builder-content">
+
+                    <div class="builder-header">
+                        <h1 class="builder-title">Build a New Template</h1>
+                        <p class="builder-subtitle">Describe your idea — your AI designs the template.</p>
+                    </div>
+
+                    <div class="builder-steps">
+
+                        <div class="builder-step" id="bstep-1">
+                            <div class="builder-step-num">1</div>
+                            <div class="builder-step-body">
+                                <p class="builder-step-heading">What do you want to create?</p>
+                                <div class="builder-type-tabs">
+                                    <button class="builder-type-tab active" data-type="single">Single Template</button>
+                                    <button class="builder-type-tab" data-type="group">Template Group</button>
+                                    <button class="builder-type-tab" data-type="workflow">Workflow</button>
+                                </div>
+                                <div id="builder-inputs"></div>
+                            </div>
+                        </div>
+
+                        <div class="builder-step" id="bstep-2">
+                            <div class="builder-step-num">2</div>
+                            <div class="builder-step-body">
+                                <button id="builder-copy-btn" class="builder-action-btn">Copy Prompt for AI</button>
+                            </div>
+                        </div>
+
+                        <div id="builder-lower" style="display:none">
+
+                            <div class="builder-step builder-step--info" id="bstep-3">
+                                <div class="builder-step-num">3</div>
+                                <div class="builder-step-body">
+                                    <p class="builder-instruction">Go paste that into <strong>Claude, ChatGPT,</strong> or any AI tool. Copy the full response it gives you.</p>
+                                </div>
+                            </div>
+
+                            <div class="builder-step" id="bstep-4">
+                                <div class="builder-step-num">4</div>
+                                <div class="builder-step-body">
+                                    <label class="builder-label" for="builder-paste">Paste the AI's response here</label>
+                                    <textarea id="builder-paste" class="builder-paste-area" placeholder='{ "id": "...", "name": "...", ... }&#10;or for groups and workflows:&#10;[ { "id": "..." }, { "id": "..." } ]'></textarea>
+                                </div>
+                            </div>
+
+                            <div class="builder-step builder-step--last" id="bstep-5">
+                                <div class="builder-step-num builder-step-num--green">5</div>
+                                <div class="builder-step-body">
+                                    <div class="builder-group-row">
+                                        <span class="builder-group-label">Adding to</span>
+                                        <select id="builder-group-select" class="builder-group-select"></select>
+                                    </div>
+                                    <div id="builder-new-group-row" style="display:none;">
+                                        <input type="text" id="builder-new-group-name" class="builder-new-group-input" placeholder="New group name…">
+                                    </div>
+                                    <button id="builder-import-btn" class="builder-action-btn builder-action-btn--green">Create Template</button>
+                                    <div id="builder-error" class="builder-error" style="display:none"></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Template view: replaces tab-based chrome for the "use template" experience -->
+            <div id="template-view" style="display:none;">
+                <div class="tv-content">
+
+                    <div class="tv-header">
+                        <div class="tv-header-main">
+                            <h2 id="tv-name" class="tv-name"></h2>
+                            <p id="tv-desc" class="tv-desc"></p>
+                        </div>
+                        <button id="tv-edit-btn" class="tv-edit-btn">Edit</button>
+                    </div>
+
+                    <div class="tv-steps">
+
+                        <div class="tv-step">
+                            <div class="tv-step-num">1</div>
+                            <div class="tv-step-body">
+                                <p class="tv-step-heading">Review template <span class="tv-step-optional">— optional</span></p>
+                                <details id="tv-details" class="tv-details">
+                                    <summary class="tv-details-summary">Show Details</summary>
+                                    <div id="tv-details-body" class="tv-details-body"></div>
+                                </details>
+                            </div>
+                        </div>
+
+                        <div class="tv-step">
+                            <div class="tv-step-num">2</div>
+                            <div class="tv-step-body">
+                                <p class="tv-step-heading">Fill in your details</p>
+                                <div id="view-inputs" class="tv-inputs"></div>
+                                <div class="tv-toolbar">
+                                    <div class="tv-history-wrap">
+                                        <button id="tv-history-btn" class="tv-history-btn">&#9203; History &#9660;</button>
+                                        <div id="tv-history-dropdown" class="tv-history-dropdown"></div>
+                                    </div>
+                                    <button id="tv-clear-btn" class="tv-clear-btn">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tv-step">
+                            <div class="tv-step-num">3</div>
+                            <div class="tv-step-body">
+                                <button id="copy-view-output" class="btn btn-primary tv-copy-btn" type="button" aria-label="Copy prompt to clipboard">
+                                    Copy Prompt
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="tv-step tv-step--last">
+                            <div class="tv-step-num tv-step-num--muted">4</div>
+                            <div class="tv-step-body">
+                                <p class="tv-step-instruction">Paste into <strong>Claude, ChatGPT,</strong> or any AI tool.</p>
+                                <details class="tv-output-details">
+                                    <summary class="tv-output-summary">View Prompt JSON</summary>
+                                    <textarea id="view-output-json" class="prompt-display tv-output-json" aria-label="Prompt output"></textarea>
+                                </details>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
 
             <div id="info-display" class="info-display card card-body" style="margin-bottom: 1.5rem;">
                 <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
@@ -164,7 +312,8 @@
 </div>
 
 <div id="toast-warning" class="toast-warning" role="alert">
-    <span>Warning: Your data is stored in your browser and may be lost if you clear your cache or use a different device.</span>
+    <span>Tip: Your work is saved in your browser. Make sure to save often.
+</span>
     <button id="toast-close" aria-label="Dismiss warning">✕</button>
 </div>
 

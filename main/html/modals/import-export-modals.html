@@ -1,3 +1,47 @@
+<!-- Quick Export Modal -->
+<div id="quick-export-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(30,41,59,0.65); z-index:9999; align-items:center; justify-content:center; padding:1.5rem;">
+    <div class="qem-box">
+        <h2 class="modal-title">Export</h2>
+
+        <div id="qem-template-row" class="qem-row" style="display:none;">
+            <div class="qem-row-info">
+                <span class="qem-row-label">This Template</span>
+                <span id="qem-template-name" class="qem-row-sub"></span>
+            </div>
+            <div class="qem-row-btns">
+                <button class="btn btn-secondary qem-btn" id="qem-template-download">Download</button>
+                <button class="btn btn-primary qem-btn" id="qem-template-share">Share</button>
+            </div>
+        </div>
+
+        <div class="qem-row">
+            <div class="qem-row-info">
+                <span class="qem-row-label">This Group</span>
+                <span id="qem-group-name" class="qem-row-sub"></span>
+            </div>
+            <div class="qem-row-btns">
+                <button class="btn btn-secondary qem-btn" id="qem-group-download">Download</button>
+                <button class="btn btn-primary qem-btn" id="qem-group-share">Share</button>
+            </div>
+        </div>
+
+        <div class="qem-row">
+            <div class="qem-row-info">
+                <span class="qem-row-label">Everything</span>
+                <span class="qem-row-sub">All groups &amp; templates</span>
+            </div>
+            <div class="qem-row-btns">
+                <button class="btn btn-secondary qem-btn" id="qem-workspace-download">Download</button>
+                <button class="btn btn-primary qem-btn" id="qem-workspace-share">Share</button>
+            </div>
+        </div>
+
+        <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; margin-top:1.25rem;">
+            <button class="btn btn-text" id="qem-close">Close</button>
+        </div>
+    </div>
+</div>
+
 <!-- Export Templates Modal -->
 <div id="export-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
     <div style="background:#fff; border-radius:8px; padding:2rem; max-width:800px; max-height:80vh; display:flex; flex-direction:column;">

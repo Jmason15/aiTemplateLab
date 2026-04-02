@@ -17,6 +17,13 @@ const STORAGE_KEYS = Object.freeze({
 });
 
 /**
+ * IDs of the built-in generator templates that power the builder screen.
+ * These are hidden from the sidebar so users interact with them only through
+ * the Build a New Template flow.
+ */
+const BUILDER_IDS = Object.freeze(new Set(['template-builder', 'group-generator', 'workflow-generator']));
+
+/**
  * ID prefixes for dynamically-created edit-form fields.
  * Each field's DOM id is `${prefix}-${counter}`, e.g. "input-name-1".
  */
@@ -406,7 +413,7 @@ window.loadPromptsFromLocalStorage = loadTemplateGroupsFromStorage;
  */
 
 /** All content panel IDs managed by switchToScreen. */
-const SCREENS = ['view-screen', 'edit-screen', 'history-screen', 'output-screen', 'welcome-screen'];
+const SCREENS = ['view-screen', 'edit-screen', 'history-screen', 'output-screen', 'welcome-screen', 'builder-screen'];
 
 /**
  * Shows one screen and hides all others. Also sets the `active` CSS class
@@ -420,6 +427,9 @@ function switchToScreen(activeId) {
         el.style.display = id === activeId ? 'block' : 'none';
         el.classList.toggle('active', id === activeId);
     });
+    // Keep the builder nav tile active only when the builder screen is showing.
+    const tile = document.getElementById('builder-nav-tile');
+    if (tile) tile.classList.toggle('active', activeId === 'builder-screen');
 }
 
 /**
@@ -449,19 +459,42 @@ function setTabActive(tabName) {
 }
 window.setTabActive = setTabActive;
 
-/** Switches to the Use Template (view) screen. */
+/**
+ * Shows the new compact template view (#template-view) and hides chrome + all tab screens.
+ */
+function showTemplateView() {
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'block';
+    showChrome(false);
+    SCREENS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'none';
+        el.classList.remove('active');
+    });
+    const tile = document.getElementById('builder-nav-tile');
+    if (tile) tile.classList.remove('active');
+}
+window.showTemplateView = showTemplateView;
+
+/** Switches to the template view (new compact single-page layout). */
 function showView() {
-    setTabActive('Use Template');
-    switchToScreen('view-screen');
-    showChrome(true);
+    showTemplateView();
 }
 window.showView = showView;
 
-/** Switches to the Edit Template screen. */
+/** Switches to the Edit Template screen — no tab bar, no info header. */
 function showEdit() {
-    setTabActive('Edit Template');
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'none';
+    // Hide the tab strip and info header; only show the edit form.
+    const infoDisplay = document.getElementById('info-display');
+    const tabsElem = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = 'none';
+    if (tabsElem) tabsElem.style.display = 'none';
+    if (tabContent) tabContent.style.display = '';
     switchToScreen('edit-screen');
-    showChrome(true);
 }
 window.showEdit = showEdit;
 
@@ -477,11 +510,9 @@ function showHistory() {
 }
 window.showHistory = showHistory;
 
-/** Switches to the Output screen. */
+/** Switches to the Output — now shows template-view where output is always visible. */
 function showPromptOutput() {
-    setTabActive('Output');
-    switchToScreen('output-screen');
-    showChrome(true);
+    showTemplateView();
 }
 window.showPromptOutput = showPromptOutput;
 
@@ -490,6 +521,8 @@ window.showPromptOutput = showPromptOutput;
  * Displayed when no prompt is selected (empty workspace or after deletion).
  */
 function showWelcome() {
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'none';
     showChrome(false);
     const welcomeScreen = document.getElementById('welcome-screen');
     if (welcomeScreen) {
@@ -498,6 +531,30 @@ function showWelcome() {
     }
 }
 window.showWelcome = showWelcome;
+
+/**
+ * Shows the Build a New Template screen and hides the chrome.
+ * Resets the screen to its initial state each time it opens.
+ */
+function showBuilderScreen() {
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'none';
+    showChrome(false);
+    switchToScreen('builder-screen');
+    // Reset to step 1 state — lower steps hidden, type defaulted to single.
+    const lower = document.getElementById('builder-lower');
+    if (lower) lower.style.display = 'none';
+    document.querySelectorAll('.builder-type-tab').forEach((btn, i) => btn.classList.toggle('active', i === 0));
+    if (typeof renderBuilderInputs === 'function') renderBuilderInputs('single');
+    const copyBtn = document.getElementById('builder-copy-btn');
+    if (copyBtn) { copyBtn.textContent = 'Copy Prompt for AI'; copyBtn.style.background = ''; copyBtn.disabled = false; }
+    const pasteArea = document.getElementById('builder-paste');
+    if (pasteArea) pasteArea.value = '';
+    const errorDiv = document.getElementById('builder-error');
+    if (errorDiv) { errorDiv.style.display = 'none'; errorDiv.textContent = ''; }
+    if (typeof refreshBuilderGroupSelect === 'function') refreshBuilderGroupSelect();
+}
+window.showBuilderScreen = showBuilderScreen;
 
 /**
  * Clears all edit-form fields and resets the dynamic field counters.
@@ -1786,7 +1843,8 @@ function renderPromptsList() {
         // Search mode: show all groups that have matches, all sections open.
         let anyMatch = false;
         const html = groups.map(([groupName, templates]) => {
-            const matched = templates.filter(p => p.name.toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
+            const visible = templates.filter(p => !BUILDER_IDS.has(p.id));
+            const matched = visible.filter(p => p.name.toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
             if (matched.length === 0) return '';
             anyMatch = true;
             const tilesHtml = matched.map((p, idx) =>
@@ -1802,18 +1860,29 @@ function renderPromptsList() {
         }).join('');
         container.innerHTML = anyMatch ? html : `<div class="group-empty" style="padding:1rem 0.75rem; color:#aaa;">No templates match "${window.escapeHtml(query)}"</div>`;
     } else {
-        // Normal mode: all groups, active group open.
+        // Normal mode: active group open. If active group has no visible templates,
+        // also expand the first other group that does so the user sees something useful.
+        const activeHasTemplates = (state.environment.templateGroups[state.currentTemplateGroup] || [])
+            .some(p => !BUILDER_IDS.has(p.id));
+        let expandedFallback = false;
         container.innerHTML = groups.map(([groupName, templates]) => {
+            const visible = templates.filter(p => !BUILDER_IDS.has(p.id));
+            if (visible.length === 0 && templates.every(p => BUILDER_IDS.has(p.id))) return '';
             const isActive = groupName === state.currentTemplateGroup;
-            const tilesHtml = templates.length === 0
+            let shouldOpen = isActive;
+            if (!activeHasTemplates && visible.length > 0 && !expandedFallback) {
+                shouldOpen = true;
+                expandedFallback = true;
+            }
+            const tilesHtml = visible.length === 0
                 ? `<div class="group-empty">No templates yet</div>`
-                : templates.map((p, idx) =>
+                : visible.map((p, idx) =>
                     `<div class="prompt-tile${state.currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
                         <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
                         <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
                     </div>`
                 ).join('');
-            return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
+            return `<details class="group-section" ${shouldOpen ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
                 <summary class="group-header">${window.escapeHtml(groupName)}</summary>
                 <div class="group-templates">${tilesHtml}</div>
             </details>`;
@@ -1884,7 +1953,8 @@ function renderPromptsList() {
 window.renderPromptsList = renderPromptsList;
 
 /**
- * Populates the view screen with a prompt's data and regenerates its output JSON.
+ * Populates the template view with a prompt's data, pre-fills inputs from last
+ * history entry, regenerates output JSON, and renders the history dropdown.
  * Also updates the sidebar selection highlight.
  * @param {string} id - The prompt's id.
  */
@@ -1893,37 +1963,48 @@ function viewPrompt(id) {
     if (!prompt) return;
     state.setCurrentPromptId(id);
 
-    showView();
-    // Hide the welcome screen in case it was showing.
-    const welcomeScreen = document.getElementById('welcome-screen');
-    if (welcomeScreen) { welcomeScreen.style.display = 'none'; welcomeScreen.classList.remove('active'); }
+    showView(); // calls showTemplateView()
 
+    // Populate compact template-view header.
+    const tvName = document.getElementById('tv-name');
+    const tvDesc = document.getElementById('tv-desc');
+    if (tvName) tvName.textContent = prompt.name;
+    if (tvDesc) tvDesc.textContent = prompt.description;
+
+    // Build the collapsible details section.
+    const tvDetailsBody = document.getElementById('tv-details-body');
+    const tvDetails = document.getElementById('tv-details');
+    if (tvDetailsBody) {
+        const parts = [];
+        if (prompt.objective) parts.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
+        if (prompt.actor) parts.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
+        if (prompt.context) parts.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
+        if (prompt.example) parts.push(`<div><strong>Example:</strong><div class="example-content" style="margin-top:0.5rem;">${window.escapeHtml(prompt.example)}</div></div>`);
+        tvDetailsBody.innerHTML = parts.length
+            ? parts.join('')
+            : '<p style="color:var(--color-text-muted);font-size:0.9em;margin:0;">No details defined.</p>';
+        if (tvDetails) tvDetails.style.display = parts.length ? '' : 'none';
+    }
+
+    // Also populate old chrome info-display elements (used when the edit tab shows chrome).
     const viewName = document.getElementById('view-name');
     const viewDesc = document.getElementById('view-desc');
     if (viewName) viewName.textContent = prompt.name;
     if (viewDesc) viewDesc.textContent = prompt.description;
-
-    // Build the collapsible metadata block (objective / actor / context).
     const meta = [];
     if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
     if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
     if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
     const viewMeta = document.getElementById('view-meta');
     if (viewMeta) viewMeta.innerHTML = meta.join('');
-
-    // Show or hide the example section.
     const exampleSection = document.getElementById('view-example-section');
     const exampleContent = document.getElementById('view-example-content');
     if (exampleSection && exampleContent) {
-        if (prompt.example) {
-            exampleContent.textContent = prompt.example;
-            exampleSection.style.display = '';
-        } else {
-            exampleSection.style.display = 'none';
-        }
+        if (prompt.example) { exampleContent.textContent = prompt.example; exampleSection.style.display = ''; }
+        else { exampleSection.style.display = 'none'; }
     }
 
-    // Render input fields as labelled textareas. Each change regenerates the output JSON.
+    // Render input fields as labelled textareas.
     const inputsContainer = document.getElementById('view-inputs');
     if (inputsContainer) {
         if (prompt.inputs.length === 0) {
@@ -1933,7 +2014,7 @@ function viewPrompt(id) {
                 <div style="margin-bottom: 1rem;">
                     <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
                     ${i.description ? `<p class="input-hint">${window.escapeHtml(i.description)}</p>` : ''}
-                    <textarea id="input-value-${idx}" class="view-textarea" rows="6"
+                    <textarea id="input-value-${idx}" class="view-textarea" rows="4"
                         placeholder="${window.escapeHtml(i.placeholder || i.description || '')}"></textarea>
                 </div>
             `).join('');
@@ -1943,9 +2024,65 @@ function viewPrompt(id) {
         }
     }
 
+    // Pre-fill inputs from the most recent history entry.
+    const history = getPromptInputHistory(id);
+    if (history.length > 0) {
+        const last = history[0];
+        prompt.inputs.forEach((i, idx) => {
+            const field = document.getElementById(`input-value-${idx}`);
+            if (field && last[i.name] !== undefined) field.value = last[i.name];
+        });
+    }
+
     generateViewPrompt();
+    renderHistoryDropdown(id);
     renderPromptsList();
 }
+
+/**
+ * Renders the last-5 history entries into the #tv-history-dropdown panel.
+ * Called by viewPrompt() and after copying a prompt.
+ * @param {string} promptId
+ */
+function renderHistoryDropdown(promptId) {
+    const dropdown = document.getElementById('tv-history-dropdown');
+    if (!dropdown) return;
+    const prompt = state.prompts.find(p => p.id === promptId);
+    const history = getPromptInputHistory(promptId).slice(0, 5);
+    if (!prompt || history.length === 0) {
+        dropdown.innerHTML = '<div class="tv-history-empty">No history yet.</div>';
+        return;
+    }
+    dropdown.innerHTML = history.map((h, idx) => {
+        const preview = Object.entries(h)
+            .filter(([, v]) => v)
+            .slice(0, 2)
+            .map(([k, v]) => `<span class="tv-history-field"><strong>${window.escapeHtml(k)}:</strong> ${window.escapeHtml(v.length > 60 ? v.slice(0, 60) + '\u2026' : v)}</span>`)
+            .join('');
+        return `<div class="tv-history-item">
+            <div class="tv-history-preview">${preview || '<em>Empty entry</em>'}</div>
+            <button class="tv-history-restore" data-idx="${idx}">Restore</button>
+        </div>`;
+    }).join('');
+
+    dropdown.querySelectorAll('.tv-history-restore').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const selected = history[parseInt(btn.getAttribute('data-idx'))];
+            if (!selected || !prompt) return;
+            prompt.inputs.forEach((i, idx) => {
+                const field = document.getElementById(`input-value-${idx}`);
+                if (field && selected[i.name] !== undefined) field.value = selected[i.name];
+            });
+            generateViewPrompt();
+            // Close dropdown
+            dropdown.style.display = 'none';
+            const histBtn = document.getElementById('tv-history-btn');
+            if (histBtn) histBtn.classList.remove('active');
+        });
+    });
+}
+window.renderHistoryDropdown = renderHistoryDropdown;
 
 /**
  * Removes a dynamic field card from the edit form by element ID,
@@ -2234,6 +2371,103 @@ window.setupTileContextMenu = setupTileContextMenu;
  * Load order: depends on state.js, promptCrud.js, and utils.js.
  */
 
+// =========================
+// Quick Export modal (sidebar Export / Share button)
+// =========================
+
+/**
+ * Opens the quick export modal and populates the template row if a prompt
+ * is currently selected.
+ */
+function openQuickExportModal() {
+    const modal = document.getElementById('quick-export-modal');
+    if (!modal) return;
+
+    const templateRow = document.getElementById('qem-template-row');
+    const templateNameEl = document.getElementById('qem-template-name');
+    const groupNameEl = document.getElementById('qem-group-name');
+
+    const currentPrompt = state.prompts.find(p => p.id === state.currentPromptId);
+    if (currentPrompt && templateRow && templateNameEl) {
+        templateRow.style.display = 'flex';
+        templateNameEl.textContent = currentPrompt.name;
+    } else if (templateRow) {
+        templateRow.style.display = 'none';
+    }
+    if (groupNameEl) groupNameEl.textContent = state.currentTemplateGroup || '';
+
+    modal.style.display = 'flex';
+}
+window.openQuickExportModal = openQuickExportModal;
+
+/**
+ * Attempts to share a file via the Web Share API. Falls back to a plain
+ * JSON download if the API is unavailable or the user cancels.
+ * @param {object|Array} data - The data to share/download.
+ * @param {string} filename   - The suggested filename (e.g. "my-template.json").
+ * @param {string} title      - Title passed to navigator.share.
+ */
+async function shareOrDownload(data, filename, title) {
+    const jsonStr = JSON.stringify(data, null, 2);
+    const file = new File([jsonStr], filename, { type: 'application/json' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+            await navigator.share({ title, files: [file] });
+            return;
+        } catch (e) {
+            if (e.name === 'AbortError') return; // User dismissed the share sheet — do nothing
+        }
+    }
+    // Fallback: plain download
+    downloadJson(data, filename);
+}
+
+/** Wires all buttons in the quick export modal. Called once at startup. */
+function setupQuickExportModal() {
+    const modal = document.getElementById('quick-export-modal');
+    if (!modal) return;
+
+    const close = () => { modal.style.display = 'none'; };
+    document.getElementById('qem-close')?.addEventListener('click', close);
+    modal.addEventListener('click', e => { if (e.target === modal) close(); });
+    modal.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+    // This Template
+    document.getElementById('qem-template-download')?.addEventListener('click', () => {
+        const p = state.prompts.find(t => t.id === state.currentPromptId);
+        if (!p) return;
+        downloadJson(p, `${p.id}.json`);
+    });
+    document.getElementById('qem-template-share')?.addEventListener('click', () => {
+        const p = state.prompts.find(t => t.id === state.currentPromptId);
+        if (!p) return;
+        shareOrDownload(p, `${p.id}.json`, p.name);
+    });
+
+    // This Group
+    document.getElementById('qem-group-download')?.addEventListener('click', () => {
+        const name = state.currentTemplateGroup;
+        const data = { name, templates: state.environment.templateGroups[name] || [], history: state.environment.history[name] || [] };
+        downloadJson(data, `${name}-group.json`);
+    });
+    document.getElementById('qem-group-share')?.addEventListener('click', () => {
+        const name = state.currentTemplateGroup;
+        const data = { name, templates: state.environment.templateGroups[name] || [], history: state.environment.history[name] || [] };
+        shareOrDownload(data, `${name}-group.json`, `Group: ${name}`);
+    });
+
+    // Everything (workspace)
+    document.getElementById('qem-workspace-download')?.addEventListener('click', () => {
+        const data = { templateGroups: state.environment.templateGroups, history: state.environment.history, currentTemplateGroup: state.currentTemplateGroup };
+        downloadJson(data, `workspace-${new Date().toISOString().slice(0, 10)}.json`);
+    });
+    document.getElementById('qem-workspace-share')?.addEventListener('click', () => {
+        const data = { templateGroups: state.environment.templateGroups, history: state.environment.history, currentTemplateGroup: state.currentTemplateGroup };
+        shareOrDownload(data, `workspace-${new Date().toISOString().slice(0, 10)}.json`, 'aiTemplateLab Workspace');
+    });
+}
+window.setupQuickExportModal = setupQuickExportModal;
+
 /**
  * Entry point for the Export button. Opens the export modal if there are
  * prompts to export.
@@ -2300,7 +2534,7 @@ function handleImport(event) {
             }
             showImportModal(uniqueTemplates, allTemplates);
         } catch (err) {
-            alert('Error parsing JSON file: ' + err.message);
+            alert('Invalid template file. Please make sure the file is a valid JSON template exported from aiTemplateLab.');
         }
     };
     reader.readAsText(file);
@@ -2441,7 +2675,7 @@ function resolveImportGroup(selectId, inputId, errorDiv) {
  */
 function importPromptFromJson(json) {
     let importedPrompts = Array.isArray(json) ? json : (typeof json === 'object' && json !== null ? [json] : null);
-    if (!importedPrompts) { alert('Invalid JSON: Must be a prompt object or array of prompt objects'); return; }
+    if (!importedPrompts) { alert('Invalid template format. Expected a template object or an array of templates.'); return; }
 
     const errorDiv = document.getElementById('json-import-error');
     const targetGroup = resolveImportGroup('json-import-group-select', 'json-import-new-group-name', errorDiv);
@@ -2467,66 +2701,423 @@ window.importPromptFromJson = importPromptFromJson;
 // New Prompt Modal (JSON paste import)
 // =========================
 
-/**
- * Opens the JSON import modal and focuses the textarea.
- * The small setTimeout ensures focus works after the display change.
- */
+/** Opens the import modal and resets it to the initial dropzone state. */
 function openNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     if (!modal) return;
-    populateImportGroupSelect('json-import-group-select');
-    const newGroupRow = document.getElementById('json-import-new-group-row');
-    const newGroupInput = document.getElementById('json-import-new-group-name');
-    if (newGroupRow) newGroupRow.style.display = 'none';
-    if (newGroupInput) newGroupInput.value = '';
+    resetUimFilePanel();
     modal.style.display = 'flex';
-    const textarea = document.getElementById('json-import-textarea');
-    if (textarea) setTimeout(() => textarea.focus(), 50);
 }
 window.openNewPromptModal = openNewPromptModal;
 
-/** Closes the JSON import modal and clears its textarea and error message. */
+/** Closes the import modal and resets it. */
 function closeNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
     if (!modal) return;
     modal.style.display = 'none';
-    const textarea = document.getElementById('json-import-textarea');
-    if (textarea) textarea.value = '';
-    const errorDiv = document.getElementById('json-import-error');
-    if (errorDiv) errorDiv.textContent = '';
+    resetUimFilePanel();
 }
 window.closeNewPromptModal = closeNewPromptModal;
 
+/** Resets the modal back to the empty dropzone state. */
+function resetUimFilePanel() {
+    const fileInput = document.getElementById('uim-file-input');
+    if (fileInput) fileInput.value = '';
+    const preview = document.getElementById('uim-file-preview');
+    if (preview) preview.style.display = 'none';
+    const cancelBar = document.getElementById('uim-cancel-bar');
+    if (cancelBar) cancelBar.style.display = 'flex';
+    const dropzone = document.getElementById('uim-dropzone');
+    if (dropzone) { dropzone.style.display = 'flex'; dropzone.classList.remove('drag-over'); }
+    const errEl = document.getElementById('uim-file-error');
+    if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+    window._uimPendingImport = null;
+}
+
 /**
- * Wires the confirm / cancel buttons and backdrop-click / Escape behaviour
- * for the JSON import modal. Called once during app startup.
+ * Wires the import modal: dropzone drag/drop, browse button, group select, confirm/cancel.
+ * Called once during app startup.
  */
 function setupNewPromptModal() {
     const modal = document.getElementById('new-prompt-modal');
-    const cancelBtn = document.getElementById('new-prompt-cancel');
-    const confirmBtn = document.getElementById('json-import-confirm');
+    const dropzone = document.getElementById('uim-dropzone');
+    const fileInput = document.getElementById('uim-file-input');
+    const pickBtn = document.getElementById('uim-pick-file-btn');
 
-    wireNewGroupToggle('json-import-group-select', 'json-import-new-group-row', 'json-import-new-group-name');
-    if (cancelBtn) cancelBtn.addEventListener('click', closeNewPromptModal);
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', function () {
-            const textarea = document.getElementById('json-import-textarea');
-            const errorDiv = document.getElementById('json-import-error');
-            if (!textarea || !errorDiv) return;
-            errorDiv.style.display = 'none';
-            try {
-                importPromptFromJson(JSON.parse(textarea.value));
-            } catch (e) {
-                errorDiv.textContent = 'Invalid JSON: ' + e.message;
-                errorDiv.style.display = 'block';
-            }
+    // Browse button
+    if (pickBtn && fileInput) pickBtn.addEventListener('click', () => fileInput.click());
+    if (fileInput) fileInput.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if (file) processImportFile(file);
+        e.target.value = '';
+    });
+
+    // Drag and drop
+    if (dropzone) {
+        dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+        dropzone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropzone.classList.remove('drag-over');
+            const file = e.dataTransfer.files[0];
+            if (file) processImportFile(file);
+        });
+        // Clicking anywhere on the dropzone (except the button) opens file picker
+        dropzone.addEventListener('click', e => {
+            if (e.target !== pickBtn && !pickBtn.contains(e.target)) fileInput.click();
         });
     }
+
+    // Group select new-group toggle
+    wireNewGroupToggle('uim-group-select', 'uim-new-group-row', 'uim-new-group-name');
+
+    // Cancel / confirm
+    document.getElementById('new-prompt-cancel')?.addEventListener('click', closeNewPromptModal);
+    document.getElementById('uim-file-cancel')?.addEventListener('click', closeNewPromptModal);
+    document.getElementById('uim-file-confirm')?.addEventListener('click', handleUimFileConfirm);
+
+    // Backdrop / Escape
     if (modal) {
-        modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
-        modal.addEventListener('keydown', e => { if (e.key === 'Escape') modal.style.display = 'none'; });
+        modal.addEventListener('click', e => { if (e.target === modal) closeNewPromptModal(); });
+        modal.addEventListener('keydown', e => { if (e.key === 'Escape') closeNewPromptModal(); });
     }
 }
+
+/**
+ * Parses a File, auto-detects its type, and either shows the group
+ * confirmation UI inline or delegates template imports to showImportModal.
+ */
+function processImportFile(file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const errEl = document.getElementById('uim-file-error');
+        const preview = document.getElementById('uim-file-preview');
+        const dropzone = document.getElementById('uim-dropzone');
+        const cancelBar = document.getElementById('uim-cancel-bar');
+
+        try {
+            const data = JSON.parse(e.target.result);
+            const isGroup = data && typeof data === 'object' && !Array.isArray(data)
+                && typeof data.name === 'string' && Array.isArray(data.templates);
+
+            if (isGroup) {
+                // Show inline group confirmation
+                const count = data.templates.length;
+                document.getElementById('uim-detected-msg').innerHTML =
+                    `<strong>Group detected:</strong> "${escapeHtml(data.name)}" &mdash; ${count} template${count !== 1 ? 's' : ''}`;
+                document.getElementById('uim-file-group-fields').style.display = 'block';
+                populateImportGroupSelect('uim-group-select');
+                if (state.environment.templateGroups[data.name]) {
+                    const sel = document.getElementById('uim-group-select');
+                    if (sel) sel.value = data.name;
+                }
+                window._uimPendingImport = { type: 'group', data };
+                if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+                if (dropzone) dropzone.style.display = 'none';
+                if (cancelBar) cancelBar.style.display = 'none';
+                if (preview) preview.style.display = 'block';
+            } else {
+                // Template(s) — delegate to existing checkbox modal
+                const allTemplates = Array.isArray(data) ? data : [data];
+                const existingIds = new Set(state.prompts.map(p => p.id));
+                const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
+                if (uniqueTemplates.length === 0) {
+                    if (errEl) { errEl.textContent = 'No new templates found — all IDs already exist.'; errEl.style.display = 'block'; }
+                    if (dropzone) dropzone.style.display = 'none';
+                    if (cancelBar) cancelBar.style.display = 'none';
+                    if (preview) preview.style.display = 'block';
+                    return;
+                }
+                closeNewPromptModal();
+                showImportModal(uniqueTemplates, allTemplates);
+            }
+        } catch (err) {
+            if (errEl) { errEl.textContent = 'Invalid file. Please make sure the file is a valid JSON template or group exported from aiTemplateLab.'; errEl.style.display = 'block'; }
+            if (dropzone) dropzone.style.display = 'none';
+            if (cancelBar) cancelBar.style.display = 'none';
+            if (preview) preview.style.display = 'block';
+        }
+    };
+    reader.readAsText(file);
+}
+
+/**
+ * Handles file selection in the "From File" tab.
+ * Auto-detects whether the file is a group or individual template(s).
+ */
+function handleUimFileSelected(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const nameEl = document.getElementById('uim-file-name');
+    if (nameEl) nameEl.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const errEl = document.getElementById('uim-file-error');
+        const preview = document.getElementById('uim-file-preview');
+        const detectedMsg = document.getElementById('uim-detected-msg');
+        const groupFields = document.getElementById('uim-file-group-fields');
+
+        try {
+            const data = JSON.parse(e.target.result);
+            event.target.value = '';
+
+            // Detect type: group file has { name: string, templates: array }
+            const isGroup = data && typeof data === 'object' && !Array.isArray(data)
+                && typeof data.name === 'string' && Array.isArray(data.templates);
+
+            if (isGroup) {
+                // Group import — handle inline
+                const groupName = data.name;
+                const count = data.templates.length;
+                const nameExists = !!state.environment.templateGroups[groupName];
+                detectedMsg.innerHTML = `<strong>Group detected:</strong> "${escapeHtml(groupName)}" &mdash; ${count} template${count !== 1 ? 's' : ''}`;
+                groupFields.style.display = 'block';
+                populateImportGroupSelect('uim-group-select');
+                // Pre-select the group if it exists, else set to the current group
+                const sel = document.getElementById('uim-group-select');
+                if (sel && nameExists) sel.value = groupName;
+                window._uimPendingImport = { type: 'group', data };
+                if (errEl) { errEl.textContent = ''; errEl.style.display = 'none'; }
+                preview.style.display = 'block';
+            } else {
+                // Template(s) — close unified modal and open the existing import-modal
+                const allTemplates = Array.isArray(data) ? data : [data];
+                const existingIds = new Set(state.prompts.map(p => p.id));
+                const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
+                if (uniqueTemplates.length === 0) {
+                    if (errEl) { errEl.textContent = 'No new templates found (all IDs already exist).'; errEl.style.display = 'block'; }
+                    preview.style.display = 'block';
+                    return;
+                }
+                closeNewPromptModal();
+                showImportModal(uniqueTemplates, allTemplates);
+            }
+        } catch (err) {
+            if (errEl) { errEl.textContent = 'Invalid file. Please make sure the file is a valid JSON template or group exported from aiTemplateLab.'; errEl.style.display = 'block'; }
+            if (preview) preview.style.display = 'block';
+        }
+    };
+    reader.readAsText(file);
+}
+
+/**
+ * Handles the Import confirm button in the "From File" tab (group imports only —
+ * template imports are handed off to showImportModal immediately on file selection).
+ */
+function handleUimFileConfirm() {
+    const pending = window._uimPendingImport;
+    if (!pending) return;
+    const errEl = document.getElementById('uim-file-error');
+
+    if (pending.type === 'group') {
+        const targetGroup = resolveImportGroup('uim-group-select', 'uim-new-group-name', errEl);
+        if (!targetGroup) return;
+
+        const groupData = pending.data;
+        const existingIds = new Set((state.environment.templateGroups[targetGroup] || []).map(p => p.id));
+        const newTemplates = (groupData.templates || []).map(normalizePrompt).filter(p => p.id && !existingIds.has(p.id));
+
+        if (newTemplates.length === 0) {
+            errEl.textContent = 'No new templates to import — all IDs already exist in that group.';
+            errEl.style.display = 'block';
+            return;
+        }
+
+        state.environment.templateGroups[targetGroup] = (state.environment.templateGroups[targetGroup] || []).concat(newTemplates);
+        if (groupData.history) state.environment.history[targetGroup] = groupData.history;
+        if (targetGroup === state.currentTemplateGroup) {
+            state.setPrompts(state.environment.templateGroups[targetGroup].map(normalizePrompt));
+        }
+        window.savePromptsToLocalStorage();
+        if (typeof updateTemplateGroupDropdown === 'function') updateTemplateGroupDropdown();
+        renderPromptsList();
+        closeNewPromptModal();
+        alert(`Imported ${newTemplates.length} template(s) into "${targetGroup}" successfully!`);
+    }
+}
+
+// =========================
+// Builder Screen — Build a New Template
+// =========================
+
+/** Looks up one of the three generator templates from preloadedPrompts by type key. */
+function getBuilderTemplate(type) {
+    const ids = { single: 'template-builder', group: 'group-generator', workflow: 'workflow-generator' };
+    return (window.preloadedPrompts || []).find(p => p.id === ids[type]) || null;
+}
+
+/**
+ * Generates the full structured prompt text for a generator template + user inputs.
+ * Mirrors the output shape of generateViewPrompt() in promptOutput.js.
+ */
+function generateBuilderPromptText(template, inputValues) {
+    const outputProperties = {};
+    const requiredFields = [];
+    (template.outputs || []).forEach(o => {
+        outputProperties[o.name] = { type: o.type, description: o.description || undefined };
+        requiredFields.push(o.name);
+    });
+    const promptJson = {};
+    if (template.objective) promptJson.objective = template.objective;
+    if (template.actor)     promptJson.actor     = template.actor;
+    if (template.context)   promptJson.context   = template.context;
+    if (template.example)   promptJson.example   = template.example;
+    if (Object.keys(inputValues).length > 0) promptJson.input = inputValues;
+    if ((template.constraints || []).length > 0) promptJson.constraints = template.constraints;
+    promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };
+    if ((template.success || []).length > 0) promptJson.success_criteria = template.success;
+    const names = Object.keys(outputProperties).join(', ');
+    promptJson.output_instructions = names
+        ? `Return only the output exactly as specified by the properties: ${names}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`
+        : 'Return only the output exactly as specified. Do not include any extra prose, comments, or code fences.';
+    return JSON.stringify(promptJson, null, 2);
+}
+
+/** Renders the input textareas in #builder-inputs for the given type. */
+function renderBuilderInputs(type) {
+    const template = getBuilderTemplate(type);
+    const container = document.getElementById('builder-inputs');
+    if (!container) return;
+    if (!template) { container.innerHTML = ''; return; }
+    container.innerHTML = template.inputs.map((inp, i) => `
+        <div class="builder-input-group">
+            <label class="builder-input-label" for="builder-input-${i}">
+                ${escapeHtml(inp.name)}${i > 0 ? ' <span class="builder-input-optional">(optional)</span>' : ''}
+            </label>
+            <p class="builder-input-hint">${escapeHtml(inp.description || '')}</p>
+            <textarea id="builder-input-${i}" class="builder-textarea" placeholder="${escapeHtml(inp.placeholder || '')}"></textarea>
+        </div>
+    `).join('');
+}
+window.renderBuilderInputs = renderBuilderInputs;
+
+/** Copies text to clipboard with a fallback for browsers that don't support the async API. */
+function builderCopy(text, onCopied) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(onCopied).catch(() => builderCopyFallback(text, onCopied));
+    } else {
+        builderCopyFallback(text, onCopied);
+    }
+}
+
+function builderCopyFallback(text, onCopied) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:-9999px';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); onCopied(); } catch { alert('Copy failed — please copy the text manually.'); }
+    document.body.removeChild(ta);
+}
+
+/** Populates the builder group select and resets the new-group input. */
+function refreshBuilderGroupSelect() {
+    populateImportGroupSelect('builder-group-select');
+    const sel = document.getElementById('builder-group-select');
+    if (sel && state.environment.templateGroups['Template Lab']) sel.value = 'Template Lab';
+    const newGroupRow = document.getElementById('builder-new-group-row');
+    const newGroupInput = document.getElementById('builder-new-group-name');
+    if (newGroupRow) newGroupRow.style.display = 'none';
+    if (newGroupInput) newGroupInput.value = '';
+}
+window.refreshBuilderGroupSelect = refreshBuilderGroupSelect;
+
+/** Wires all events on the builder screen. Called once at startup. */
+function setupBuilderScreen() {
+    const screen = document.getElementById('builder-screen');
+    if (!screen) return;
+
+    // Initial render
+    renderBuilderInputs('single');
+
+    // Group select — wire new-group toggle
+    wireNewGroupToggle('builder-group-select', 'builder-new-group-row', 'builder-new-group-name');
+
+    // Type tab switching
+    screen.addEventListener('click', e => {
+        const tab = e.target.closest('.builder-type-tab');
+        if (!tab) return;
+        document.querySelectorAll('.builder-type-tab').forEach(b => b.classList.remove('active'));
+        tab.classList.add('active');
+        renderBuilderInputs(tab.dataset.type);
+        setTimeout(() => { const f = document.getElementById('builder-input-0'); if (f) f.focus(); }, 0);
+    });
+
+    // Copy button
+    const copyBtn = document.getElementById('builder-copy-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            const type = document.querySelector('.builder-type-tab.active')?.dataset.type || 'single';
+            const template = getBuilderTemplate(type);
+            if (!template) { alert('Template data not found.'); return; }
+
+            const inputValues = {};
+            template.inputs.forEach((inp, i) => {
+                const field = document.getElementById(`builder-input-${i}`);
+                inputValues[inp.name] = field ? field.value : '';
+            });
+
+            builderCopy(generateBuilderPromptText(template, inputValues), () => {
+                copyBtn.textContent = '\u2713 Copied!';
+                copyBtn.style.background = 'var(--color-success-dark, #15803d)';
+                // Reveal steps 3-5
+                const lower = document.getElementById('builder-lower');
+                if (lower) lower.style.display = 'block';
+                // Reset button after delay, focus paste area
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy Prompt for AI';
+                    copyBtn.style.background = '';
+                }, 3000);
+                setTimeout(() => {
+                    const paste = document.getElementById('builder-paste');
+                    if (paste) { paste.scrollIntoView({ behavior: 'smooth', block: 'center' }); paste.focus(); }
+                }, 400);
+            });
+        });
+    }
+
+    // Import button
+    const importBtn = document.getElementById('builder-import-btn');
+    if (importBtn) {
+        importBtn.addEventListener('click', () => {
+            const textarea  = document.getElementById('builder-paste');
+            const errorDiv  = document.getElementById('builder-error');
+            if (!textarea || !errorDiv) return;
+            errorDiv.style.display = 'none';
+
+            const raw = textarea.value.trim();
+            if (!raw) { errorDiv.textContent = 'Please paste the AI\u2019s response first.'; errorDiv.style.display = 'block'; return; }
+
+            let parsed;
+            try { parsed = JSON.parse(raw); }
+            catch (e) { errorDiv.textContent = 'Invalid template format. Please check the AI\'s response and try again.'; errorDiv.style.display = 'block'; return; }
+
+            const templates  = Array.isArray(parsed) ? parsed : [parsed];
+            const targetGroup = resolveImportGroup('builder-group-select', 'builder-new-group-name', errorDiv);
+            if (!targetGroup) return;
+
+            if (!state.environment.templateGroups[targetGroup]) state.environment.templateGroups[targetGroup] = [];
+            const existingIds = new Set(state.environment.templateGroups[targetGroup].map(p => p.id));
+            const newTemplates = templates.map(normalizePrompt).filter(p => p.id && !existingIds.has(p.id));
+            if (newTemplates.length === 0) {
+                errorDiv.textContent = 'No new templates to import \u2014 all IDs already exist in this group.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            state.environment.templateGroups[targetGroup] = state.environment.templateGroups[targetGroup].concat(newTemplates);
+            state.setCurrentTemplateGroup(targetGroup);
+            state.setPrompts(state.environment.templateGroups[targetGroup].map(normalizePrompt));
+            window.savePromptsToLocalStorage();
+            renderPromptsList();
+
+            // Navigate directly to the first new template
+            viewPrompt(newTemplates[0].id);
+        });
+    }
+}
+window.setupBuilderScreen = setupBuilderScreen;
 
 
 /* === workspaceManager.js === */
@@ -2850,14 +3441,11 @@ function setupMenuBar() {
 
     // Templates menu.
     document.getElementById('menu-new-template')?.addEventListener('click', () => { closeAll(); startBlankPrompt(); });
-    document.getElementById('menu-import-templates')?.addEventListener('click', () => { closeAll(); if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
-    document.getElementById('menu-import-from-file')?.addEventListener('click', () => { closeAll(); if (typeof window.importPrompts === 'function') window.importPrompts(); });
     document.getElementById('menu-export-templates')?.addEventListener('click', () => { closeAll(); if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
 
     // Groups menu.
     document.getElementById('menu-create-template-group')?.addEventListener('click', () => { closeAll(); openCreateGroupModal(); });
     document.getElementById('menu-save-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('save-template-group-btn').click(); });
-    document.getElementById('menu-load-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('load-template-group-btn').click(); });
     document.getElementById('menu-delete-template-group')?.addEventListener('click', () => {
         closeAll();
         const modal = document.getElementById('delete-template-group-modal');
@@ -2883,7 +3471,7 @@ function setupMenuBar() {
             title: 'What is a Template?',
             content: `<p>A <strong>template</strong> is a pre-built AI prompt designed for a specific task.</p>
                 <p>Instead of figuring out what to say to an AI from scratch every time, a template does the hard work for you. It knows the right structure, the right instructions, and the right questions to ask — you just fill in your specific details.</p>
-                <p><strong>Example:</strong> The "Jira Story Generator" template already knows how to turn messy ticket notes into a clean user story with acceptance criteria. You paste in your notes, click Create Prompt, and paste the result into your favorite AI tool.</p>
+                <p><strong>Example:</strong> The "Jira Story Generator" template already knows how to turn messy ticket notes into a clean user story with acceptance criteria. You paste in your notes, click Copy Prompt, and paste the result into your favorite AI tool.</p>
                 <p>Think of templates like smart forms — they turn your raw information into a polished, professional AI prompt every time.</p>`
         },
         'help-what-is-group': {
@@ -2897,8 +3485,8 @@ function setupMenuBar() {
             title: 'How to use this app',
             content: `<ol style="padding-left:1.25rem; margin:0; display:flex; flex-direction:column; gap:0.75rem;">
                 <li><strong>Pick a template from the sidebar.</strong> Each template is built for a specific task. If you don't see one you need, use the Template Builder to create one.</li>
-                <li><strong>Fill in the fields under "Use Template".</strong> Each field tells you exactly what to provide — just type in your information.</li>
-                <li><strong>Click "Create Prompt".</strong> The app assembles everything into a complete, structured AI prompt.</li>
+                <li><strong>Fill in the fields.</strong> Each field tells you exactly what to provide — just type in your information.</li>
+                <li><strong>Click "Copy Prompt".</strong> The app assembles everything into a complete, structured AI prompt and copies it to your clipboard.</li>
                 <li><strong>Copy and paste into your AI tool.</strong> Paste the result into your favorite AI tool and get a high-quality response.</li>
                 <li><strong>Come back and reuse it.</strong> Next time you need the same kind of result, your template is already here waiting.</li>
             </ol>`
@@ -2921,53 +3509,50 @@ function setupMenuBar() {
             content: `<p>The <strong>Template Lab</strong> group contains three tools that let you build new templates using an AI. Switch to the Template Lab group in the sidebar to get started.</p>
                 <p><strong>Template Builder</strong> — Creates a single new template from a plain-English idea.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
-                    <li>Pick <em>Template Builder</em> from the sidebar and open <em>Use Template</em>.</li>
+                    <li>Pick <em>Template Builder</em> from the sidebar.</li>
                     <li>Describe what you want — e.g. <em>"A prompt that turns meeting notes into action items."</em></li>
-                    <li>Click <strong>Create Prompt</strong> and copy the result.</li>
-                    <li>Paste it into your favorite AI tool. It will return a complete template as JSON.</li>
-                    <li>Copy the response, then click the green <strong>Import Template From AI</strong> button in the sidebar, paste it in, and click Import.</li>
+                    <li>Click <strong>Copy Prompt</strong> and paste it into your favorite AI tool.</li>
+                    <li>Copy the AI's full response, then paste it into step 4 on the builder screen.</li>
+                    <li>Click <strong>Create Template</strong> — your new template is added to the library instantly.</li>
                 </ol>
                 <p><strong>Template Group Generator</strong> — Creates a full set of templates for a specific job or role.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Enter your job title or area of work — e.g. <em>"Marketing Manager"</em>.</li>
-                    <li>Run it through your AI tool. You'll get a whole group of templates covering every common task for that role.</li>
-                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — your whole group appears at once.</li>
+                    <li>Click <strong>Copy Prompt</strong> and run it through your AI tool. You'll get a whole group of templates covering every common task for that role.</li>
+                    <li>Copy the AI's response, paste it into step 4 on the builder screen, and click <strong>Create Template</strong> — your whole group appears at once.</li>
                 </ol>
                 <p><strong>Workflow Generator</strong> — Breaks a multi-step goal into a sequence of templates, one per stage.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 0 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Describe your goal — e.g. <em>"Write and publish a blog post."</em></li>
                     <li>The AI generates a chain of templates where the output of each step feeds into the next.</li>
-                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — all steps appear ready to run in order.</li>
+                    <li>Copy the AI's response, paste it into step 4 on the builder screen, and click <strong>Create Template</strong> — all steps appear ready to run in order.</li>
                 </ol>`
         },
         'help-create-from-scratch': {
             title: 'Creating a template from scratch',
             content: `<p>You can build a template entirely by hand — no AI needed — using the blank template editor.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.5rem;">
-                    <li><strong>Open a blank template.</strong> Click <em>New Blank Template</em> in the sidebar, or go to <em>Templates → New</em> in the menu bar.</li>
+                    <li><strong>Open a blank template.</strong> Go to <em>Templates → New Blank</em> in the menu bar.</li>
                     <li><strong>Give it a name and description.</strong> The name appears in the sidebar; the description helps you remember what the template is for.</li>
                     <li><strong>Fill in the sections.</strong> Work through Objective, Actor, Context, and the rest at your own pace. You don't need to fill in every section — just what's useful for your task.</li>
                     <li><strong>Add inputs.</strong> Inputs are the fields you fill in each time you use the template. Click <em>Add Input</em>, give each one a clear label, and optionally add a placeholder example so you remember what to type.</li>
-                    <li><strong>Click Save.</strong> Your template appears in the sidebar immediately, ready to use.</li>
+                    <li><strong>Your changes save automatically</strong> as you type. Your template appears in the sidebar immediately, ready to use.</li>
                 </ol>
                 <p><strong>Tip:</strong> If you're not sure what to write, open the <em>See an Example</em> section on any existing template to see how it's structured — then model yours on that.</p>`
         },
         'help-edit-screen': {
             title: 'What does the Edit screen do?',
-            content: `<p>The <strong>Edit Template</strong> tab lets you modify any template. Click it while a template is selected to open the editor.</p>
+            content: `<p>Click the <strong>Edit</strong> button on any template to open the editor.</p>
+                <p><strong>The name and description</strong> are always visible at the top and can be edited directly. The remaining sections are collapsed by default — click any section header to expand it.</p>
                 <p><strong>Sections you can edit:</strong></p>
                 <ul style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.5rem;">
-                    <li><strong>Name &amp; Description</strong> — What appears in the sidebar and at the top of the template view.</li>
-                    <li><strong>Example</strong> — An optional plain-English walkthrough that appears in the "See an Example" section when using the template. Great for helping others understand what the template is for.</li>
-                    <li><strong>Objective</strong> — What the prompt is trying to achieve.</li>
-                    <li><strong>Actor</strong> — The role or persona the AI should take on (e.g. "a senior software engineer").</li>
-                    <li><strong>Context</strong> — Background information the AI needs to know before it starts.</li>
-                    <li><strong>Inputs</strong> — The fields you fill in each time you use the template. Each input has a label, a description, and an optional placeholder example. Use the <em>Add Input</em> button to add more.</li>
-                    <li><strong>Constraints</strong> — Rules the AI must follow (e.g. "Keep the response under 200 words"). Use <em>Add Constraint</em> to add more.</li>
-                    <li><strong>Outputs</strong> — What the AI should return, and in what format. Use <em>Add Output</em> to add more.</li>
-                    <li><strong>Success Criteria</strong> — How you know the result is good. Use <em>Add Success Criterion</em> to add more.</li>
+                    <li><strong>Template Details</strong> — Objective, Actor, Context, and an optional Example walkthrough.</li>
+                    <li><strong>Inputs</strong> — The fields you fill in each time you use the template. Each input has a label, a description, and an optional placeholder. Use <em>+ Add</em> to add more.</li>
+                    <li><strong>Constraints</strong> — Rules the AI must follow. Use <em>+ Add</em> to add more.</li>
+                    <li><strong>Outputs</strong> — What the AI should return and in what format. Use <em>+ Add</em> to add more.</li>
+                    <li><strong>Success Criteria</strong> — How you know the result is good. Use <em>+ Add</em> to add more.</li>
                 </ul>
-                <p><strong>Auto-save:</strong> Changes are saved automatically as you type — no need to click Save unless you want to force a save immediately.</p>`
+                <p><strong>Auto-save:</strong> All changes save automatically as you type — there is no Save button.</p>`
         }
     };
 
@@ -3026,11 +3611,8 @@ function setupMenuBar() {
     mob('mob-clear-storage',    () => { document.getElementById('clear-storage-modal').style.display = 'flex'; });
     mob('mob-create-group',     () => openCreateGroupModal());
     mob('mob-save-group',       () => document.getElementById('save-template-group-btn').click());
-    mob('mob-load-group',       () => document.getElementById('load-template-group-btn').click());
     mob('mob-delete-group',     () => document.getElementById('menu-delete-template-group').click());
     mob('mob-new-template',     () => startBlankPrompt());
-    mob('mob-import-template',  () => { if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
-    mob('mob-import-from-file', () => { if (typeof window.importPrompts === 'function') window.importPrompts(); });
     mob('mob-export-templates', () => { if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
     mob('mob-help-what-is-template',    () => window.showHelpModal('help-what-is-template'));
     mob('mob-help-what-is-group',       () => window.showHelpModal('help-what-is-group'));
@@ -3102,10 +3684,23 @@ function startApp() {
     setupTabListeners();
 
     // Edit form action buttons.
-    const saveBtn = document.getElementById('save-prompt');
-    if (saveBtn) saveBtn.addEventListener('click', savePrompt);
     const cancelBtn = document.getElementById('cancel-edit');
     if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+    const editBackBtn = document.getElementById('edit-back-btn');
+    if (editBackBtn) editBackBtn.addEventListener('click', cancelEdit);
+
+    // ℹ hint toggles in the edit form — delegated on document.
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.edit-hint-btn');
+        if (!btn) return;
+        const hintId = btn.dataset.hint;
+        const hint = hintId ? document.getElementById(hintId) : null;
+        if (!hint) return;
+        const isOpen = hint.classList.contains('open');
+        hint.classList.toggle('open', !isOpen);
+        btn.classList.toggle('active', !isOpen);
+        btn.setAttribute('aria-expanded', String(!isOpen));
+    });
 
     // Main tab buttons (Use Template / Template History / Output).
     // Edit Template is handled by setupTabListeners above.
@@ -3147,12 +3742,42 @@ function startApp() {
                 inputs[i.name] = field ? field.value : '';
             });
             savePromptInputHistory(prompt.id, inputs);
-            // Refresh the history tab if it's currently visible.
-            const historyScreen = document.getElementById('history-screen');
-            if (historyScreen && historyScreen.classList.contains('active')) renderHistoryList(prompt.id);
+            // Refresh inline history dropdown.
+            if (typeof renderHistoryDropdown === 'function') renderHistoryDropdown(prompt.id);
             const pre = document.getElementById('view-output-json');
             const modal = document.getElementById('copy-modal');
             if (pre) navigator.clipboard.writeText(pre.value).then(() => { if (modal) modal.style.display = 'flex'; });
+        });
+    }
+
+    // Template view: Edit button.
+    const tvEditBtn = document.getElementById('tv-edit-btn');
+    if (tvEditBtn) tvEditBtn.addEventListener('click', () => {
+        if (state.currentPromptId) editPrompt(state.currentPromptId);
+    });
+
+    // Template view: Clear button — wipes all input textareas and regenerates output.
+    const tvClearBtn = document.getElementById('tv-clear-btn');
+    if (tvClearBtn) tvClearBtn.addEventListener('click', () => {
+        document.querySelectorAll('[id^="input-value-"]').forEach(el => { el.value = ''; });
+        if (typeof generateViewPrompt === 'function') generateViewPrompt();
+    });
+
+    // Template view: History dropdown toggle.
+    const tvHistoryBtn = document.getElementById('tv-history-btn');
+    const tvHistoryDropdown = document.getElementById('tv-history-dropdown');
+    if (tvHistoryBtn && tvHistoryDropdown) {
+        tvHistoryBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = tvHistoryDropdown.style.display === 'block';
+            tvHistoryDropdown.style.display = isOpen ? 'none' : 'block';
+            tvHistoryBtn.classList.toggle('active', !isOpen);
+        });
+        document.addEventListener('click', e => {
+            if (!tvHistoryBtn.contains(e.target) && !tvHistoryDropdown.contains(e.target)) {
+                tvHistoryDropdown.style.display = 'none';
+                tvHistoryBtn.classList.remove('active');
+            }
         });
     }
 
@@ -3163,13 +3788,13 @@ function startApp() {
 
     // Add field buttons in the edit form (inputs / constraints / outputs / success).
     const addInputBtn = document.getElementById('add-input');
-    if (addInputBtn) addInputBtn.addEventListener('click', () => { if (window.addInput) window.addInput(); });
+    if (addInputBtn) addInputBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-inputs'); if (window.addInput) window.addInput(); });
     const addConstraintBtn = document.getElementById('add-constraint');
-    if (addConstraintBtn) addConstraintBtn.addEventListener('click', () => { if (window.addConstraint) window.addConstraint(); });
+    if (addConstraintBtn) addConstraintBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-constraints'); if (window.addConstraint) window.addConstraint(); });
     const addOutputBtn = document.getElementById('add-output');
-    if (addOutputBtn) addOutputBtn.addEventListener('click', () => { if (window.addOutput) window.addOutput(); });
+    if (addOutputBtn) addOutputBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-outputs'); if (window.addOutput) window.addOutput(); });
     const addSuccessBtn = document.getElementById('add-success');
-    if (addSuccessBtn) addSuccessBtn.addEventListener('click', () => { if (window.addSuccess) window.addSuccess(); });
+    if (addSuccessBtn) addSuccessBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-success'); if (window.addSuccess) window.addSuccess(); });
 
     // Mobile sidebar toggle.
     const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -3189,10 +3814,14 @@ function startApp() {
     if (sidebarSearch) sidebarSearch.addEventListener('input', renderPromptsList);
 
     // Sidebar action buttons.
-    const importJsonBtn = document.getElementById('import-json-btn');
-    if (importJsonBtn) importJsonBtn.addEventListener('click', openNewPromptModal);
+    const builderNavTile = document.getElementById('builder-nav-tile');
+    if (builderNavTile) builderNavTile.addEventListener('click', showBuilderScreen);
     const blankPromptBtn = document.getElementById('blank-prompt-btn');
     if (blankPromptBtn) blankPromptBtn.addEventListener('click', startBlankPrompt);
+    const importBtn = document.getElementById('import-btn');
+    if (importBtn) importBtn.addEventListener('click', openNewPromptModal);
+    const exportBtn = document.getElementById('export-btn');
+    if (exportBtn) exportBtn.addEventListener('click', openQuickExportModal);
 
     // Hidden file input for JSON template import.
     const importFile = document.getElementById('import-file');
@@ -3216,13 +3845,68 @@ function startApp() {
         }
     }
 
+    setupQuickExportModal();
+    setupEditAccordions();
+    setupEditCounts();
     setupEditScreenListener();
     setupNewPromptModal();
+    setupBuilderScreen();
     setupTileContextMenu();
     setupWorkspaceHandlers();
     setupTemplateGroupHandlers();
     setupMenuBar();
     updateStorageMeter();
+}
+
+/**
+ * Wires accordion toggle behaviour on the edit screen.
+ * Clicking a header expands/collapses its body; clicking the "+ Add" button
+ * inside the header is handled separately (stopPropagation prevents double-toggle).
+ */
+function setupEditAccordions() {
+    document.querySelectorAll('.edit-accordion-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const accordion = header.closest('.edit-accordion');
+            if (accordion) accordion.classList.toggle('open');
+        });
+    });
+}
+
+/**
+ * Expands the accordion whose body has the given id, if it isn't already open.
+ * @param {string} bodyId - The id of the `.edit-accordion-body` element.
+ */
+function expandEditAccordion(bodyId) {
+    const body = document.getElementById(bodyId);
+    if (!body) return;
+    const accordion = body.closest('.edit-accordion');
+    if (accordion) accordion.classList.add('open');
+}
+window.expandEditAccordion = expandEditAccordion;
+
+/**
+ * Keeps the count badge in each accordion header in sync with the number of
+ * items in the corresponding container. Uses MutationObserver so counts update
+ * whenever items are added or removed without needing explicit calls.
+ */
+function setupEditCounts() {
+    const sections = [
+        { countId: 'inputs-count',      containerId: 'inputs-container' },
+        { countId: 'constraints-count', containerId: 'constraints-container' },
+        { countId: 'outputs-count',     containerId: 'outputs-container' },
+        { countId: 'success-count',     containerId: 'success-container' },
+    ];
+    sections.forEach(({ countId, containerId }) => {
+        const countEl = document.getElementById(countId);
+        const container = document.getElementById(containerId);
+        if (!countEl || !container) return;
+        const update = () => {
+            const n = container.children.length;
+            countEl.textContent = n > 0 ? String(n) : '';
+        };
+        update();
+        new MutationObserver(update).observe(container, { childList: true });
+    });
 }
 
 startApp();

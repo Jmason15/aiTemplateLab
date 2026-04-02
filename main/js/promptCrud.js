@@ -193,7 +193,8 @@ function renderPromptsList() {
         // Search mode: show all groups that have matches, all sections open.
         let anyMatch = false;
         const html = groups.map(([groupName, templates]) => {
-            const matched = templates.filter(p => p.name.toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
+            const visible = templates.filter(p => !BUILDER_IDS.has(p.id));
+            const matched = visible.filter(p => p.name.toLowerCase().includes(query) || (p.description || '').toLowerCase().includes(query));
             if (matched.length === 0) return '';
             anyMatch = true;
             const tilesHtml = matched.map((p, idx) =>
@@ -209,18 +210,29 @@ function renderPromptsList() {
         }).join('');
         container.innerHTML = anyMatch ? html : `<div class="group-empty" style="padding:1rem 0.75rem; color:#aaa;">No templates match "${window.escapeHtml(query)}"</div>`;
     } else {
-        // Normal mode: all groups, active group open.
+        // Normal mode: active group open. If active group has no visible templates,
+        // also expand the first other group that does so the user sees something useful.
+        const activeHasTemplates = (state.environment.templateGroups[state.currentTemplateGroup] || [])
+            .some(p => !BUILDER_IDS.has(p.id));
+        let expandedFallback = false;
         container.innerHTML = groups.map(([groupName, templates]) => {
+            const visible = templates.filter(p => !BUILDER_IDS.has(p.id));
+            if (visible.length === 0 && templates.every(p => BUILDER_IDS.has(p.id))) return '';
             const isActive = groupName === state.currentTemplateGroup;
-            const tilesHtml = templates.length === 0
+            let shouldOpen = isActive;
+            if (!activeHasTemplates && visible.length > 0 && !expandedFallback) {
+                shouldOpen = true;
+                expandedFallback = true;
+            }
+            const tilesHtml = visible.length === 0
                 ? `<div class="group-empty">No templates yet</div>`
-                : templates.map((p, idx) =>
+                : visible.map((p, idx) =>
                     `<div class="prompt-tile${state.currentPromptId === p.id ? ' selected' : ''}" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}" draggable="true" data-index="${idx}">
                         <span class="prompt-tile-name">${window.escapeHtml(p.name)}</span>
                         <button class="prompt-tile-move-btn" draggable="false" aria-label="Options" data-id="${p.id}" data-group="${window.escapeHtml(groupName)}">⋮</button>
                     </div>`
                 ).join('');
-            return `<details class="group-section" ${isActive ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
+            return `<details class="group-section" ${shouldOpen ? 'open' : ''} data-group="${window.escapeHtml(groupName)}">
                 <summary class="group-header">${window.escapeHtml(groupName)}</summary>
                 <div class="group-templates">${tilesHtml}</div>
             </details>`;
@@ -291,7 +303,8 @@ function renderPromptsList() {
 window.renderPromptsList = renderPromptsList;
 
 /**
- * Populates the view screen with a prompt's data and regenerates its output JSON.
+ * Populates the template view with a prompt's data, pre-fills inputs from last
+ * history entry, regenerates output JSON, and renders the history dropdown.
  * Also updates the sidebar selection highlight.
  * @param {string} id - The prompt's id.
  */
@@ -300,37 +313,48 @@ function viewPrompt(id) {
     if (!prompt) return;
     state.setCurrentPromptId(id);
 
-    showView();
-    // Hide the welcome screen in case it was showing.
-    const welcomeScreen = document.getElementById('welcome-screen');
-    if (welcomeScreen) { welcomeScreen.style.display = 'none'; welcomeScreen.classList.remove('active'); }
+    showView(); // calls showTemplateView()
 
+    // Populate compact template-view header.
+    const tvName = document.getElementById('tv-name');
+    const tvDesc = document.getElementById('tv-desc');
+    if (tvName) tvName.textContent = prompt.name;
+    if (tvDesc) tvDesc.textContent = prompt.description;
+
+    // Build the collapsible details section.
+    const tvDetailsBody = document.getElementById('tv-details-body');
+    const tvDetails = document.getElementById('tv-details');
+    if (tvDetailsBody) {
+        const parts = [];
+        if (prompt.objective) parts.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
+        if (prompt.actor) parts.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
+        if (prompt.context) parts.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
+        if (prompt.example) parts.push(`<div><strong>Example:</strong><div class="example-content" style="margin-top:0.5rem;">${window.escapeHtml(prompt.example)}</div></div>`);
+        tvDetailsBody.innerHTML = parts.length
+            ? parts.join('')
+            : '<p style="color:var(--color-text-muted);font-size:0.9em;margin:0;">No details defined.</p>';
+        if (tvDetails) tvDetails.style.display = parts.length ? '' : 'none';
+    }
+
+    // Also populate old chrome info-display elements (used when the edit tab shows chrome).
     const viewName = document.getElementById('view-name');
     const viewDesc = document.getElementById('view-desc');
     if (viewName) viewName.textContent = prompt.name;
     if (viewDesc) viewDesc.textContent = prompt.description;
-
-    // Build the collapsible metadata block (objective / actor / context).
     const meta = [];
     if (prompt.objective) meta.push(`<div><strong>Objective:</strong> ${window.escapeHtml(prompt.objective)}</div>`);
     if (prompt.actor) meta.push(`<div><strong>Actor:</strong> ${window.escapeHtml(prompt.actor)}</div>`);
     if (prompt.context) meta.push(`<div><strong>Context:</strong> ${window.escapeHtml(prompt.context)}</div>`);
     const viewMeta = document.getElementById('view-meta');
     if (viewMeta) viewMeta.innerHTML = meta.join('');
-
-    // Show or hide the example section.
     const exampleSection = document.getElementById('view-example-section');
     const exampleContent = document.getElementById('view-example-content');
     if (exampleSection && exampleContent) {
-        if (prompt.example) {
-            exampleContent.textContent = prompt.example;
-            exampleSection.style.display = '';
-        } else {
-            exampleSection.style.display = 'none';
-        }
+        if (prompt.example) { exampleContent.textContent = prompt.example; exampleSection.style.display = ''; }
+        else { exampleSection.style.display = 'none'; }
     }
 
-    // Render input fields as labelled textareas. Each change regenerates the output JSON.
+    // Render input fields as labelled textareas.
     const inputsContainer = document.getElementById('view-inputs');
     if (inputsContainer) {
         if (prompt.inputs.length === 0) {
@@ -340,7 +364,7 @@ function viewPrompt(id) {
                 <div style="margin-bottom: 1rem;">
                     <label for="input-value-${idx}">${window.escapeHtml(i.name)}:</label>
                     ${i.description ? `<p class="input-hint">${window.escapeHtml(i.description)}</p>` : ''}
-                    <textarea id="input-value-${idx}" class="view-textarea" rows="6"
+                    <textarea id="input-value-${idx}" class="view-textarea" rows="4"
                         placeholder="${window.escapeHtml(i.placeholder || i.description || '')}"></textarea>
                 </div>
             `).join('');
@@ -350,9 +374,65 @@ function viewPrompt(id) {
         }
     }
 
+    // Pre-fill inputs from the most recent history entry.
+    const history = getPromptInputHistory(id);
+    if (history.length > 0) {
+        const last = history[0];
+        prompt.inputs.forEach((i, idx) => {
+            const field = document.getElementById(`input-value-${idx}`);
+            if (field && last[i.name] !== undefined) field.value = last[i.name];
+        });
+    }
+
     generateViewPrompt();
+    renderHistoryDropdown(id);
     renderPromptsList();
 }
+
+/**
+ * Renders the last-5 history entries into the #tv-history-dropdown panel.
+ * Called by viewPrompt() and after copying a prompt.
+ * @param {string} promptId
+ */
+function renderHistoryDropdown(promptId) {
+    const dropdown = document.getElementById('tv-history-dropdown');
+    if (!dropdown) return;
+    const prompt = state.prompts.find(p => p.id === promptId);
+    const history = getPromptInputHistory(promptId).slice(0, 5);
+    if (!prompt || history.length === 0) {
+        dropdown.innerHTML = '<div class="tv-history-empty">No history yet.</div>';
+        return;
+    }
+    dropdown.innerHTML = history.map((h, idx) => {
+        const preview = Object.entries(h)
+            .filter(([, v]) => v)
+            .slice(0, 2)
+            .map(([k, v]) => `<span class="tv-history-field"><strong>${window.escapeHtml(k)}:</strong> ${window.escapeHtml(v.length > 60 ? v.slice(0, 60) + '\u2026' : v)}</span>`)
+            .join('');
+        return `<div class="tv-history-item">
+            <div class="tv-history-preview">${preview || '<em>Empty entry</em>'}</div>
+            <button class="tv-history-restore" data-idx="${idx}">Restore</button>
+        </div>`;
+    }).join('');
+
+    dropdown.querySelectorAll('.tv-history-restore').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.stopPropagation();
+            const selected = history[parseInt(btn.getAttribute('data-idx'))];
+            if (!selected || !prompt) return;
+            prompt.inputs.forEach((i, idx) => {
+                const field = document.getElementById(`input-value-${idx}`);
+                if (field && selected[i.name] !== undefined) field.value = selected[i.name];
+            });
+            generateViewPrompt();
+            // Close dropdown
+            dropdown.style.display = 'none';
+            const histBtn = document.getElementById('tv-history-btn');
+            if (histBtn) histBtn.classList.remove('active');
+        });
+    });
+}
+window.renderHistoryDropdown = renderHistoryDropdown;
 
 /**
  * Removes a dynamic field card from the edit form by element ID,

@@ -318,14 +318,11 @@ function setupMenuBar() {
 
     // Templates menu.
     document.getElementById('menu-new-template')?.addEventListener('click', () => { closeAll(); startBlankPrompt(); });
-    document.getElementById('menu-import-templates')?.addEventListener('click', () => { closeAll(); if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
-    document.getElementById('menu-import-from-file')?.addEventListener('click', () => { closeAll(); if (typeof window.importPrompts === 'function') window.importPrompts(); });
     document.getElementById('menu-export-templates')?.addEventListener('click', () => { closeAll(); if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
 
     // Groups menu.
     document.getElementById('menu-create-template-group')?.addEventListener('click', () => { closeAll(); openCreateGroupModal(); });
     document.getElementById('menu-save-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('save-template-group-btn').click(); });
-    document.getElementById('menu-load-template-group')?.addEventListener('click', () => { closeAll(); document.getElementById('load-template-group-btn').click(); });
     document.getElementById('menu-delete-template-group')?.addEventListener('click', () => {
         closeAll();
         const modal = document.getElementById('delete-template-group-modal');
@@ -351,7 +348,7 @@ function setupMenuBar() {
             title: 'What is a Template?',
             content: `<p>A <strong>template</strong> is a pre-built AI prompt designed for a specific task.</p>
                 <p>Instead of figuring out what to say to an AI from scratch every time, a template does the hard work for you. It knows the right structure, the right instructions, and the right questions to ask — you just fill in your specific details.</p>
-                <p><strong>Example:</strong> The "Jira Story Generator" template already knows how to turn messy ticket notes into a clean user story with acceptance criteria. You paste in your notes, click Create Prompt, and paste the result into your favorite AI tool.</p>
+                <p><strong>Example:</strong> The "Jira Story Generator" template already knows how to turn messy ticket notes into a clean user story with acceptance criteria. You paste in your notes, click Copy Prompt, and paste the result into your favorite AI tool.</p>
                 <p>Think of templates like smart forms — they turn your raw information into a polished, professional AI prompt every time.</p>`
         },
         'help-what-is-group': {
@@ -365,8 +362,8 @@ function setupMenuBar() {
             title: 'How to use this app',
             content: `<ol style="padding-left:1.25rem; margin:0; display:flex; flex-direction:column; gap:0.75rem;">
                 <li><strong>Pick a template from the sidebar.</strong> Each template is built for a specific task. If you don't see one you need, use the Template Builder to create one.</li>
-                <li><strong>Fill in the fields under "Use Template".</strong> Each field tells you exactly what to provide — just type in your information.</li>
-                <li><strong>Click "Create Prompt".</strong> The app assembles everything into a complete, structured AI prompt.</li>
+                <li><strong>Fill in the fields.</strong> Each field tells you exactly what to provide — just type in your information.</li>
+                <li><strong>Click "Copy Prompt".</strong> The app assembles everything into a complete, structured AI prompt and copies it to your clipboard.</li>
                 <li><strong>Copy and paste into your AI tool.</strong> Paste the result into your favorite AI tool and get a high-quality response.</li>
                 <li><strong>Come back and reuse it.</strong> Next time you need the same kind of result, your template is already here waiting.</li>
             </ol>`
@@ -389,53 +386,50 @@ function setupMenuBar() {
             content: `<p>The <strong>Template Lab</strong> group contains three tools that let you build new templates using an AI. Switch to the Template Lab group in the sidebar to get started.</p>
                 <p><strong>Template Builder</strong> — Creates a single new template from a plain-English idea.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
-                    <li>Pick <em>Template Builder</em> from the sidebar and open <em>Use Template</em>.</li>
+                    <li>Pick <em>Template Builder</em> from the sidebar.</li>
                     <li>Describe what you want — e.g. <em>"A prompt that turns meeting notes into action items."</em></li>
-                    <li>Click <strong>Create Prompt</strong> and copy the result.</li>
-                    <li>Paste it into your favorite AI tool. It will return a complete template as JSON.</li>
-                    <li>Copy the response, then click the green <strong>Import Template From AI</strong> button in the sidebar, paste it in, and click Import.</li>
+                    <li>Click <strong>Copy Prompt</strong> and paste it into your favorite AI tool.</li>
+                    <li>Copy the AI's full response, then paste it into step 4 on the builder screen.</li>
+                    <li>Click <strong>Create Template</strong> — your new template is added to the library instantly.</li>
                 </ol>
                 <p><strong>Template Group Generator</strong> — Creates a full set of templates for a specific job or role.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Enter your job title or area of work — e.g. <em>"Marketing Manager"</em>.</li>
-                    <li>Run it through your AI tool. You'll get a whole group of templates covering every common task for that role.</li>
-                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — your whole group appears at once.</li>
+                    <li>Click <strong>Copy Prompt</strong> and run it through your AI tool. You'll get a whole group of templates covering every common task for that role.</li>
+                    <li>Copy the AI's response, paste it into step 4 on the builder screen, and click <strong>Create Template</strong> — your whole group appears at once.</li>
                 </ol>
                 <p><strong>Workflow Generator</strong> — Breaks a multi-step goal into a sequence of templates, one per stage.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 0 0; display:flex; flex-direction:column; gap:0.4rem;">
                     <li>Describe your goal — e.g. <em>"Write and publish a blog post."</em></li>
                     <li>The AI generates a chain of templates where the output of each step feeds into the next.</li>
-                    <li>Copy the response, click <strong>Import Template From AI</strong> in the sidebar, paste it in, and click Import — all steps appear ready to run in order.</li>
+                    <li>Copy the AI's response, paste it into step 4 on the builder screen, and click <strong>Create Template</strong> — all steps appear ready to run in order.</li>
                 </ol>`
         },
         'help-create-from-scratch': {
             title: 'Creating a template from scratch',
             content: `<p>You can build a template entirely by hand — no AI needed — using the blank template editor.</p>
                 <ol style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.5rem;">
-                    <li><strong>Open a blank template.</strong> Click <em>New Blank Template</em> in the sidebar, or go to <em>Templates → New</em> in the menu bar.</li>
+                    <li><strong>Open a blank template.</strong> Go to <em>Templates → New Blank</em> in the menu bar.</li>
                     <li><strong>Give it a name and description.</strong> The name appears in the sidebar; the description helps you remember what the template is for.</li>
                     <li><strong>Fill in the sections.</strong> Work through Objective, Actor, Context, and the rest at your own pace. You don't need to fill in every section — just what's useful for your task.</li>
                     <li><strong>Add inputs.</strong> Inputs are the fields you fill in each time you use the template. Click <em>Add Input</em>, give each one a clear label, and optionally add a placeholder example so you remember what to type.</li>
-                    <li><strong>Click Save.</strong> Your template appears in the sidebar immediately, ready to use.</li>
+                    <li><strong>Your changes save automatically</strong> as you type. Your template appears in the sidebar immediately, ready to use.</li>
                 </ol>
                 <p><strong>Tip:</strong> If you're not sure what to write, open the <em>See an Example</em> section on any existing template to see how it's structured — then model yours on that.</p>`
         },
         'help-edit-screen': {
             title: 'What does the Edit screen do?',
-            content: `<p>The <strong>Edit Template</strong> tab lets you modify any template. Click it while a template is selected to open the editor.</p>
+            content: `<p>Click the <strong>Edit</strong> button on any template to open the editor.</p>
+                <p><strong>The name and description</strong> are always visible at the top and can be edited directly. The remaining sections are collapsed by default — click any section header to expand it.</p>
                 <p><strong>Sections you can edit:</strong></p>
                 <ul style="padding-left:1.25rem; margin:0.5rem 0 1rem 0; display:flex; flex-direction:column; gap:0.5rem;">
-                    <li><strong>Name &amp; Description</strong> — What appears in the sidebar and at the top of the template view.</li>
-                    <li><strong>Example</strong> — An optional plain-English walkthrough that appears in the "See an Example" section when using the template. Great for helping others understand what the template is for.</li>
-                    <li><strong>Objective</strong> — What the prompt is trying to achieve.</li>
-                    <li><strong>Actor</strong> — The role or persona the AI should take on (e.g. "a senior software engineer").</li>
-                    <li><strong>Context</strong> — Background information the AI needs to know before it starts.</li>
-                    <li><strong>Inputs</strong> — The fields you fill in each time you use the template. Each input has a label, a description, and an optional placeholder example. Use the <em>Add Input</em> button to add more.</li>
-                    <li><strong>Constraints</strong> — Rules the AI must follow (e.g. "Keep the response under 200 words"). Use <em>Add Constraint</em> to add more.</li>
-                    <li><strong>Outputs</strong> — What the AI should return, and in what format. Use <em>Add Output</em> to add more.</li>
-                    <li><strong>Success Criteria</strong> — How you know the result is good. Use <em>Add Success Criterion</em> to add more.</li>
+                    <li><strong>Template Details</strong> — Objective, Actor, Context, and an optional Example walkthrough.</li>
+                    <li><strong>Inputs</strong> — The fields you fill in each time you use the template. Each input has a label, a description, and an optional placeholder. Use <em>+ Add</em> to add more.</li>
+                    <li><strong>Constraints</strong> — Rules the AI must follow. Use <em>+ Add</em> to add more.</li>
+                    <li><strong>Outputs</strong> — What the AI should return and in what format. Use <em>+ Add</em> to add more.</li>
+                    <li><strong>Success Criteria</strong> — How you know the result is good. Use <em>+ Add</em> to add more.</li>
                 </ul>
-                <p><strong>Auto-save:</strong> Changes are saved automatically as you type — no need to click Save unless you want to force a save immediately.</p>`
+                <p><strong>Auto-save:</strong> All changes save automatically as you type — there is no Save button.</p>`
         }
     };
 
@@ -494,11 +488,8 @@ function setupMenuBar() {
     mob('mob-clear-storage',    () => { document.getElementById('clear-storage-modal').style.display = 'flex'; });
     mob('mob-create-group',     () => openCreateGroupModal());
     mob('mob-save-group',       () => document.getElementById('save-template-group-btn').click());
-    mob('mob-load-group',       () => document.getElementById('load-template-group-btn').click());
     mob('mob-delete-group',     () => document.getElementById('menu-delete-template-group').click());
     mob('mob-new-template',     () => startBlankPrompt());
-    mob('mob-import-template',  () => { if (typeof openNewPromptModal === 'function') openNewPromptModal(); });
-    mob('mob-import-from-file', () => { if (typeof window.importPrompts === 'function') window.importPrompts(); });
     mob('mob-export-templates', () => { if (typeof window.exportPrompts === 'function') window.exportPrompts(); });
     mob('mob-help-what-is-template',    () => window.showHelpModal('help-what-is-template'));
     mob('mob-help-what-is-group',       () => window.showHelpModal('help-what-is-group'));

@@ -31,6 +31,9 @@ const htmlDistPath = path.join(distDir, 'aiTemplateLab.html');
 const htmlDocsPath = path.join(docsDir, 'index.html');
 const logoSrcPath = path.join(__dirname, 'images', 'aiTemplateLab.png');
 const faviconSrcPath = path.join(__dirname, 'images', 'favicon.png');
+const demoGifSrcPath = path.join(__dirname, 'images', 'exampleVid.gif');
+const usingTemplateSrcPath = path.join(__dirname, 'images', 'UsingATemplate.mp4');
+const createTemplateSrcPath = path.join(__dirname, 'images', 'createANewTemplate.mp4');
 
 // CSS load order — must match the <link> tags in index.html.
 const CSS_FILES_ORDERED = [
@@ -80,6 +83,45 @@ if (fs.existsSync(logoSrcPath)) {
     fs.copyFileSync(logoSrcPath, path.join(docsDir, 'aiTemplateLab.png'));
 } else {
     console.warn('Warning: images/aiTemplateLab.png not found — app bar logo will be missing.');
+}
+
+// Demo GIF: base64 for dist (self-contained), relative URL for docs.
+let demoGifDataUri = '';
+let demoGifRelativeUrl = '';
+if (fs.existsSync(demoGifSrcPath)) {
+    const demoGifBase64 = fs.readFileSync(demoGifSrcPath).toString('base64');
+    demoGifDataUri = `data:image/gif;base64,${demoGifBase64}`;
+    demoGifRelativeUrl = 'exampleVid.gif';
+    fs.copyFileSync(demoGifSrcPath, path.join(docsDir, 'exampleVid.gif'));
+    console.log('Demo GIF: embedded from images/exampleVid.gif');
+} else {
+    console.warn('Warning: images/exampleVid.gif not found — demo GIF will be missing.');
+}
+
+// UsingATemplate MP4
+let usingTemplateDataUri = '';
+let usingTemplateRelativeUrl = '';
+if (fs.existsSync(usingTemplateSrcPath)) {
+    const b64 = fs.readFileSync(usingTemplateSrcPath).toString('base64');
+    usingTemplateDataUri = `data:video/mp4;base64,${b64}`;
+    usingTemplateRelativeUrl = 'UsingATemplate.mp4';
+    fs.copyFileSync(usingTemplateSrcPath, path.join(docsDir, 'UsingATemplate.mp4'));
+    console.log('MP4 embedded: images/UsingATemplate.mp4');
+} else {
+    console.warn('Warning: images/UsingATemplate.mp4 not found.');
+}
+
+// createANewTemplate MP4
+let createTemplateDataUri = '';
+let createTemplateRelativeUrl = '';
+if (fs.existsSync(createTemplateSrcPath)) {
+    const b64 = fs.readFileSync(createTemplateSrcPath).toString('base64');
+    createTemplateDataUri = `data:video/mp4;base64,${b64}`;
+    createTemplateRelativeUrl = 'createANewTemplate.mp4';
+    fs.copyFileSync(createTemplateSrcPath, path.join(docsDir, 'createANewTemplate.mp4'));
+    console.log('MP4 embedded: images/createANewTemplate.mp4');
+} else {
+    console.warn('Warning: images/createANewTemplate.mp4 not found.');
 }
 
 // Favicon: base64 for dist, relative URL for docs.
@@ -219,6 +261,9 @@ for (const jsFile of JS_FILES_ORDERED) {
 // Inject logo and favicon as base64 data URIs so the file works offline.
 if (logoDataUri) distHtml = distHtml.replace(/__LOGO_SRC__/g, logoDataUri);
 distHtml = distHtml.replace(/__FAVICON_SRC__/g, faviconDataUri);
+if (demoGifDataUri) distHtml = distHtml.replace(/__DEMO_GIF_SRC__/g, demoGifDataUri);
+if (usingTemplateDataUri) distHtml = distHtml.replace(/__USING_TEMPLATE_SRC__/g, usingTemplateDataUri);
+if (createTemplateDataUri) distHtml = distHtml.replace(/__CREATE_TEMPLATE_SRC__/g, createTemplateDataUri);
 
 fs.writeFileSync(htmlDistPath, distHtml, 'utf8');
 console.log(`Build complete: ${htmlDistPath}`);
@@ -251,6 +296,9 @@ docsHtml = docsHtml.replace(
 // Inject logo and favicon as URLs — the browser caches these separately.
 docsHtml = docsHtml.replace(/__LOGO_SRC__/g, logoDataUri ? 'aiTemplateLab.png' : '');
 docsHtml = docsHtml.replace(/__FAVICON_SRC__/g, faviconRelativeUrl);
+if (demoGifRelativeUrl) docsHtml = docsHtml.replace(/__DEMO_GIF_SRC__/g, demoGifRelativeUrl);
+if (usingTemplateRelativeUrl) docsHtml = docsHtml.replace(/__USING_TEMPLATE_SRC__/g, usingTemplateRelativeUrl);
+if (createTemplateRelativeUrl) docsHtml = docsHtml.replace(/__CREATE_TEMPLATE_SRC__/g, createTemplateRelativeUrl);
 
 fs.writeFileSync(htmlDocsPath, docsHtml, 'utf8');
 console.log(`GitHub Pages:  ${htmlDocsPath}`);

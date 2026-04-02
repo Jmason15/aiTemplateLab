@@ -10,7 +10,7 @@
  */
 
 /** All content panel IDs managed by switchToScreen. */
-const SCREENS = ['view-screen', 'edit-screen', 'history-screen', 'output-screen', 'welcome-screen'];
+const SCREENS = ['view-screen', 'edit-screen', 'history-screen', 'output-screen', 'welcome-screen', 'builder-screen'];
 
 /**
  * Shows one screen and hides all others. Also sets the `active` CSS class
@@ -24,6 +24,9 @@ function switchToScreen(activeId) {
         el.style.display = id === activeId ? 'block' : 'none';
         el.classList.toggle('active', id === activeId);
     });
+    // Keep the builder nav tile active only when the builder screen is showing.
+    const tile = document.getElementById('builder-nav-tile');
+    if (tile) tile.classList.toggle('active', activeId === 'builder-screen');
 }
 
 /**
@@ -53,19 +56,42 @@ function setTabActive(tabName) {
 }
 window.setTabActive = setTabActive;
 
-/** Switches to the Use Template (view) screen. */
+/**
+ * Shows the new compact template view (#template-view) and hides chrome + all tab screens.
+ */
+function showTemplateView() {
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'block';
+    showChrome(false);
+    SCREENS.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.style.display = 'none';
+        el.classList.remove('active');
+    });
+    const tile = document.getElementById('builder-nav-tile');
+    if (tile) tile.classList.remove('active');
+}
+window.showTemplateView = showTemplateView;
+
+/** Switches to the template view (new compact single-page layout). */
 function showView() {
-    setTabActive('Use Template');
-    switchToScreen('view-screen');
-    showChrome(true);
+    showTemplateView();
 }
 window.showView = showView;
 
-/** Switches to the Edit Template screen. */
+/** Switches to the Edit Template screen — no tab bar, no info header. */
 function showEdit() {
-    setTabActive('Edit Template');
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'none';
+    // Hide the tab strip and info header; only show the edit form.
+    const infoDisplay = document.getElementById('info-display');
+    const tabsElem = document.getElementById('tabs');
+    const tabContent = document.querySelector('.tab-content');
+    if (infoDisplay) infoDisplay.style.display = 'none';
+    if (tabsElem) tabsElem.style.display = 'none';
+    if (tabContent) tabContent.style.display = '';
     switchToScreen('edit-screen');
-    showChrome(true);
 }
 window.showEdit = showEdit;
 
@@ -81,11 +107,9 @@ function showHistory() {
 }
 window.showHistory = showHistory;
 
-/** Switches to the Output screen. */
+/** Switches to the Output — now shows template-view where output is always visible. */
 function showPromptOutput() {
-    setTabActive('Output');
-    switchToScreen('output-screen');
-    showChrome(true);
+    showTemplateView();
 }
 window.showPromptOutput = showPromptOutput;
 
@@ -94,6 +118,8 @@ window.showPromptOutput = showPromptOutput;
  * Displayed when no prompt is selected (empty workspace or after deletion).
  */
 function showWelcome() {
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'none';
     showChrome(false);
     const welcomeScreen = document.getElementById('welcome-screen');
     if (welcomeScreen) {
@@ -102,6 +128,30 @@ function showWelcome() {
     }
 }
 window.showWelcome = showWelcome;
+
+/**
+ * Shows the Build a New Template screen and hides the chrome.
+ * Resets the screen to its initial state each time it opens.
+ */
+function showBuilderScreen() {
+    const tv = document.getElementById('template-view');
+    if (tv) tv.style.display = 'none';
+    showChrome(false);
+    switchToScreen('builder-screen');
+    // Reset to step 1 state — lower steps hidden, type defaulted to single.
+    const lower = document.getElementById('builder-lower');
+    if (lower) lower.style.display = 'none';
+    document.querySelectorAll('.builder-type-tab').forEach((btn, i) => btn.classList.toggle('active', i === 0));
+    if (typeof renderBuilderInputs === 'function') renderBuilderInputs('single');
+    const copyBtn = document.getElementById('builder-copy-btn');
+    if (copyBtn) { copyBtn.textContent = 'Copy Prompt for AI'; copyBtn.style.background = ''; copyBtn.disabled = false; }
+    const pasteArea = document.getElementById('builder-paste');
+    if (pasteArea) pasteArea.value = '';
+    const errorDiv = document.getElementById('builder-error');
+    if (errorDiv) { errorDiv.style.display = 'none'; errorDiv.textContent = ''; }
+    if (typeof refreshBuilderGroupSelect === 'function') refreshBuilderGroupSelect();
+}
+window.showBuilderScreen = showBuilderScreen;
 
 /**
  * Clears all edit-form fields and resets the dynamic field counters.

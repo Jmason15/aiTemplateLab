@@ -202,14 +202,53 @@
   padding-bottom: 0 !important;
 }
 
-/* Import button — green to stand out */
-#import-json-btn {
+/* Builder nav tile — pinned at top of template list */
+#builder-nav-tile {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.6rem !important;
+  width: 100% !important;
+  padding: 0.75rem 0.85rem !important;
+  margin: 0 0 2px 0 !important;
+  background: var(--color-success-dark) !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 0 !important;
+  color: #fff !important;
+  cursor: pointer !important;
+  text-align: left !important;
+  font-size: 0.9em !important;
+  font-weight: 600 !important;
+  transition: background 0.15s !important;
+  box-sizing: border-box !important;
+}
+
+#builder-nav-tile:hover {
+  background: var(--color-success) !important;
+}
+
+#builder-nav-tile.active {
+  background: var(--color-primary) !important;
+  color: #fff !important;
+}
+
+.builder-nav-tile-icon {
+  font-size: 1em;
+  flex-shrink: 0;
+}
+
+.builder-nav-tile-label {
+  line-height: 1.3;
+}
+
+/* Create New Template button — green to stand out */
+#create-template-btn {
   background: var(--color-success-dark) !important;
   color: #fff !important;
   border: none !important;
 }
 
-#import-json-btn:hover {
+#create-template-btn:hover {
   background: var(--color-success) !important;
   color: #fff !important;
 }

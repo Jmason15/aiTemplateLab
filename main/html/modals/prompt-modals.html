@@ -1,23 +1,37 @@
-<!-- Import Template From AI Modal -->
+<!-- Import Modal -->
 <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
     <div id="new-prompt-modal-content">
-        <h2 class="modal-title">Import Template From AI</h2>
-        <p style="margin:0 0 1rem 0; color:#555; font-size:0.97em; line-height:1.6;">
-            Used the <strong>Template Builder</strong> or another generator? Your AI tool will have given you a block of template data to copy. Paste it below and we'll add it to your library automatically.
-        </p>
-        <label for="json-import-textarea">Paste your template here</label>
-        <textarea id="json-import-textarea" placeholder="Paste the template output from your AI tool here…"></textarea>
-        <label for="json-import-group-select" style="margin-top:0.7em;">Add to Group</label>
-        <select id="json-import-group-select" style="margin-top:0.3em; margin-bottom:0.5em;"></select>
-        <div id="json-import-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.5em;">
-            <label for="json-import-new-group-name">New Group Name:</label>
-            <input type="text" id="json-import-new-group-name" placeholder="e.g., Marketing" style="margin-top:0.3em;">
+        <h2 class="modal-title">Import</h2>
+
+        <div class="uim-dropzone" id="uim-dropzone">
+            <svg class="uim-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+            <p class="uim-dropzone-text">Drop a JSON file here</p>
+            <p class="uim-dropzone-or">or</p>
+            <button type="button" class="btn btn-secondary" id="uim-pick-file-btn">Browse Files</button>
+            <input type="file" id="uim-file-input" accept=".json" style="display:none;">
         </div>
-        <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
-        <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
-            <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
-            <button class="btn btn-primary" id="json-import-confirm">Import</button>
+
+        <div id="uim-file-preview" style="display:none;">
+            <div id="uim-detected-msg" class="uim-detected-msg"></div>
+            <div id="uim-file-group-fields" style="display:none;">
+                <label for="uim-group-select" style="display:block; margin-top:0.7em;">Import into Group</label>
+                <select id="uim-group-select" style="margin-top:0.3em; margin-bottom:0.5em; width:100%;"></select>
+                <div id="uim-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.5em;">
+                    <label for="uim-new-group-name">New Group Name:</label>
+                    <input type="text" id="uim-new-group-name" placeholder="e.g., Marketing" style="margin-top:0.3em;">
+                </div>
+            </div>
+            <div id="uim-file-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
+            <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:1em;">
+                <button type="button" class="btn btn-text" id="uim-file-cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uim-file-confirm">Import</button>
+            </div>
         </div>
+
+        <div id="uim-cancel-bar" class="modal-btn-bar" style="display:flex; justify-content:flex-end; margin-top:0.75em;">
+            <button type="button" class="btn btn-text" id="new-prompt-cancel">Cancel</button>
+        </div>
+
     </div>
 </div>
 

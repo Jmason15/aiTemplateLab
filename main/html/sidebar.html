@@ -10,14 +10,18 @@
         <input type="search" id="sidebar-search" placeholder="Search templates…" autocomplete="off">
     </div>
     <div class="templates-container template-list-card">
+        <button id="builder-nav-tile" class="builder-nav-tile">
+            <span class="builder-nav-tile-icon">✦</span>
+            <span class="builder-nav-tile-label">Build a New Template</span>
+        </button>
         <div id="prompts-list">
             <!-- Prompt tiles rendered by JS -->
         </div>
     </div>
     <div class="sidebar-footer">
-        <div class="sidebar-actions sidebar-actions-bottom" style="padding:0.6em 0.75em 1em 0.75em; display:flex; gap:0.4rem;">
-            <button class="btn btn-success" id="import-json-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Import Template From AI</button>
-            <button class="btn btn-success" id="blank-prompt-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">New Blank Template</button>
+        <div class="sidebar-actions sidebar-actions-bottom" style="padding:0.6em 0.75em 1em 0.75em; display:flex; flex-direction:column; gap:0.4rem;">
+            <button id="import-btn" style="width:100%; border-radius:6px; font-weight:600; font-size:0.82em; padding:0.45em 0.5em;">Import</button>
+            <button id="export-btn" style="width:100%; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Export / Share</button>
         </div>
 
         <div id="storage-meter-wrap" aria-label="Browser storage usage">

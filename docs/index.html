@@ -42,17 +42,14 @@
             <button class="menu-bar-btn">Groups</button>
             <div class="menu-bar-dropdown">
                 <button id="menu-create-template-group">New…</button>
-                <button id="menu-save-template-group">Save…</button>
-                <button id="menu-load-template-group">Load…</button>
+                <button id="menu-save-template-group">Export…</button>
                 <button id="menu-delete-template-group">Delete…</button>
             </div>
         </div>
         <div class="menu-bar-item">
             <button class="menu-bar-btn">Templates</button>
             <div class="menu-bar-dropdown">
-                <button id="menu-new-template">New</button>
-                <button id="menu-import-templates">Import Template From AI Chat…</button>
-                <button id="menu-import-from-file">Import From File…</button>
+                <button id="menu-new-template">New Blank</button>
                 <button id="menu-export-templates">Export…</button>
             </div>
         </div>
@@ -92,15 +89,12 @@
     <div class="mobile-menu-section">
         <div class="mobile-menu-label">Groups</div>
         <button id="mob-create-group">New Group…</button>
-        <button id="mob-save-group">Save Group…</button>
-        <button id="mob-load-group">Load Group…</button>
+        <button id="mob-save-group">Export Group…</button>
         <button id="mob-delete-group">Delete Group…</button>
     </div>
     <div class="mobile-menu-section">
         <div class="mobile-menu-label">Templates</div>
         <button id="mob-new-template">New Blank Template</button>
-        <button id="mob-import-template">Import Template From AI…</button>
-        <button id="mob-import-from-file">Import From File…</button>
         <button id="mob-export-templates">Export…</button>
     </div>
     <div class="mobile-menu-section">
@@ -127,14 +121,18 @@
         <input type="search" id="sidebar-search" placeholder="Search templates…" autocomplete="off">
     </div>
     <div class="templates-container template-list-card">
+        <button id="builder-nav-tile" class="builder-nav-tile">
+            <span class="builder-nav-tile-icon">✦</span>
+            <span class="builder-nav-tile-label">Build a New Template</span>
+        </button>
         <div id="prompts-list">
             <!-- Prompt tiles rendered by JS -->
         </div>
     </div>
     <div class="sidebar-footer">
-        <div class="sidebar-actions sidebar-actions-bottom" style="padding:0.6em 0.75em 1em 0.75em; display:flex; gap:0.4rem;">
-            <button class="btn btn-success" id="import-json-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Import Template From AI</button>
-            <button class="btn btn-success" id="blank-prompt-btn" style="flex:1; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">New Blank Template</button>
+        <div class="sidebar-actions sidebar-actions-bottom" style="padding:0.6em 0.75em 1em 0.75em; display:flex; flex-direction:column; gap:0.4rem;">
+            <button id="import-btn" style="width:100%; border-radius:6px; font-weight:600; font-size:0.82em; padding:0.45em 0.5em;">Import</button>
+            <button id="export-btn" style="width:100%; border-radius:6px; font-weight:500; font-size:0.82em; padding:0.45em 0.5em;">Export / Share</button>
         </div>
 
         <div id="storage-meter-wrap" aria-label="Browser storage usage">
@@ -165,29 +163,54 @@
                     <div class="welcome-hero">
                         <h1 class="welcome-title">aiTemplateLab</h1>
                         <p class="welcome-tagline">Build AI prompts once. Reuse them forever.</p>
-                        <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template once, fill in your details, and paste a perfect prompt into any AI tool — every time.</p>
+                        <p class="welcome-subtitle">Stop rewriting the same prompts from scratch. Build a template, fill in your details, and get a perfect AI prompt every time.</p>
+                    </div>
+
+                    <div class="home-videos">
+
+                        <div class="home-video-card">
+                            <div class="home-video-info">
+                                <span class="home-video-label">Using a Template</span>
+                                <p class="home-video-caption">Pick a template from the sidebar, fill in your details, and copy a perfect AI prompt in seconds.</p>
+                            </div>
+                            <video class="home-video-img" controls playsinline>
+                                <source src="UsingATemplate.mp4" type="video/mp4">
+                            </video>
+                        </div>
+
+                        <div class="home-video-card">
+                            <div class="home-video-info">
+                                <span class="home-video-label">Creating a Template</span>
+                                <p class="home-video-caption">Describe what you need and let the AI design a reusable template for you in seconds.</p>
+                            </div>
+                            <video class="home-video-img" controls playsinline>
+                                <source src="createANewTemplate.mp4" type="video/mp4">
+                            </video>
+                        </div>
+
                     </div>
 
                     <div class="welcome-steps">
+                        <p class="welcome-steps-label">How it works</p>
                         <div class="welcome-step">
                             <div class="welcome-step-number">1</div>
                             <div>
                                 <strong>Pick a template</strong>
-                                <p>Choose from the sidebar. Each one is built for a specific task.</p>
+                                <p>Choose from the sidebar, or use the green <em>Build a New Template</em> button to create your own.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">2</div>
                             <div>
                                 <strong>Fill in your details</strong>
-                                <p>Open <em>Use Template</em> and fill in the fields.</p>
+                                <p>Each field tells you exactly what to provide — just type in your information.</p>
                             </div>
                         </div>
                         <div class="welcome-step">
                             <div class="welcome-step-number">3</div>
                             <div>
                                 <strong>Copy to your AI tool</strong>
-                                <p>Click <em>Create Prompt</em> and paste into your favorite AI tool.</p>
+                                <p>Click <em>Copy Prompt</em> and paste into Claude, ChatGPT, or any AI tool.</p>
                             </div>
                         </div>
                     </div>
@@ -197,13 +220,13 @@
                         <details class="home-accordion">
                             <summary class="home-accordion-header">🧰 Build your own template library</summary>
                             <div class="home-accordion-body">
-                                <p>The <strong>Template Lab</strong> group comes pre-loaded with three tools for building your own AI prompt library — just run them in your AI tool and import the result.</p>
+                                <p>The <strong>Template Lab</strong> group comes pre-loaded with three tools for building your own AI prompt library — just run them in your AI tool and paste the result back.</p>
                                 <ul>
-                                    <li><strong>Template Builder</strong> — Describe what you want a prompt to do and the AI designs a complete, ready-to-import template for you.</li>
-                                    <li><strong>Template Group Generator</strong> — Tell the AI your job title or area of work and it generates a full set of templates covering every task you'd regularly need AI help with.</li>
-                                    <li><strong>Workflow Generator</strong> — Describe a goal and the AI breaks it into a step-by-step sequence of templates, one per stage, where each step feeds into the next.</li>
+                                    <li><strong>Template Builder</strong> — Describe what you want a prompt to do and the AI designs a complete, ready-to-use template.</li>
+                                    <li><strong>Template Group Generator</strong> — Tell the AI your job title and it generates a full set of templates for every task you'd regularly need help with.</li>
+                                    <li><strong>Workflow Generator</strong> — Describe a multi-step goal and the AI breaks it into a sequence of templates, one per stage.</li>
                                 </ul>
-                                <p>Switch to the <strong>Template Lab</strong> group in the sidebar to get started.</p>
+                                <p>Click the green <strong>Build a New Template</strong> button in the sidebar to get started.</p>
                                 <div class="home-help-chips">
                                     <button class="home-help-chip" data-help="help-template-lab">Using the Template Lab</button>
                                     <button class="home-help-chip" data-help="help-what-is-template">What is a Template?</button>
@@ -213,29 +236,19 @@
                         </details>
 
                         <details class="home-accordion">
-                            <summary class="home-accordion-header">💻 No installation needed</summary>
+                            <summary class="home-accordion-header">💾 How your work is saved</summary>
                             <div class="home-accordion-body">
-                                <p>aiTemplateLab is a single HTML file. There is nothing to install, no account to create, and no internet connection required after you have the file.</p>
-                                <p>You can run it directly from your desktop, a USB drive, a shared network folder, or a company intranet. Just open it in any modern browser — Chrome, Edge, Firefox, or Safari — and it works immediately.</p>
-                                <p>This also means you can share it with a colleague by simply sending them the file.</p>
+                                <p>Your templates save automatically to your browser as you work — no account or internet needed. They persist across page refreshes and restarts on the same device and browser.</p>
+                                <p>To back up or share your templates, use <strong>Export / Share</strong> in the sidebar. This lets you download or share individual templates, a whole group, or your entire workspace as a JSON file.</p>
+                                <p>To restore on another device, click <strong>Import</strong> and drop the file in.</p>
                             </div>
                         </details>
 
                         <details class="home-accordion">
-                            <summary class="home-accordion-header">💾 How and where your work is saved</summary>
+                            <summary class="home-accordion-header">⚠️ Don't lose your templates</summary>
                             <div class="home-accordion-body">
-                                <p>Your templates and history are <strong>automatically saved to your browser's local storage</strong> as you work — no manual saving needed. They survive page refreshes and browser restarts on the same device.</p>
-                                <p>However, local storage is tied to the specific browser and computer you are using. If you open the app in a different browser or on a different machine, your templates will not be there.</p>
-                                <p>This is why exporting your workspace regularly is important — see below.</p>
-                            </div>
-                        </details>
-
-                        <details class="home-accordion">
-                            <summary class="home-accordion-header">⚠️ Why saving your workspace matters</summary>
-                            <div class="home-accordion-body">
-                                <p>Browser local storage can be wiped if you clear your browser data, switch browsers, or use a different computer. When that happens, <strong>all your templates and history are gone</strong> with no way to recover them.</p>
-                                <p>Saving your workspace exports everything — all your groups and templates — into a single file you can back up, share with colleagues, or load on another machine.</p>
-                                <p>Use <strong>File → Save</strong> in the top menu. It takes seconds and protects everything you have built.</p>
+                                <p>Browser storage can be wiped when you clear browser data, switch browsers, or use a different computer. <strong>Export your workspace regularly</strong> so you always have a backup.</p>
+                                <p>Use <strong>Export / Share → Everything</strong> in the sidebar, or <strong>File → Save Workspace</strong> in the menu bar. It takes seconds and protects everything you have built.</p>
                             </div>
                         </details>
 
@@ -255,6 +268,139 @@
                     </div>
                 </div>
             </section>
+
+            <section id="builder-screen" class="screen">
+                <div class="builder-content">
+
+                    <div class="builder-header">
+                        <h1 class="builder-title">Build a New Template</h1>
+                        <p class="builder-subtitle">Describe your idea — your AI designs the template.</p>
+                    </div>
+
+                    <div class="builder-steps">
+
+                        <div class="builder-step" id="bstep-1">
+                            <div class="builder-step-num">1</div>
+                            <div class="builder-step-body">
+                                <p class="builder-step-heading">What do you want to create?</p>
+                                <div class="builder-type-tabs">
+                                    <button class="builder-type-tab active" data-type="single">Single Template</button>
+                                    <button class="builder-type-tab" data-type="group">Template Group</button>
+                                    <button class="builder-type-tab" data-type="workflow">Workflow</button>
+                                </div>
+                                <div id="builder-inputs"></div>
+                            </div>
+                        </div>
+
+                        <div class="builder-step" id="bstep-2">
+                            <div class="builder-step-num">2</div>
+                            <div class="builder-step-body">
+                                <button id="builder-copy-btn" class="builder-action-btn">Copy Prompt for AI</button>
+                            </div>
+                        </div>
+
+                        <div id="builder-lower" style="display:none">
+
+                            <div class="builder-step builder-step--info" id="bstep-3">
+                                <div class="builder-step-num">3</div>
+                                <div class="builder-step-body">
+                                    <p class="builder-instruction">Go paste that into <strong>Claude, ChatGPT,</strong> or any AI tool. Copy the full response it gives you.</p>
+                                </div>
+                            </div>
+
+                            <div class="builder-step" id="bstep-4">
+                                <div class="builder-step-num">4</div>
+                                <div class="builder-step-body">
+                                    <label class="builder-label" for="builder-paste">Paste the AI's response here</label>
+                                    <textarea id="builder-paste" class="builder-paste-area" placeholder='{ "id": "...", "name": "...", ... }&#10;or for groups and workflows:&#10;[ { "id": "..." }, { "id": "..." } ]'></textarea>
+                                </div>
+                            </div>
+
+                            <div class="builder-step builder-step--last" id="bstep-5">
+                                <div class="builder-step-num builder-step-num--green">5</div>
+                                <div class="builder-step-body">
+                                    <div class="builder-group-row">
+                                        <span class="builder-group-label">Adding to</span>
+                                        <select id="builder-group-select" class="builder-group-select"></select>
+                                    </div>
+                                    <div id="builder-new-group-row" style="display:none;">
+                                        <input type="text" id="builder-new-group-name" class="builder-new-group-input" placeholder="New group name…">
+                                    </div>
+                                    <button id="builder-import-btn" class="builder-action-btn builder-action-btn--green">Create Template</button>
+                                    <div id="builder-error" class="builder-error" style="display:none"></div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Template view: replaces tab-based chrome for the "use template" experience -->
+            <div id="template-view" style="display:none;">
+                <div class="tv-content">
+
+                    <div class="tv-header">
+                        <div class="tv-header-main">
+                            <h2 id="tv-name" class="tv-name"></h2>
+                            <p id="tv-desc" class="tv-desc"></p>
+                        </div>
+                        <button id="tv-edit-btn" class="tv-edit-btn">Edit</button>
+                    </div>
+
+                    <div class="tv-steps">
+
+                        <div class="tv-step">
+                            <div class="tv-step-num">1</div>
+                            <div class="tv-step-body">
+                                <p class="tv-step-heading">Review template <span class="tv-step-optional">— optional</span></p>
+                                <details id="tv-details" class="tv-details">
+                                    <summary class="tv-details-summary">Show Details</summary>
+                                    <div id="tv-details-body" class="tv-details-body"></div>
+                                </details>
+                            </div>
+                        </div>
+
+                        <div class="tv-step">
+                            <div class="tv-step-num">2</div>
+                            <div class="tv-step-body">
+                                <p class="tv-step-heading">Fill in your details</p>
+                                <div id="view-inputs" class="tv-inputs"></div>
+                                <div class="tv-toolbar">
+                                    <div class="tv-history-wrap">
+                                        <button id="tv-history-btn" class="tv-history-btn">&#9203; History &#9660;</button>
+                                        <div id="tv-history-dropdown" class="tv-history-dropdown"></div>
+                                    </div>
+                                    <button id="tv-clear-btn" class="tv-clear-btn">Clear</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tv-step">
+                            <div class="tv-step-num">3</div>
+                            <div class="tv-step-body">
+                                <button id="copy-view-output" class="btn btn-primary tv-copy-btn" type="button" aria-label="Copy prompt to clipboard">
+                                    Copy Prompt
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="tv-step tv-step--last">
+                            <div class="tv-step-num tv-step-num--muted">4</div>
+                            <div class="tv-step-body">
+                                <p class="tv-step-instruction">Paste into <strong>Claude, ChatGPT,</strong> or any AI tool.</p>
+                                <details class="tv-output-details">
+                                    <summary class="tv-output-summary">View Prompt JSON</summary>
+                                    <textarea id="view-output-json" class="prompt-display tv-output-json" aria-label="Prompt output"></textarea>
+                                </details>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
 
             <div id="info-display" class="info-display card card-body" style="margin-bottom: 1.5rem;">
                 <h3 id="view-name" style="margin-bottom: 0.5rem; color: var(--color-primary); font-size: 1.5em;">Prompt Name</h3>
@@ -278,29 +424,9 @@
 
             <div class="tab-content">
                 <section id="view-screen" class="screen" aria-labelledby="view-name">
-    <div class="view-screen">
-        <div class="view-left">
-            <div class="section card card-body" style="margin-bottom: 1.5rem;">
-                <h4 style="margin-top:0; color: var(--color-primary);">Inputs</h4>
-                <div id="view-inputs"></div>
-            </div>
-        </div>
-        <div class="view-right">
-            <div class="btn-group" style="gap: 0.75rem; align-items: center;">
-                <button class="btn btn-primary" type="button" id="copy-view-output" aria-label="Copy prompt to clipboard">
-                    Create Prompt
-                </button>
-            </div>
-        </div>
-    </div>
 </section>
 
                 <section id="output-screen" class="screen" style="display:none;">
-    <div class="output-panel">
-        <h3 style="color:var(--color-primary);margin-bottom:1rem;">Prompt Output</h3>
-        <label for="view-output-json" class="visually-hidden">Prompt JSON Output</label>
-        <textarea id="view-output-json" class="prompt-display" style="width:100%; min-height:200px; font-family:monospace; font-size:1em; padding:1em; border-radius:6px; border:1px solid #ccc; resize:vertical; background:#f9f9f9; color:#222;"></textarea>
-    </div>
 </section>
 
                 <section id="history-screen" class="screen" style="display:none;">
@@ -311,161 +437,153 @@
 
                 <section id="edit-screen" class="screen" style="display:none;">
     <div class="edit-panel">
-        <div class="edit-screen">
-            <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
-                <h3>⚠️ Required Fields Missing</h3>
-                <ul id="validation-errors-list"></ul>
-            </div>
-            <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
-                <h3>⚠️ Recommendations</h3>
-                <ul id="validation-warnings-list"></ul>
-            </div>
 
-            <details open>
-                <summary>Prompt Info</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> The name and description help you and others quickly identify what this prompt is for.<br>
-                    <strong>Why is it important?</strong> Clear names and descriptions make it easy to find and reuse prompts for different business or technical needs.<br>
-                    <strong>Business Example:</strong> "Quarterly Sales Report" or "Summarize meeting notes for executives."<br>
-                    <strong>Technical Example:</strong> "Generate a REST API endpoint for user authentication." or "Create a SQL query to aggregate sales data."
-                </div>
-                <div class="edit-fields">
-                    <label for="prompt-name">Name:</label>
-                    <input type="text" id="prompt-name" placeholder="e.g., Quarterly Sales Report" aria-required="true">
-                    <label for="prompt-desc">Description:</label>
-                    <textarea id="prompt-desc" placeholder="Brief description of what this prompt does" aria-required="true" rows="3"></textarea>
-                </div>
-            </details>
-
-            <details>
-                <summary>Example</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> A concrete example showing the template in action — sample inputs and the kind of output it produces.<br>
-                    <strong>Why is it important?</strong> Examples make it immediately obvious how to use the template and what to expect, especially for first-time users.<br>
-                    <strong>Tip:</strong> Show a realistic scenario: paste example input values and a snippet of the output you'd get from an AI tool.
-                </div>
-                <div class="edit-fields">
-                    <label for="prompt-example" class="visually-hidden">Example</label>
-                    <textarea id="prompt-example" placeholder="e.g., Input — Meeting Notes: 'The team agreed to push the Q3 launch to October and hire two more engineers.'&#10;&#10;Output — 'Summary: The Q3 launch has been delayed to October. Two engineering hires are approved.'" rows="6"></textarea>
-                </div>
-            </details>
-
-            <details>
-                <summary>1. Objective</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> The objective states the main goal of the prompt.<br>
-                    <strong>Why is it important?</strong> A clear objective ensures the output matches your expectations and business goals.<br>
-                    <strong>Business Example:</strong> "Summarize the main points from a business meeting in plain language."<br>
-                    <strong>Technical Example:</strong> "Document the steps to deploy a Node.js application to AWS."
-                </div>
-                <div class="edit-fields">
-                    <label for="objective" class="visually-hidden">Objective</label>
-                    <textarea id="objective" placeholder="e.g., Summarize the main points from a business meeting in plain language" aria-required="true"></textarea>
-                </div>
-            </details>
-
-            <details>
-                <summary>2. Actor</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> The actor is the person or role performing the task described by the prompt.<br>
-                    <strong>Why is it important?</strong> Defining the actor helps tailor the output to the right audience or expertise level.<br>
-                    <strong>Business Example:</strong> "You are a business analyst preparing a summary for the CEO."<br>
-                    <strong>Technical Example:</strong> "You are a DevOps engineer automating deployment scripts."
-                </div>
-                <div class="edit-fields">
-                    <label for="actor" class="visually-hidden">Actor</label>
-                    <textarea id="actor" placeholder="e.g., You are a business analyst preparing a summary for the CEO" aria-required="true"></textarea>
-                </div>
-            </details>
-
-            <details>
-                <summary>3. Context</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> The context provides background information or the situation for the prompt.<br>
-                    <strong>Why is it important?</strong> Good context ensures the output is relevant and fits the intended use case.<br>
-                    <strong>Business Example:</strong> "This summary will be shared with the executive team after each meeting."<br>
-                    <strong>Technical Example:</strong> "This script will be used by developers to automate database backups."
-                </div>
-                <div class="edit-fields">
-                    <label for="context" class="visually-hidden">Context</label>
-                    <textarea id="context" placeholder="e.g., This summary will be shared with the executive team after each meeting" aria-required="true"></textarea>
-                </div>
-            </details>
-
-            <details>
-                <summary>4. Input</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> Inputs are the information the user must provide for the prompt to work.<br>
-                    <strong>Why is it important?</strong> Listing inputs ensures nothing is missed and the output is accurate.<br>
-                    <strong>Business Example:</strong> "Meeting notes, list of attendees, action items."<br>
-                    <strong>Technical Example:</strong> "API endpoint URL, request parameters, authentication token."
-                </div>
-                <div class="edit-fields">
-                    <div id="inputs-container"></div>
-                    <button type="button" id="add-input" class="add-btn">
-                        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
-                        Add Input Field
-                    </button>
-                </div>
-            </details>
-
-            <details>
-                <summary>5. Constraints</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> Constraints are rules or requirements the output must follow.<br>
-                    <strong>Why is it important?</strong> Constraints help ensure the results meet business standards or technical requirements.<br>
-                    <strong>Business Example:</strong> "Keep the summary under 200 words. Avoid technical jargon."<br>
-                    <strong>Technical Example:</strong> "Response time must be under 2 seconds. Use only GET and POST methods."
-                </div>
-                <div class="edit-fields">
-                    <div id="constraints-container"></div>
-                    <button type="button" id="add-constraint" class="add-btn">
-                        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
-                        Add Constraint
-                    </button>
-                </div>
-            </details>
-
-            <details>
-                <summary>6. Output</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> The output describes what the result should look like.<br>
-                    <strong>Why is it important?</strong> Defining the output helps you get exactly what you need, in the right format.<br>
-                    <strong>Business Example:</strong> "A short summary with key decisions and next steps."<br>
-                    <strong>Technical Example:</strong> "A JSON object with user data and status code."
-                </div>
-                <div class="edit-fields">
-                    <div id="outputs-container"></div>
-                    <button type="button" id="add-output" class="add-btn">
-                        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
-                        Add Output Property
-                    </button>
-                </div>
-            </details>
-
-            <details>
-                <summary>7. Success</summary>
-                <div class="section-hint">
-                    <strong>What is this?</strong> Success criteria define how you know the output is good.<br>
-                    <strong>Why is it important?</strong> Clear success criteria make it easy to check if the results meet your needs.<br>
-                    <strong>Business Example:</strong> "The summary is clear, easy to read, and covers all important points."<br>
-                    <strong>Technical Example:</strong> "All unit tests pass and the API returns the expected response."
-                </div>
-                <div class="edit-fields">
-                    <div id="success-container"></div>
-                    <button type="button" id="add-success" class="add-btn">
-                        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><circle cx="10" cy="10" r="9" stroke-width="2" stroke="currentColor" fill="none"/><path d="M10 6v8M6 10h8" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"/></svg>
-                        Add Success Criterion
-                    </button>
-                </div>
-            </details>
+        <div class="edit-top-bar">
+            <button type="button" id="edit-back-btn" class="edit-back-btn">&#8592; Back</button>
         </div>
+
+        <div class="edit-name-row">
+            <input type="text" id="prompt-name" class="edit-name-input" placeholder="Template name" aria-required="true" aria-label="Template name">
+        </div>
+
+        <div class="edit-desc-row">
+            <textarea id="prompt-desc" class="edit-desc-input" placeholder="Short description of what this template does" rows="2" aria-required="true" aria-label="Description"></textarea>
+        </div>
+
+        <div id="validation-errors" class="validation-panel" aria-live="assertive" style="display:none;">
+            <h3>⚠️ Required Fields Missing</h3>
+            <ul id="validation-errors-list"></ul>
+        </div>
+        <div id="validation-warnings" class="validation-warning" aria-live="polite" style="display:none;">
+            <h3>⚠️ Recommendations</h3>
+            <ul id="validation-warnings-list"></ul>
+        </div>
+
+        <div class="edit-accordion">
+            <div class="edit-accordion-header" data-body="acc-details">
+                <span class="edit-accordion-title">Template Details</span>
+                <div class="edit-accordion-actions">
+                    <span class="edit-accordion-chevron">&#9654;</span>
+                </div>
+            </div>
+            <div class="edit-accordion-body" id="acc-details">
+                <div class="edit-details-body">
+
+                    <div class="edit-detail-field">
+                        <div class="edit-field-header">
+                            <label for="objective" class="edit-field-label">Objective</label>
+                            <button type="button" class="edit-hint-btn" data-hint="hint-objective" aria-expanded="false">ℹ</button>
+                        </div>
+                        <div id="hint-objective" class="edit-hint-body">
+                            The main goal of this prompt — what it accomplishes when used. <strong>Example:</strong> "Summarize the main points from a business meeting in plain language."
+                        </div>
+                        <div class="edit-fields">
+                            <textarea id="objective" placeholder="e.g., Summarize the main points from a business meeting in plain language" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="edit-detail-field">
+                        <div class="edit-field-header">
+                            <label for="actor" class="edit-field-label">Actor</label>
+                            <button type="button" class="edit-hint-btn" data-hint="hint-actor" aria-expanded="false">ℹ</button>
+                        </div>
+                        <div id="hint-actor" class="edit-hint-body">
+                            The role the AI should adopt when responding. <strong>Example:</strong> "You are a business analyst preparing a summary for the CEO."
+                        </div>
+                        <div class="edit-fields">
+                            <textarea id="actor" placeholder="e.g., You are a business analyst preparing a summary for the CEO" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="edit-detail-field">
+                        <div class="edit-field-header">
+                            <label for="context" class="edit-field-label">Context</label>
+                            <button type="button" class="edit-hint-btn" data-hint="hint-context" aria-expanded="false">ℹ</button>
+                        </div>
+                        <div id="hint-context" class="edit-hint-body">
+                            Background the AI needs before seeing the user's inputs. <strong>Example:</strong> "This summary will be shared with the executive team after each meeting."
+                        </div>
+                        <div class="edit-fields">
+                            <textarea id="context" placeholder="e.g., This summary will be shared with the executive team after each meeting" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="edit-detail-field">
+                        <div class="edit-field-header">
+                            <label for="prompt-example" class="edit-field-label">Example <span class="edit-field-optional">(optional)</span></label>
+                            <button type="button" class="edit-hint-btn" data-hint="hint-example" aria-expanded="false">ℹ</button>
+                        </div>
+                        <div id="hint-example" class="edit-hint-body">
+                            A walkthrough shown in "Show Details" when using the template — sample inputs and expected output.
+                        </div>
+                        <div class="edit-fields">
+                            <textarea id="prompt-example" placeholder="e.g., Input — Meeting Notes: 'Q3 launch pushed to October.'&#10;&#10;Output — 'Summary: Q3 launch delayed to October.'" rows="5"></textarea>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="edit-accordion">
+            <div class="edit-accordion-header" data-body="acc-inputs">
+                <span class="edit-accordion-title">Inputs <span id="inputs-count" class="edit-accordion-count"></span></span>
+                <div class="edit-accordion-actions">
+                    <button type="button" id="add-input" class="grid-add-btn">+ Add</button>
+                    <span class="edit-accordion-chevron">&#9654;</span>
+                </div>
+            </div>
+            <div class="edit-accordion-body" id="acc-inputs">
+                <div id="inputs-container"></div>
+            </div>
+        </div>
+
+        <div class="edit-accordion">
+            <div class="edit-accordion-header" data-body="acc-constraints">
+                <span class="edit-accordion-title">Constraints <span id="constraints-count" class="edit-accordion-count"></span></span>
+                <div class="edit-accordion-actions">
+                    <button type="button" id="add-constraint" class="grid-add-btn">+ Add</button>
+                    <span class="edit-accordion-chevron">&#9654;</span>
+                </div>
+            </div>
+            <div class="edit-accordion-body" id="acc-constraints">
+                <div id="constraints-container"></div>
+            </div>
+        </div>
+
+        <div class="edit-accordion">
+            <div class="edit-accordion-header" data-body="acc-outputs">
+                <span class="edit-accordion-title">Outputs <span id="outputs-count" class="edit-accordion-count"></span></span>
+                <div class="edit-accordion-actions">
+                    <button type="button" id="add-output" class="grid-add-btn">+ Add</button>
+                    <span class="edit-accordion-chevron">&#9654;</span>
+                </div>
+            </div>
+            <div class="edit-accordion-body" id="acc-outputs">
+                <div id="outputs-container"></div>
+            </div>
+        </div>
+
+        <div class="edit-accordion">
+            <div class="edit-accordion-header" data-body="acc-success">
+                <span class="edit-accordion-title">Success Criteria <span id="success-count" class="edit-accordion-count"></span></span>
+                <div class="edit-accordion-actions">
+                    <button type="button" id="add-success" class="grid-add-btn">+ Add</button>
+                    <span class="edit-accordion-chevron">&#9654;</span>
+                </div>
+            </div>
+            <div class="edit-accordion-body" id="acc-success">
+                <div id="success-container"></div>
+            </div>
+        </div>
+
         <div class="edit-footer">
             <div class="edit-btn-group">
-                <button type="button" id="cancel-edit" class="btn btn-secondary" aria-label="Cancel">Cancel</button>
-                <button type="button" id="delete-prompt" class="btn btn-danger" aria-label="Delete">Delete</button>
+                <button type="button" id="cancel-edit" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="delete-prompt" class="btn btn-danger">Delete</button>
             </div>
         </div>
+
     </div>
 </section>
 
@@ -473,26 +591,40 @@
 
         </div>
 
-        <!-- Import Template From AI Modal -->
+        <!-- Import Modal -->
 <div id="new-prompt-modal" tabindex="-1" aria-modal="true" role="dialog">
     <div id="new-prompt-modal-content">
-        <h2 class="modal-title">Import Template From AI</h2>
-        <p style="margin:0 0 1rem 0; color:#555; font-size:0.97em; line-height:1.6;">
-            Used the <strong>Template Builder</strong> or another generator? Your AI tool will have given you a block of template data to copy. Paste it below and we'll add it to your library automatically.
-        </p>
-        <label for="json-import-textarea">Paste your template here</label>
-        <textarea id="json-import-textarea" placeholder="Paste the template output from your AI tool here…"></textarea>
-        <label for="json-import-group-select" style="margin-top:0.7em;">Add to Group</label>
-        <select id="json-import-group-select" style="margin-top:0.3em; margin-bottom:0.5em;"></select>
-        <div id="json-import-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.5em;">
-            <label for="json-import-new-group-name">New Group Name:</label>
-            <input type="text" id="json-import-new-group-name" placeholder="e.g., Marketing" style="margin-top:0.3em;">
+        <h2 class="modal-title">Import</h2>
+
+        <div class="uim-dropzone" id="uim-dropzone">
+            <svg class="uim-dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 12 15 15"/></svg>
+            <p class="uim-dropzone-text">Drop a JSON file here</p>
+            <p class="uim-dropzone-or">or</p>
+            <button type="button" class="btn btn-secondary" id="uim-pick-file-btn">Browse Files</button>
+            <input type="file" id="uim-file-input" accept=".json" style="display:none;">
         </div>
-        <div id="json-import-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
-        <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:0.7em;">
-            <button type="button" class="btn btn-text" id="new-prompt-cancel" aria-label="Cancel">Cancel</button>
-            <button class="btn btn-primary" id="json-import-confirm">Import</button>
+
+        <div id="uim-file-preview" style="display:none;">
+            <div id="uim-detected-msg" class="uim-detected-msg"></div>
+            <div id="uim-file-group-fields" style="display:none;">
+                <label for="uim-group-select" style="display:block; margin-top:0.7em;">Import into Group</label>
+                <select id="uim-group-select" style="margin-top:0.3em; margin-bottom:0.5em; width:100%;"></select>
+                <div id="uim-new-group-row" style="display:none; flex-direction:column; margin-bottom:0.5em;">
+                    <label for="uim-new-group-name">New Group Name:</label>
+                    <input type="text" id="uim-new-group-name" placeholder="e.g., Marketing" style="margin-top:0.3em;">
+                </div>
+            </div>
+            <div id="uim-file-error" style="margin-bottom:0.5em; display:none; color:#ef4444; background:#fffbe6; border-radius:6px; padding:0.4em 0.8em;"></div>
+            <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; gap:0.7em; margin-top:1em;">
+                <button type="button" class="btn btn-text" id="uim-file-cancel">Cancel</button>
+                <button type="button" class="btn btn-primary" id="uim-file-confirm">Import</button>
+            </div>
         </div>
+
+        <div id="uim-cancel-bar" class="modal-btn-bar" style="display:flex; justify-content:flex-end; margin-top:0.75em;">
+            <button type="button" class="btn btn-text" id="new-prompt-cancel">Cancel</button>
+        </div>
+
     </div>
 </div>
 
@@ -517,7 +649,51 @@
     </div>
 </div>
 
-        <!-- Export Templates Modal -->
+        <!-- Quick Export Modal -->
+<div id="quick-export-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(30,41,59,0.65); z-index:9999; align-items:center; justify-content:center; padding:1.5rem;">
+    <div class="qem-box">
+        <h2 class="modal-title">Export</h2>
+
+        <div id="qem-template-row" class="qem-row" style="display:none;">
+            <div class="qem-row-info">
+                <span class="qem-row-label">This Template</span>
+                <span id="qem-template-name" class="qem-row-sub"></span>
+            </div>
+            <div class="qem-row-btns">
+                <button class="btn btn-secondary qem-btn" id="qem-template-download">Download</button>
+                <button class="btn btn-primary qem-btn" id="qem-template-share">Share</button>
+            </div>
+        </div>
+
+        <div class="qem-row">
+            <div class="qem-row-info">
+                <span class="qem-row-label">This Group</span>
+                <span id="qem-group-name" class="qem-row-sub"></span>
+            </div>
+            <div class="qem-row-btns">
+                <button class="btn btn-secondary qem-btn" id="qem-group-download">Download</button>
+                <button class="btn btn-primary qem-btn" id="qem-group-share">Share</button>
+            </div>
+        </div>
+
+        <div class="qem-row">
+            <div class="qem-row-info">
+                <span class="qem-row-label">Everything</span>
+                <span class="qem-row-sub">All groups &amp; templates</span>
+            </div>
+            <div class="qem-row-btns">
+                <button class="btn btn-secondary qem-btn" id="qem-workspace-download">Download</button>
+                <button class="btn btn-primary qem-btn" id="qem-workspace-share">Share</button>
+            </div>
+        </div>
+
+        <div class="modal-btn-bar" style="display:flex; justify-content:flex-end; margin-top:1.25rem;">
+            <button class="btn btn-text" id="qem-close">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Export Templates Modal -->
 <div id="export-modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; padding:2rem;">
     <div style="background:#fff; border-radius:8px; padding:2rem; max-width:800px; max-height:80vh; display:flex; flex-direction:column;">
         <h2 style="margin-bottom:1rem; color:#2563eb;">Export Templates</h2>
@@ -557,7 +733,8 @@
 </div>
 
 <div id="toast-warning" class="toast-warning" role="alert">
-    <span>Warning: Your data is stored in your browser and may be lost if you clear your cache or use a different device.</span>
+    <span>Tip: Your work is saved in your browser. Make sure to save often.
+</span>
     <button id="toast-close" aria-label="Dismiss warning">✕</button>
 </div>
 

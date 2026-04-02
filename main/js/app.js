@@ -53,10 +53,23 @@ function startApp() {
     setupTabListeners();
 
     // Edit form action buttons.
-    const saveBtn = document.getElementById('save-prompt');
-    if (saveBtn) saveBtn.addEventListener('click', savePrompt);
     const cancelBtn = document.getElementById('cancel-edit');
     if (cancelBtn) cancelBtn.addEventListener('click', cancelEdit);
+    const editBackBtn = document.getElementById('edit-back-btn');
+    if (editBackBtn) editBackBtn.addEventListener('click', cancelEdit);
+
+    // ℹ hint toggles in the edit form — delegated on document.
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.edit-hint-btn');
+        if (!btn) return;
+        const hintId = btn.dataset.hint;
+        const hint = hintId ? document.getElementById(hintId) : null;
+        if (!hint) return;
+        const isOpen = hint.classList.contains('open');
+        hint.classList.toggle('open', !isOpen);
+        btn.classList.toggle('active', !isOpen);
+        btn.setAttribute('aria-expanded', String(!isOpen));
+    });
 
     // Main tab buttons (Use Template / Template History / Output).
     // Edit Template is handled by setupTabListeners above.
@@ -98,12 +111,42 @@ function startApp() {
                 inputs[i.name] = field ? field.value : '';
             });
             savePromptInputHistory(prompt.id, inputs);
-            // Refresh the history tab if it's currently visible.
-            const historyScreen = document.getElementById('history-screen');
-            if (historyScreen && historyScreen.classList.contains('active')) renderHistoryList(prompt.id);
+            // Refresh inline history dropdown.
+            if (typeof renderHistoryDropdown === 'function') renderHistoryDropdown(prompt.id);
             const pre = document.getElementById('view-output-json');
             const modal = document.getElementById('copy-modal');
             if (pre) navigator.clipboard.writeText(pre.value).then(() => { if (modal) modal.style.display = 'flex'; });
+        });
+    }
+
+    // Template view: Edit button.
+    const tvEditBtn = document.getElementById('tv-edit-btn');
+    if (tvEditBtn) tvEditBtn.addEventListener('click', () => {
+        if (state.currentPromptId) editPrompt(state.currentPromptId);
+    });
+
+    // Template view: Clear button — wipes all input textareas and regenerates output.
+    const tvClearBtn = document.getElementById('tv-clear-btn');
+    if (tvClearBtn) tvClearBtn.addEventListener('click', () => {
+        document.querySelectorAll('[id^="input-value-"]').forEach(el => { el.value = ''; });
+        if (typeof generateViewPrompt === 'function') generateViewPrompt();
+    });
+
+    // Template view: History dropdown toggle.
+    const tvHistoryBtn = document.getElementById('tv-history-btn');
+    const tvHistoryDropdown = document.getElementById('tv-history-dropdown');
+    if (tvHistoryBtn && tvHistoryDropdown) {
+        tvHistoryBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = tvHistoryDropdown.style.display === 'block';
+            tvHistoryDropdown.style.display = isOpen ? 'none' : 'block';
+            tvHistoryBtn.classList.toggle('active', !isOpen);
+        });
+        document.addEventListener('click', e => {
+            if (!tvHistoryBtn.contains(e.target) && !tvHistoryDropdown.contains(e.target)) {
+                tvHistoryDropdown.style.display = 'none';
+                tvHistoryBtn.classList.remove('active');
+            }
         });
     }
 
@@ -114,13 +157,13 @@ function startApp() {
 
     // Add field buttons in the edit form (inputs / constraints / outputs / success).
     const addInputBtn = document.getElementById('add-input');
-    if (addInputBtn) addInputBtn.addEventListener('click', () => { if (window.addInput) window.addInput(); });
+    if (addInputBtn) addInputBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-inputs'); if (window.addInput) window.addInput(); });
     const addConstraintBtn = document.getElementById('add-constraint');
-    if (addConstraintBtn) addConstraintBtn.addEventListener('click', () => { if (window.addConstraint) window.addConstraint(); });
+    if (addConstraintBtn) addConstraintBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-constraints'); if (window.addConstraint) window.addConstraint(); });
     const addOutputBtn = document.getElementById('add-output');
-    if (addOutputBtn) addOutputBtn.addEventListener('click', () => { if (window.addOutput) window.addOutput(); });
+    if (addOutputBtn) addOutputBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-outputs'); if (window.addOutput) window.addOutput(); });
     const addSuccessBtn = document.getElementById('add-success');
-    if (addSuccessBtn) addSuccessBtn.addEventListener('click', () => { if (window.addSuccess) window.addSuccess(); });
+    if (addSuccessBtn) addSuccessBtn.addEventListener('click', e => { e.stopPropagation(); expandEditAccordion('acc-success'); if (window.addSuccess) window.addSuccess(); });
 
     // Mobile sidebar toggle.
     const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -140,10 +183,14 @@ function startApp() {
     if (sidebarSearch) sidebarSearch.addEventListener('input', renderPromptsList);
 
     // Sidebar action buttons.
-    const importJsonBtn = document.getElementById('import-json-btn');
-    if (importJsonBtn) importJsonBtn.addEventListener('click', openNewPromptModal);
+    const builderNavTile = document.getElementById('builder-nav-tile');
+    if (builderNavTile) builderNavTile.addEventListener('click', showBuilderScreen);
     const blankPromptBtn = document.getElementById('blank-prompt-btn');
     if (blankPromptBtn) blankPromptBtn.addEventListener('click', startBlankPrompt);
+    const importBtn = document.getElementById('import-btn');
+    if (importBtn) importBtn.addEventListener('click', openNewPromptModal);
+    const exportBtn = document.getElementById('export-btn');
+    if (exportBtn) exportBtn.addEventListener('click', openQuickExportModal);
 
     // Hidden file input for JSON template import.
     const importFile = document.getElementById('import-file');
@@ -167,13 +214,68 @@ function startApp() {
         }
     }
 
+    setupQuickExportModal();
+    setupEditAccordions();
+    setupEditCounts();
     setupEditScreenListener();
     setupNewPromptModal();
+    setupBuilderScreen();
     setupTileContextMenu();
     setupWorkspaceHandlers();
     setupTemplateGroupHandlers();
     setupMenuBar();
     updateStorageMeter();
+}
+
+/**
+ * Wires accordion toggle behaviour on the edit screen.
+ * Clicking a header expands/collapses its body; clicking the "+ Add" button
+ * inside the header is handled separately (stopPropagation prevents double-toggle).
+ */
+function setupEditAccordions() {
+    document.querySelectorAll('.edit-accordion-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const accordion = header.closest('.edit-accordion');
+            if (accordion) accordion.classList.toggle('open');
+        });
+    });
+}
+
+/**
+ * Expands the accordion whose body has the given id, if it isn't already open.
+ * @param {string} bodyId - The id of the `.edit-accordion-body` element.
+ */
+function expandEditAccordion(bodyId) {
+    const body = document.getElementById(bodyId);
+    if (!body) return;
+    const accordion = body.closest('.edit-accordion');
+    if (accordion) accordion.classList.add('open');
+}
+window.expandEditAccordion = expandEditAccordion;
+
+/**
+ * Keeps the count badge in each accordion header in sync with the number of
+ * items in the corresponding container. Uses MutationObserver so counts update
+ * whenever items are added or removed without needing explicit calls.
+ */
+function setupEditCounts() {
+    const sections = [
+        { countId: 'inputs-count',      containerId: 'inputs-container' },
+        { countId: 'constraints-count', containerId: 'constraints-container' },
+        { countId: 'outputs-count',     containerId: 'outputs-container' },
+        { countId: 'success-count',     containerId: 'success-container' },
+    ];
+    sections.forEach(({ countId, containerId }) => {
+        const countEl = document.getElementById(countId);
+        const container = document.getElementById(containerId);
+        if (!countEl || !container) return;
+        const update = () => {
+            const n = container.children.length;
+            countEl.textContent = n > 0 ? String(n) : '';
+        };
+        update();
+        new MutationObserver(update).observe(container, { childList: true });
+    });
 }
 
 startApp();
