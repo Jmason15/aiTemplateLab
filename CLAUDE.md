@@ -82,6 +82,7 @@ aiTemplateLab_claude/
 │   │   ├── modals.css
 │   │   └── screens.css             # Welcome screen, history, output, input hints
 │   └── js/
+│       ├── constants.js            # STORAGE_KEYS, FIELD_PREFIXES — must load first
 │       ├── utils.js                # escapeHtml, downloadJson, renderCheckboxGrid
 │       ├── state.js                # Shared state variables + syncWindowState + normalizePrompt
 │       ├── storage.js              # localStorage read/write/reset
@@ -106,6 +107,7 @@ aiTemplateLab_claude/
 Each file depends on the ones above it. Do not reorder without checking deps.
 
 ```
+constants.js       → STORAGE_KEYS, FIELD_PREFIXES — no deps; must be first
 utils.js           → pure helpers, no deps
 state.js           → shared variables; depends on utils.js
 storage.js         → depends on state.js

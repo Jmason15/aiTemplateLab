@@ -9,13 +9,13 @@
     "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
     "inputs": [
       {
-        "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+        "name": "Function Source",
         "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
         "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
       },
       {
-        "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
-        "description": "Enter: performance, readability, or both.",
+        "name": "Priority",
+        "description": "Should the improvement focus on performance, readability, or both?",
         "placeholder": "e.g., readability"
       }
     ],
@@ -36,14 +36,14 @@
         "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
       },
       {
-        "name": "explanation:",
+        "name": "Explanation",
         "type": "string",
         "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
       },
       {
-        "name": "potential_issues:",
+        "name": "Potential Issues",
         "type": "string",
-        "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+        "example": "A list of detected risks in the original code (or remaining risks in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
       }
     ],
     "success": [

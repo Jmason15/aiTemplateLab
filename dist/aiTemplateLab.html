@@ -3,15 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>aiTemplateLab</title>
+    <title>aiTemplateLab — Build AI Prompts Once. Reuse Them Forever.</title>
     <link rel="icon" type="image/png" href="data:image/png;base64,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">
-    <meta property="og:title" content="aiTemplateLab">
-    <meta property="og:description" content="Build AI prompts once. Reuse them forever. A free tool for creating reusable AI prompt templates.">
-    <meta property="og:image" content="https://jmason15.github.io/aiTemplateLab/aiTemplateLab.png">
-    <meta property="og:url" content="https://jmason15.github.io/aiTemplateLab/">
+    <meta name="description" content="aiTemplateLab is a free browser-based tool for creating, managing, and reusing structured AI prompt templates. No account or install required.">
+    <meta property="og:title" content="aiTemplateLab — Build AI Prompts Once. Reuse Them Forever.">
+    <meta property="og:description" content="aiTemplateLab is a free browser-based tool for creating, managing, and reusing structured AI prompt templates. No account or install required.">
+    <meta property="og:image" content="https://www.aitemplatelab.com/aiTemplateLab.png">
+    <meta property="og:url" content="https://www.aitemplatelab.com/">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://jmason15.github.io/aiTemplateLab/aiTemplateLab.png">
+    <meta name="twitter:image" content="https://www.aitemplatelab.com/aiTemplateLab.png">
+    <meta name="robots" content="index, follow">
+    <meta property="og:site_name" content="aiTemplateLab">
+    <meta name="twitter:title" content="aiTemplateLab — Build AI Prompts Once. Reuse Them Forever.">
+    <meta name="twitter:description" content="aiTemplateLab is a free browser-based tool for creating, managing, and reusing structured AI prompt templates. No account or install required.">
     <style>
 /* === variables.css === */
 :root {
@@ -3666,8 +3671,18 @@ body.toast-visible #container {
 }
 
     </style>
+
 </head>
 <body>
+
+<noscript>
+  <div style="font-family:sans-serif;max-width:640px;margin:40px auto;padding:0 20px">
+    <h1>aiTemplateLab</h1>
+    <p>A free browser-based tool for creating, managing, and reusing structured AI prompt templates. Build a template once — fill in your details and get a polished, ready-to-use AI prompt every time.</p>
+    <p>Templates follow a 7-section schema: Objective, Actor, Context, Inputs, Constraints, Outputs, and Success Criteria. Templates are stored locally in your browser — no account, no server, no data sent anywhere.</p>
+    <p>Visit <a href="https://www.aitemplatelab.com">aitemplatelab.com</a> in a JavaScript-enabled browser to use the app.</p>
+  </div>
+</noscript>
 
 <div id="container">
     <header id="app-bar" style="position:fixed; top:0; left:0; right:0; height:var(--appbar-height); background:#232a36; color:#fff; display:flex; align-items:stretch; z-index:10000; box-shadow:0 2px 4px rgba(0,0,0,0.35);">
@@ -4386,8 +4401,8 @@ body.toast-visible #container {
 </div>
 
 <div id="toast-warning" class="toast-warning" role="alert">
-    <span>Tip: Your work is saved in your browser. Make sure to save often.
-</span>
+    <span>Your templates are saved in your browser. Export regularly to keep a backup.</span>
+
     <button id="toast-close" aria-label="Dismiss warning">✕</button>
 </div>
 
@@ -5679,7 +5694,7 @@ window.preloadedPrompts = [
             {
                 "name": "Estimated Storypoints",
                 "type": "String",
-                "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+                "example": "1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
             },
             {
                 "name": "Story point description",
@@ -5705,13 +5720,13 @@ window.preloadedPrompts = [
         "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
         "inputs": [
             {
-                "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+                "name": "Function Source",
                 "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
                 "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
             },
             {
-                "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
-                "description": "Enter: performance, readability, or both.",
+                "name": "Priority",
+                "description": "Should the improvement focus on performance, readability, or both?",
                 "placeholder": "e.g., readability"
             }
         ],
@@ -5732,14 +5747,14 @@ window.preloadedPrompts = [
                 "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
             },
             {
-                "name": "explanation:",
+                "name": "Explanation",
                 "type": "string",
                 "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
             },
             {
-                "name": "potential_issues:",
+                "name": "Potential Issues",
                 "type": "string",
-                "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+                "example": "A list of detected risks in the original code (or remaining risks in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
             }
         ],
         "success": [
@@ -5934,7 +5949,7 @@ window.preloadedWorkspaces = {
                     {
                         "name": "Estimated Storypoints",
                         "type": "String",
-                        "example": "1 – Tiny, very clear, low uncertainty.\n\n2 – Small, still clear, maybe 1–2 edge cases.\n\n3 – Small/medium, some unknowns but manageable.\n\n5 – Medium, visible complexity or dependencies, uncertainty noticeable.\n\n8 – Large, many moving parts or risks; consider splitting.\n\n13 – Very large, high uncertainty; typically should be split.\n\n1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
+                        "example": "1 (Tiny): Very clear, low uncertainty.\n\n2 (Small): Clear, maybe 1–2 edge cases.\n\n3 (Small/Medium): Some unknowns but manageable.\n\n5 (Medium): Visible complexity or dependencies; uncertainty noticeable.\n\n8 (Large): Many moving parts or risks; consider splitting.\n\n13 (Very Large): High uncertainty; typically should be split.\n\n21 (Too Big/Very Risky): Strong signal to slice the story."
                     },
                     {
                         "name": "Story point description",
@@ -5960,13 +5975,13 @@ window.preloadedWorkspaces = {
                 "example": "Input — Function Source (JavaScript, readability priority):\nfunction calc(a,b,op){if(op=='add'){return a+b}else if(op=='sub'){return a-b}else if(op=='mul'){return a*b}else{return a/b}}\n\nOutput — Improved Function:\nfunction calculate(a, b, operation) {\n  const operations = {\n    add: () => a + b,\n    subtract: () => a - b,\n    multiply: () => a * b,\n    divide: () => a / b,\n  };\n  return operations[operation]?.() ?? null;\n}\n\nExplanation: Replaced if/else chain with a lookup map for clarity. Added null return for unknown operations.\n\nPotential Issues: No divide-by-zero guard — if b is 0 and operation is 'divide', returns Infinity.",
                 "inputs": [
                     {
-                        "name": "function_source: The full source code of a single, self-contained function that you will improve and analyze.",
+                        "name": "Function Source",
                         "description": "Paste the complete function you want improved. Include the full function body — not just a snippet.",
                         "placeholder": "e.g., function calcTotal(items) { let t = 0; for (var i=0; i<items.length; i++) { t = t + items[i].price; } return t; }"
                     },
                     {
-                        "name": "context.performance_or_readability_priority: Enum value of performance, readability, or both that tells you whether to favor speed, clarity, or a balanced compromise when refactoring.",
-                        "description": "Enter: performance, readability, or both.",
+                        "name": "Priority",
+                        "description": "Should the improvement focus on performance, readability, or both?",
                         "placeholder": "e.g., readability"
                     }
                 ],
@@ -5987,14 +6002,14 @@ window.preloadedWorkspaces = {
                         "example": "The revised implementation of the function in the same language, preserving the original public behavior under normal inputs while improving readability and/or performance according to the specified priority"
                     },
                     {
-                        "name": "explanation:",
+                        "name": "Explanation",
                         "type": "string",
                         "example": "A brief narrative that highlights the key structural, readability, and/or performance changes, including any notable trade-offs made to honor constraints."
                     },
                     {
-                        "name": "potential_issues:",
+                        "name": "Potential Issues",
                         "type": "string",
-                        "example": "A list of Issue objects, each describing a detected risk in the original code (or remaining risk in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
+                        "example": "A list of detected risks in the original code (or remaining risks in the improved version) with type, description, location, and a concrete suggestion that respects the project constraints."
                     }
                 ],
                 "success": [
