@@ -271,48 +271,6 @@ body.toast-visible #container {
   display: flex !important;
 }
 
-/* ==============================
-   Warning toast (top bar)
-   ============================== */
-
-#toast-warning {
-  position: fixed;
-  top: var(--appbar-height);
-  left: 0;
-  right: 0;
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1em;
-  background: #fef3c7;
-  color: #b45309;
-  font-size: 0.9em;
-  font-weight: 500;
-  padding: 0.55em 1em;
-  border-bottom: 1.5px solid #fde68a;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-#toast-warning.hidden {
-  display: none;
-}
-
-#toast-close {
-  background: none;
-  border: none;
-  color: #b45309;
-  font-size: 1em;
-  cursor: pointer;
-  padding: 0 0.2em;
-  line-height: 1;
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-
-#toast-close:hover {
-  opacity: 1;
-}
 
 /* ==============================
    Mobile menu panel

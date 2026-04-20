@@ -53,18 +53,21 @@ function generateViewPrompt() {
     if (prompt.example) promptJson.example = prompt.example;
     if (Object.keys(inputs).length > 0) promptJson.input = inputs;
     if (prompt.constraints.length > 0) promptJson.constraints = prompt.constraints;
-    promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };
+    if (requiredFields.length > 0) {
+        promptJson.output_schema = { type: 'object', properties: outputProperties, required: requiredFields };
+    }
     if (prompt.success.length > 0) promptJson.success_criteria = prompt.success;
 
-    // Append an output instruction that names the expected properties so the
-    // AI knows exactly what to return without extra prose.
-    const outputExample = Object.keys(outputProperties).join(', ');
-    promptJson.output_instructions = outputExample
-        ? `Return only the output exactly as specified by the properties: ${outputExample}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`
-        : 'Return only the output exactly as specified by the defined properties. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array';
+    // Only inject output_instructions when outputs are defined — if there are
+    // none, the constraints alone govern the output format and adding this
+    // field would contradict them.
+    if (requiredFields.length > 0) {
+        const outputExample = Object.keys(outputProperties).join(', ');
+        promptJson.output_instructions = `Return only the output exactly as specified by the properties: ${outputExample}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`;
+    }
 
     const outputEl = document.getElementById('view-output-json');
-    if (outputEl) outputEl.textContent = JSON.stringify(promptJson, null, 2);
+    if (outputEl) outputEl.textContent = 'Execute this prompt specification exactly. Use the JSON fields as operative instructions and follow the output instructions literally.\n\n' + JSON.stringify(promptJson, null, 2);
 }
 window.generateViewPrompt = generateViewPrompt;
 

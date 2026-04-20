@@ -24,13 +24,7 @@
       "constraints MUST be an array of plain strings. success MUST be an array of plain strings. Never use objects for these fields.",
       "Respond with only a Markdown code block using ```json ... ``` containing that object, with no other text before or after."
     ],
-    "outputs": [
-      {
-        "name": "Field Suggestions",
-        "type": "JSON",
-        "example": "{\n  \"id\": \"\",\n  \"name\": \"\",\n  \"description\": \"\",\n  \"objective\": \"\",\n  \"actor\": \"\",\n  \"context\": \"\",\n  \"example\": \"Input — [Field Name]: '[sample value]'\\n\\nWhat you get back: [plain English description of the output]\",\n  \"inputs\": [\n    {\n      \"name\": \"\",\n      \"description\": \"\",\n      \"placeholder\": \"\"\n    }\n  ],\n  \"constraints\": [\n  ],\n  \"outputs\": [\n    {\n      \"name\": \"\",\n      \"type\": \"\",\n      \"description\": \"\"\n    }\n  ],\n  \"success\": [\n  ]\n}"
-      }
-    ],
+    "outputs": [],
     "success": [
       "The assistant returns exactly one valid JSON object with the fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success, and no additional wrapper properties.",
       "The user can copy the whole JSON output and paste it into the prompt editor to create a new prompt with all fields populated.",

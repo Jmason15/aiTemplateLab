@@ -165,13 +165,12 @@ function handleImport(event) {
             const loaded = JSON.parse(e.target.result);
             // Accept either a single object or an array.
             const allTemplates = Array.isArray(loaded) ? loaded : [loaded];
-            const existingIds = new Set(state.prompts.map(p => p.id));
-            const uniqueTemplates = allTemplates.filter(t => t.id && !existingIds.has(t.id));
-            if (uniqueTemplates.length === 0) {
-                alert('No new templates to import (all IDs already exist or invalid).');
+            const validTemplates = allTemplates.filter(t => t.id);
+            if (validTemplates.length === 0) {
+                alert('No valid templates found in this file.');
                 return;
             }
-            showImportModal(uniqueTemplates, allTemplates);
+            showImportModal(validTemplates, allTemplates);
         } catch (err) {
             alert('Invalid template file. Please make sure the file is a valid JSON template exported from aiTemplateLab.');
         }
@@ -218,14 +217,11 @@ function showImportModal(templates, allTemplates) {
         }
         const targetGroup = resolveImportGroup('import-group-select', 'import-new-group-name', errorDiv);
         if (!targetGroup) return;
-        const groupExistingIds = new Set((state.environment.templateGroups[targetGroup] || []).map(p => p.id));
-        const newTemplates = selected.filter(t => !groupExistingIds.has(t.id));
-        if (newTemplates.length === 0) {
-            errorDiv.textContent = 'No new templates to import (all IDs already exist in that group).';
-            errorDiv.style.display = 'block';
-            return;
-        }
-        state.environment.templateGroups[targetGroup] = (state.environment.templateGroups[targetGroup] || []).concat(newTemplates);
+        const selectedIds = new Set(selected.map(t => t.id));
+        state.environment.templateGroups[targetGroup] = [
+            ...(state.environment.templateGroups[targetGroup] || []).filter(p => !selectedIds.has(p.id)),
+            ...selected
+        ];
         if (targetGroup === state.currentTemplateGroup) {
             state.setPrompts(state.environment.templateGroups[targetGroup].map(normalizePrompt));
         }
@@ -233,7 +229,7 @@ function showImportModal(templates, allTemplates) {
         renderPromptsList();
         modal.style.display = 'none';
         errorDiv.style.display = 'none';
-        alert(`Imported ${newTemplates.length} template(s) into "${targetGroup}" successfully!`);
+        alert(`Imported ${selected.length} template(s) into "${targetGroup}" successfully!`);
     };
     document.getElementById('import-modal-cancel').onclick = function () {
         modal.style.display = 'none';
@@ -554,16 +550,20 @@ function handleUimFileConfirm() {
         if (!targetGroup) return;
 
         const groupData = pending.data;
-        const existingIds = new Set((state.environment.templateGroups[targetGroup] || []).map(p => p.id));
-        const newTemplates = (groupData.templates || []).map(normalizePrompt).filter(p => p.id && !existingIds.has(p.id));
+        const incomingTemplates = (groupData.templates || []).map(normalizePrompt).filter(p => p.id);
 
-        if (newTemplates.length === 0) {
-            errEl.textContent = 'No new templates to import — all IDs already exist in that group.';
+        if (incomingTemplates.length === 0) {
+            errEl.textContent = 'No valid templates found in this group file.';
             errEl.style.display = 'block';
             return;
         }
 
-        state.environment.templateGroups[targetGroup] = (state.environment.templateGroups[targetGroup] || []).concat(newTemplates);
+        const incomingIds = new Set(incomingTemplates.map(p => p.id));
+        const newTemplates = incomingTemplates; // used in alert below
+        state.environment.templateGroups[targetGroup] = [
+            ...(state.environment.templateGroups[targetGroup] || []).filter(p => !incomingIds.has(p.id)),
+            ...incomingTemplates
+        ];
         if (groupData.history) state.environment.history[targetGroup] = groupData.history;
         if (targetGroup === state.currentTemplateGroup) {
             state.setPrompts(state.environment.templateGroups[targetGroup].map(normalizePrompt));
@@ -610,7 +610,7 @@ function generateBuilderPromptText(template, inputValues) {
     promptJson.output_instructions = names
         ? `Return only the output exactly as specified by the properties: ${names}. Do not include any extra prose, comments, or code fences. Do not wrap the answer in an object or array`
         : 'Return only the output exactly as specified. Do not include any extra prose, comments, or code fences.';
-    return JSON.stringify(promptJson, null, 2);
+    return 'Execute this prompt specification exactly. Use the JSON fields as operative instructions and follow the output instructions literally.\n\n' + JSON.stringify(promptJson, null, 2);
 }
 
 /** Renders the input textareas in #builder-inputs for the given type. */
@@ -732,27 +732,38 @@ function setupBuilderScreen() {
             try { parsed = JSON.parse(raw); }
             catch (e) { errorDiv.textContent = 'Invalid template format. Please check the AI\'s response and try again.'; errorDiv.style.display = 'block'; return; }
 
-            const templates  = Array.isArray(parsed) ? parsed : [parsed];
+            // Unwrap AI output that looks like {"Some Label": {id, name, ...}} — a
+            // common pattern when the output schema names a field and the AI
+            // wraps the template inside it instead of returning it at the root.
+            let unwrapped = parsed;
+            if (!Array.isArray(parsed) && parsed && typeof parsed === 'object' && !parsed.id) {
+                const vals = Object.values(parsed).filter(v => v && typeof v === 'object' && v.id);
+                if (vals.length > 0) unwrapped = vals;
+            }
+            const templates  = Array.isArray(unwrapped) ? unwrapped : [unwrapped];
             const targetGroup = resolveImportGroup('builder-group-select', 'builder-new-group-name', errorDiv);
             if (!targetGroup) return;
 
             if (!state.environment.templateGroups[targetGroup]) state.environment.templateGroups[targetGroup] = [];
-            const existingIds = new Set(state.environment.templateGroups[targetGroup].map(p => p.id));
-            const newTemplates = templates.map(normalizePrompt).filter(p => p.id && !existingIds.has(p.id));
-            if (newTemplates.length === 0) {
-                errorDiv.textContent = 'No new templates to import \u2014 all IDs already exist in this group.';
+            const allNormalized = templates.map(normalizePrompt).filter(p => p.id);
+            if (allNormalized.length === 0) {
+                errorDiv.textContent = 'No valid templates to import — check that the JSON has an "id" field.';
                 errorDiv.style.display = 'block';
                 return;
             }
 
-            state.environment.templateGroups[targetGroup] = state.environment.templateGroups[targetGroup].concat(newTemplates);
+            const incomingIds = new Set(allNormalized.map(p => p.id));
+            state.environment.templateGroups[targetGroup] = [
+                ...state.environment.templateGroups[targetGroup].filter(p => !incomingIds.has(p.id)),
+                ...allNormalized
+            ];
             state.setCurrentTemplateGroup(targetGroup);
             state.setPrompts(state.environment.templateGroups[targetGroup].map(normalizePrompt));
             window.savePromptsToLocalStorage();
             renderPromptsList();
 
-            // Navigate directly to the first new template
-            viewPrompt(newTemplates[0].id);
+            // Navigate directly to the first imported template
+            viewPrompt(allNormalized[0].id);
         });
     }
 }

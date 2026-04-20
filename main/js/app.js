@@ -196,23 +196,6 @@ function startApp() {
     const importFile = document.getElementById('import-file');
     if (importFile) importFile.addEventListener('change', handleImport);
 
-    // Warning toast — show unless dismissed this session.
-    const toast = document.getElementById('toast-warning');
-    const toastClose = document.getElementById('toast-close');
-    if (toast) {
-        if (sessionStorage.getItem(STORAGE_KEYS.TOAST_DISMISSED)) {
-            toast.classList.add('hidden');
-        } else {
-            document.body.classList.add('toast-visible');
-        }
-        if (toastClose) {
-            toastClose.addEventListener('click', () => {
-                toast.classList.add('hidden');
-                document.body.classList.remove('toast-visible');
-                sessionStorage.setItem(STORAGE_KEYS.TOAST_DISMISSED, '1');
-            });
-        }
-    }
 
     setupQuickExportModal();
     setupEditAccordions();

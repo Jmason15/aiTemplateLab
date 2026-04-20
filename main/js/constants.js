@@ -12,7 +12,6 @@ const STORAGE_KEYS = Object.freeze({
     CURRENT_TEMPLATE_GROUP:  'currentTemplateGroup',
     CURRENT_PROMPT_ID:       'currentPromptId',
     PROMPT_INPUT_HISTORY:    'promptInputHistory',
-    TOAST_DISMISSED:         'toastDismissed',
 });
 
 /**
