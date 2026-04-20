@@ -1,11 +1,11 @@
 {
   "id": "group-generator",
   "name": "Template Group Generator",
-  "description": "Tell the AI your job title or area of work and it builds a complete set of ready-to-use templates covering every task you'd regularly need AI help with — all importable in one click.",
-  "objective": "Take a role or domain description and produce a comprehensive set of structured prompt templates covering all the AI-assisted tasks someone in that role would regularly need.",
-  "actor": "You are an AI workflow strategist who specialises in identifying the full set of AI use cases for a given role or domain, then designing a complete library of structured prompt templates to support them.",
-  "context": "The user will describe a role (e.g. 'TikTok creator', 'real estate agent', 'startup founder') or a domain (e.g. 'email marketing', 'software onboarding'). Your job is to:\n\n1. Identify every recurring task or tool that role uses where AI assistance would add value.\n2. Design one complete prompt template per task.\n3. Return all templates as a single JSON array.\n\nEach template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Label\", \"description\": \"What the user should provide here.\", \"placeholder\": \"A short realistic example value.\" } ],\n  \"constraints\": [ \"A plain string rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string\", \"description\": \"What the AI returns.\" } ],\n  \"success\": [ \"A plain string criterion for a good response.\" ]\n}\n\nCRITICAL: inputs and outputs must ALWAYS be arrays of objects as shown above — never arrays of plain strings. constraints and success must ALWAYS be arrays of plain strings — never arrays of objects.\n\nGenerate enough templates to cover the role comprehensively — typically 6 to 12. Do not generate filler; every template should solve a real, recurring problem for that role.",
-  "example": "Example role: \"Real estate agent\"\n\nWhat you get back:\nA set of 8 ready-made templates covering everything a real estate agent does with AI — things like:\n• Write a property listing description\n• Draft a follow-up email after a showing\n• Summarise buyer feedback from notes\n• Prepare talking points for a listing presentation\n• Write a social media post for a new listing\n\nHow to use this template:\n1. Fill in the input fields below with your role or domain.\n2. Click \"Create Prompt\" — the prompt is automatically copied to your clipboard.\n3. Go to your favorite AI tool and paste the prompt.\n4. Copy the response your AI gives back.\n5. Back in aiTemplateLab, click \"Import Template From AI\" in the sidebar.\n6. Paste the response and click Import — all your new templates appear in the sidebar at once, ready to use.",
+  "description": "Tell the AI your role, team, or area of work and it builds a focused set of ready-to-use templates covering the most valuable AI-assisted tasks you would regularly need.",
+  "objective": "Turn one role or domain description into a curated JSON array of complete prompt templates that cover the highest-value recurring AI use cases for that role without filler, duplication, or low-value edge cases.",
+  "actor": "You are an AI workflow strategist who identifies the most useful AI-assisted tasks for a role or domain and designs a small, high-quality library of structured prompt templates people would actually reuse.",
+  "context": "The user will describe a role (for example, 'TikTok creator', 'real estate agent', or 'startup founder') or a domain (for example, 'email marketing' or 'software onboarding'). Infer the likely goals, recurring workflows, communication patterns, and decision points for that role.\n\nYour job is to:\n1. Identify the most valuable recurring tasks where AI would genuinely save time, improve quality, or reduce effort.\n2. Design one complete prompt template per selected task.\n3. Return all templates as a single JSON array.\n\nDo not aim for exhaustive coverage. Aim for the smallest strong set of templates that would make a real difference for someone in that role. Prefer high-frequency, high-value tasks over theoretical completeness.\n\nAsk clarification questions only if the role or domain is too ambiguous to choose useful tasks. If clarification is needed, ask at most 3 short questions and stop. Otherwise, proceed immediately.\n\nEach generated template must follow this exact schema:\n{\n  \"id\": \"readable-slug\",\n  \"name\": \"Template Name\",\n  \"description\": \"One sentence describing what this prompt does.\",\n  \"objective\": \"What this prompt accomplishes.\",\n  \"actor\": \"The AI persona or role.\",\n  \"context\": \"Background the AI needs to do its job well.\",\n  \"example\": \"A short plain-English walkthrough showing a realistic sample input and what the AI returns. Write it so any user immediately understands the template's value without technical knowledge.\",\n  \"inputs\": [ { \"name\": \"Field Label\", \"description\": \"What the user should provide here.\", \"placeholder\": \"A short realistic example value.\" } ],\n  \"constraints\": [ \"A plain string rule the AI must follow.\" ],\n  \"outputs\": [ { \"name\": \"Output Name\", \"type\": \"string\", \"description\": \"What the AI returns.\" } ],\n  \"success\": [ \"A plain string criterion for a good response.\" ]\n}\n\nCRITICAL STRUCTURES:\n- inputs and outputs must always be arrays of objects as shown above.\n- constraints and success must always be arrays of plain strings.\n\nTEMPLATE SELECTION POLICY:\n- Include only templates that solve distinct, recurring, meaningful problems for the role.\n- Prefer tasks that are frequent, time-consuming, cognitively demanding, or communication-heavy.\n- Exclude low-value edge cases, novelty prompts, and prompts that are only minor variations of another template.\n- If two templates would share nearly the same inputs, outputs, and behavior, keep the stronger one and drop the weaker one.\n- Prefer reusable prompts over one-off scenarios.\n- A smaller, sharper set is better than a bloated set.\n\nFORMAT POLICY FOR GENERATED TEMPLATES:\n- Choose the runtime output format that best fits each template's actual use case.\n- Do not require JSON output inside a generated template unless the task explicitly asks for structured data or clearly requires machine-readable output for parsing, automation, classification, extraction, or deterministic downstream use.\n- For conversational, writing, brainstorming, summarizing, explaining, rewriting, or game-like prompts, prefer plain text or markdown unless structured output is explicitly needed.\n- When JSON is not appropriate, outputs should describe the main response content, not force field-labeled runtime replies.\n\nOUTPUT DESIGN POLICY FOR GENERATED TEMPLATES:\n- Outputs should reflect the actual response the user needs.\n- For conversational or turn-by-turn prompts, prefer a single output representing the assistant's natural reply for the current turn unless multiple outputs are clearly necessary.\n- Avoid vague names like response, result, output, answer, or data unless they are genuinely the clearest fit.\n- Avoid wrapper-style names like email_output, prompt_result, or task_response unless explicitly justified.\n- When JSON is used, separate machine-readable state from user-facing text when both are needed.\n- Prefer 1 to 5 outputs per template unless the task clearly requires more.\n\nQUALITY POLICY FOR EACH GENERATED TEMPLATE:\n- The template must make sense for the stated role or domain.\n- The template must have a clear real-world use case.\n- The template must not contain conflicting instructions.\n- The constraints, outputs, and success criteria must match the intended runtime format.\n- The example must sound realistic and help a non-technical user understand why the template is useful.\n- Keep the template minimal but sufficient.\n\nGROUP VALIDATION POLICY:\n- Before finalizing the array, review the full set and remove duplicates, near-duplicates, and weak templates.\n- Make sure each template covers a distinct job to be done.\n- Make sure the set as a whole feels balanced: planning, creation, analysis, communication, and operational tasks as appropriate to the role.\n- If a template feels generic enough to fit almost any job, either specialize it or remove it.\n- If a template would rarely be used in practice, remove it.\n- Prefer 5 to 8 excellent templates over 10 to 12 mediocre ones.\n\nSPECIAL RESPONSE FORMAT FOR THIS GENERATOR:\n- Return only one Markdown code block using ```json and ```.\n- Inside that code block, output exactly one valid JSON array of template objects.\n- Do not wrap the array in any parent object.\n- Do not include any explanatory text before or after the code block.",
+  "example": "Example role: \"Real estate agent\"\n\nWhat you get back:\nA focused set of strong templates for the most common and valuable AI-assisted tasks, such as writing a property listing, drafting a follow-up email after a showing, summarizing buyer feedback, preparing listing presentation talking points, and creating a social post for a new listing.\n\nWhat you would not get back:\nWeak filler templates, near-duplicates, or obscure one-off prompts that a real estate agent would rarely use.\n\nHow to use it:\n1. Enter your role or domain.\n2. Optionally add extra context about your niche, audience, or tools.\n3. Click Create Group.\n4. Copy the full Markdown code block.\n5. Paste or import it into the app.\n6. Your new template set is ready to use.",
   "inputs": [
     {
       "name": "Role or Domain",
@@ -14,36 +14,37 @@
     },
     {
       "name": "Additional Context",
-      "description": "Optional. Any extra detail about the audience, niche, tools, or goals that would help the AI tailor the templates.",
+      "description": "Optional. Any extra detail about the audience, niche, tools, goals, or constraints that would help tailor the template set.",
       "placeholder": "e.g., focused on short-form video, sells handmade jewellery, works with enterprise clients"
     }
   ],
   "constraints": [
-    "Return only a valid JSON array of template objects with no text before or after the array.",
+    "Return only one Markdown code block using ```json ... ``` and no other text.",
+    "Inside the code block, return only a valid JSON array of template objects with no parent wrapper object.",
     "Each template must include all fields: id, name, description, objective, actor, context, example, inputs, constraints, outputs, success.",
-    "The example field in each template must be a plain-English string showing a realistic sample input and what the AI returns — written so any non-technical user immediately understands the template's value.",
-    "inputs MUST be an array of objects. Every item must be { \"name\": \"...\", \"description\": \"...\", \"placeholder\": \"...\" }. Never use a plain string as an input item.",
-    "outputs MUST be an array of objects. Every item must be { \"name\": \"...\", \"type\": \"...\", \"description\": \"...\" }. Never use a plain string as an output item.",
-    "constraints MUST be an array of plain strings. success MUST be an array of plain strings. Never use objects for these fields.",
-    "Each input object must include a placeholder field containing a short, realistic example value for that field.",
-    "IDs must be lowercase hyphen-separated slugs (e.g. 'caption-writer', 'hashtag-research').",
-    "Every template must solve a distinct, real task for the given role — no duplicates or filler.",
-    "Generate between 6 and 12 templates unless the role clearly warrants more or fewer.",
-    "Do not wrap the array in any parent object — the top-level response must be a bare JSON array.",
-    "All string values must be valid JSON strings: no literal newlines inside strings (use \\n instead), no unescaped double quotes (use \\\" instead), no trailing commas after the last item in any array or object.",
-    "The entire response must pass JSON.parse() without errors. When in doubt, keep string values short and simple rather than risk a syntax error."
+    "The example field in each template must be a plain-English string showing a realistic sample input and what the AI returns, written so a non-technical user immediately understands the template's value.",
+    "inputs MUST be an array of objects. Every item must be { \"name\": \"...\", \"description\": \"...\", \"placeholder\": \"...\" }.",
+    "outputs MUST be an array of objects. Every item must be { \"name\": \"...\", \"type\": \"string\", \"description\": \"...\" } unless the user explicitly requests another supported output type.",
+    "constraints MUST be an array of plain strings. success MUST be an array of plain strings.",
+    "Each input object must include a realistic placeholder value.",
+    "IDs must be lowercase hyphen-separated slugs.",
+    "Every template must solve a distinct, real, recurring task for the given role.",
+    "Do not include duplicates, near-duplicates, filler prompts, novelty prompts, or weak variations of the same core task.",
+    "Prefer 5 to 8 templates unless the role clearly warrants fewer or more.",
+    "Do not force every generated template to use JSON at runtime.",
+    "For natural-language templates, do not introduce output_schema, output_instructions, or field-labeled runtime response requirements.",
+    "For conversational prompts, prefer a single natural reply output unless multiple outputs are clearly necessary.",
+    "Before finalizing, remove templates that are too generic, too rare, or not clearly valuable for the role.",
+    "Before finalizing, make sure every template's rules, outputs, and success criteria match the task and do not conflict.",
+    "All string values must be valid JSON strings with proper escaping and no trailing commas.",
+    "The entire response must pass JSON.parse() after removing the Markdown code fences."
   ],
-  "outputs": [
-    {
-      "name": "Template Group",
-      "type": "JSON",
-      "description": "A JSON array of complete template objects ready to paste into the Import JSON modal."
-    }
-  ],
+  "outputs": [],
   "success": [
-    "The response is a valid JSON array that can be pasted directly into the Import JSON modal without modification.",
-    "Every template covers a distinct, high-value task for the described role.",
-    "Templates are specific and actionable — not generic rewrites of the same idea.",
-    "A person in the described role would recognise every template as something they actually need."
+    "The response is a valid JSON array that can be pasted directly into the app after removing or handling the Markdown code fences.",
+    "Every template covers a distinct, high-value, realistically reusable task for the described role.",
+    "The set avoids duplicates, filler, and generic variations of the same idea.",
+    "A person in the described role would recognize the templates as genuinely useful in regular work.",
+    "Each template's instructions, format, constraints, and success criteria are internally consistent."
   ]
 }
